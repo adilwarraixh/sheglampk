@@ -149,7 +149,7 @@ function buildHeader(page, base) {
 <div class="overlay" id="overlay"></div>`;
 }
 
-function buildNewsletter() {
+function buildNewsletter(base) {
   return `
 <section class="newsletter">
   <div class="container newsletter__inner">
@@ -161,7 +161,7 @@ function buildNewsletter() {
     </form>
     <p class="formmsg" id="newsletterMsg" role="status"></p>
     <p class="newsletter__fine">By subscribing you agree to receive marketing emails from ${esc(SITE.name)}.
-      You can unsubscribe at any time. See our <a href="privacy.html">Privacy Policy</a>.</p>
+      You can unsubscribe at any time. See our <a href="${base}privacy.html">Privacy Policy</a>.</p>
   </div>
 </section>`;
 }
@@ -433,7 +433,7 @@ ${buildHeader(o.page, base)}
 <main id="main">
 ${o.body}
 </main>
-${o.hideNewsletter ? "" : buildNewsletter()}
+${o.hideNewsletter ? "" : buildNewsletter(base)}
 ${buildFooter(base)}
 ${buildOverlays(base)}
 <script src="${base}data/products.js"></script>
