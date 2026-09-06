@@ -150,7 +150,8 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
     <div class="spacer"></div>
     <span class="dirty" id="dirty" hidden><i class="dot"></i> Unsaved changes</span>
     <button class="btn btn--outline btn--sm" id="saveBtn" disabled>Save</button>
-    <button class="btn btn--dark btn--sm" id="publishBtn">Save &amp; publish</button>
+    <button class="btn btn--outline btn--sm" id="publishBtn" title="Rebuild the site on this computer">Build preview</button>
+    <button class="btn btn--dark btn--sm" id="deployBtn" title="Push the changes so the live site updates">Publish live</button>
     <a class="btn btn--outline btn--sm" href="http://localhost:5599" target="_blank" rel="noopener">View site ↗</a>
     <button class="btn btn--outline btn--sm" id="logoutBtn" title="Sign out">Sign out</button>
   </div>
@@ -625,7 +626,9 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
     try {
       if (dirty) await save();
       const r = await api("/api/build", { method: "POST" });
-      toast("Published — the live site is up to date");
+      // This only rebuilds the copy on this machine — the live site is
+      // updated by "Publish live", which pushes the changes to the host.
+      toast("Preview rebuilt — check localhost:5599. Use “Publish live” to update the real site.");
       const out = r.output || "";
       if (out) {
         $("#sheetTitle").textContent = "Build output";
@@ -639,7 +642,37 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
     } catch (e) {
       toast("Publish failed: " + e.message, true);
     } finally {
-      btn.disabled = false; btn.textContent = "Save & publish";
+      btn.disabled = false; btn.textContent = "Build preview";
+      $("#saveProduct").hidden = false; $("#cancelProduct").textContent = "Cancel";
+    }
+  });
+
+  /* Publish live: rebuild, then push so the host redeploys. */
+  $("#deployBtn").addEventListener("click", async () => {
+    if (!META.deployConfigured) {
+      return toast("Publishing needs a git repo with vercel.json. See the README.", true);
+    }
+    if (!confirm("Publish to the live site?\n\nThis rebuilds the site and pushes the changes. Customers will see them in a minute or two.")) return;
+
+    const btn = $("#deployBtn");
+    btn.disabled = true; btn.textContent = "Publishing…";
+    try {
+      if (dirty) await save();
+      const r = await api("/api/deploy", { method: "POST", body: JSON.stringify({}) });
+      toast(r.message || "Published");
+      if (r.output) {
+        $("#sheetTitle").textContent = r.pushed ? "Published to live site" : "Nothing to publish";
+        $("#sheetBody").innerHTML =
+          `<p style="margin-bottom:14px;font-size:14px">${esc(r.message || "")}</p>
+           <pre class="out">${esc(r.output)}</pre>`;
+        $("#delProduct").hidden = true; $("#saveProduct").hidden = true;
+        $("#cancelProduct").textContent = "Close";
+        $("#mask").classList.add("is-on"); $("#sheet").classList.add("is-on");
+      }
+    } catch (e) {
+      toast("Publish failed: " + e.message, true);
+    } finally {
+      btn.disabled = false; btn.textContent = "Publish live";
       $("#saveProduct").hidden = false; $("#cancelProduct").textContent = "Cancel";
     }
   });

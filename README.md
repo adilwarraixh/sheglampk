@@ -67,9 +67,27 @@ node set-admin-password.js
   change its status (Received → Confirmed → Packed → Shipped → Delivered), add a tracking
   number and an internal note, or message the customer on WhatsApp in one click.
 
-**Save** writes `data/products.json`. **Save & publish** writes it *and* runs the build, so the
-live site updates in one step. Every save takes a timestamped backup into `data/backups/`
-(20 kept), and invalid data is rejected before anything is written.
+### The admin portal is not part of your website
+
+It runs on your computer, at `localhost:5600`. It is deliberately excluded from the deployed
+site (`deploy-prepare.js` copies from an allow-list and fails the build if anything from
+`admin/` slips in), and there is no URL on your live domain that reaches it. That is on purpose:
+a static host cannot run it anyway — it needs to write files, and Vercel's filesystem is
+read-only — and if it *were* published, anyone could find the login page.
+
+To use it, start it on your machine. To manage products from another device, that needs a
+hosted backend and a database, which is a different build (see *What still needs a backend*).
+
+### Three buttons, three different things
+
+| Button | What it does |
+|--------|--------------|
+| **Save** | Writes `data/products.json`. Nothing else changes. |
+| **Build preview** | Saves, then rebuilds the site on this computer. Check it at `localhost:5599`. |
+| **Publish live** | Saves, rebuilds, then **commits and pushes** — your host redeploys and customers see the change in a minute or two. |
+
+Every save takes a timestamped backup into `data/backups/` (20 kept), and invalid data is
+rejected before anything is written.
 
 A save that would empty the catalogue, or delete more than half of it at once, is refused —
 that is almost always a bug or a truncated payload rather than something you meant.

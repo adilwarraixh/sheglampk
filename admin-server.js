@@ -292,6 +292,47 @@ async function api(req, res, url) {
       });
   }
 
+  /* --- deploy: rebuild, then push so the host redeploys --- */
+  if (route === "/api/deploy" && req.method === "POST") {
+    const run = (cmd, args) =>
+      new Promise((resolve) =>
+        execFile(cmd, args, { cwd: ROOT, timeout: 180000, windowsHide: true },
+          (err, stdout, stderr) =>
+            resolve({ ok: !err, out: String(stdout || "") + String(stderr || ""), code: err ? err.code : 0 })));
+
+    const log = [];
+    const step = async (label, cmd, args, { allowFail = false } = {}) => {
+      const r = await run(cmd, args);
+      log.push(`$ ${label}\n${r.out.trim()}`);
+      if (!r.ok && !allowFail) throw new Error(`${label} failed:\n${r.out.trim().slice(-600)}`);
+      return r;
+    };
+
+    try {
+      await step("node build.js", process.execPath, [path.join(ROOT, "build.js")]);
+      await step("node deploy-prepare.js", process.execPath, [path.join(ROOT, "deploy-prepare.js")]);
+
+      const status = await run("git", ["status", "--porcelain"]);
+      if (!status.ok) throw new Error("git is not available, or this folder is not a repository.");
+      if (!status.out.trim()) {
+        return send(res, 200, { ok: true, pushed: false, message: "Nothing changed — the live site already matches.", output: log.join("\n\n") });
+      }
+
+      await step("git add -A", "git", ["add", "-A"]);
+      const msg = (await body(req)).message || `Update catalogue — ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+      await step("git commit", "git", ["commit", "-m", msg]);
+      await step("git push", "git", ["push"]);
+
+      return send(res, 200, {
+        ok: true, pushed: true,
+        message: "Pushed. Your host will rebuild and the live site updates in a minute or two.",
+        output: log.join("\n\n"),
+      });
+    } catch (e) {
+      return send(res, 500, { ok: false, error: e.message, output: log.join("\n\n") });
+    }
+  }
+
   /* --- orders --- */
   if (route === "/api/orders" && req.method === "GET") {
     const store = readJSON(ORDERS_FILE, { orders: [] });
@@ -409,6 +450,7 @@ async function api(req, res, url) {
       photos,
       site: { name: D.SITE.name, currency: D.SITE.currency, freeShippingOver: D.SITE.freeShippingOver, flatShipping: D.SITE.flatShipping },
       ordersApiConfigured: !!D.SITE.ordersApi,
+      deployConfigured: fs.existsSync(path.join(ROOT, ".git")) && fs.existsSync(path.join(ROOT, "vercel.json")),
     });
   }
 
