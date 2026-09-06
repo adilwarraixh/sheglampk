@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Photo Import — SHEGLAM PK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#fff; --ink:#171717; --pink:#e83e70; --pink-soft:rgba(232,62,112,.10);
+  --muted:#6f6f6f; --menu:#8a8a8a; --line:#ededed; --line-strong:#dcdcdc;
+  --bg-alt:#f7f7f7; --ok:#1f8a5b; --warn:#c98a00; --r:12px; --r-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+/* an author `display` rule outranks the UA sheet's [hidden] rule */
+[hidden]{display:none!important;}
+body{font-family:Poppins,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.55;}
+.wrap{width:min(100% - 32px,1180px);margin-inline:auto;padding-bottom:80px;}
+header{border-bottom:1px solid var(--line);margin-bottom:26px;}
+.head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0;flex-wrap:wrap;}
+.logo{font-size:21px;font-weight:800;letter-spacing:-.01em;}
+.logo span{font-size:.56em;font-weight:700;}
+h1{font-size:24px;font-weight:700;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:14px;max-width:680px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:var(--r);
+  font:inherit;font-size:14px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:.2s;}
+.btn--primary{background:var(--pink);color:#fff;border-color:var(--pink);}
+.btn--primary:hover{background:#cf2f5e;border-color:#cf2f5e;}
+.btn--outline{background:#fff;color:var(--ink);border-color:var(--ink);}
+.btn--outline:hover{background:var(--ink);color:#fff;}
+.btn--sm{height:34px;padding:0 12px;font-size:13px;border-radius:var(--r-sm);}
+.btn:disabled{opacity:.4;pointer-events:none;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat{background:var(--bg-alt);border-radius:var(--r);padding:14px 16px;}
+.stat b{display:block;font-size:26px;font-weight:700;line-height:1.1;}
+.stat span{font-size:12.5px;color:var(--muted);}
+
+#drop{border:2px dashed var(--line-strong);border-radius:16px;padding:44px 24px;text-align:center;transition:.2s;cursor:pointer;background:var(--bg-alt);}
+#drop.over{border-color:var(--pink);background:var(--pink-soft);}
+#drop h2{font-size:18px;margin-bottom:8px;}
+#drop p{color:var(--muted);font-size:14px;}
+#file{display:none;}
+
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:26px 0 14px;}
+.bar h2{font-size:17px;font-weight:600;margin-right:auto;}
+
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;}
+.item{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}
+.item__prev{aspect-ratio:5/6;background:var(--bg-alt);position:relative;}
+.item__prev img{width:100%;height:100%;object-fit:cover;display:block;}
+.item__tag{position:absolute;top:8px;left:8px;font-size:11px;font-weight:600;padding:4px 7px;border-radius:4px;color:#fff;}
+.t-ok{background:var(--ok);} .t-guess{background:var(--warn);} .t-none{background:var(--menu);}
+.item__body{padding:12px;display:grid;gap:8px;}
+.item__file{font-size:11.5px;color:var(--menu);word-break:break-all;}
+select{width:100%;height:38px;border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:0 8px;font:inherit;font-size:13px;background:#fff;}
+select:focus{outline:none;border-color:var(--pink);}
+.item__out{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;}
+
+.missing{margin-top:36px;}
+.missing summary{cursor:pointer;font-weight:600;font-size:15px;padding:12px 0;}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px 18px;padding-top:8px;}
+.mrow{font-size:13px;color:var(--muted);display:flex;gap:8px;padding:3px 0;}
+.mrow code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ink);}
+.note{background:var(--bg-alt);border-left:3px solid var(--pink);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:14px 18px;margin:22px 0;font-size:14px;}
+.note b{font-weight:600;}
+ol.steps{margin:10px 0 0 20px;display:grid;gap:6px;font-size:14px;color:var(--muted);}
+ol.steps b{color:var(--ink);font-weight:500;}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head">
+    <div class="logo">SHEGLAM<span>.PK</span></div>
+    <a class="btn btn--outline btn--sm" href="../index.html">← Back to site</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>Product photo import</h1>
+  <p class="sub">Drop in photos from your phone or camera. Each one is matched to a product,
+    centre-cropped to portrait, resized to 1000&times;1200 and renamed to the exact filename the
+    site expects. Then save them into <code>assets/img/products/</code> and rebuild.</p>
+
+  <div class="stats" id="stats"></div>
+
+  <div id="drop" tabindex="0" role="button" aria-label="Choose photos">
+    <h2>Drop photos here</h2>
+    <p>or click to choose files &middot; JPG, PNG, HEIC or WebP &middot; any size</p>
+  </div>
+  <input type="file" id="file" accept="image/*" multiple>
+
+  <div class="note">
+    <b>Shooting tip:</b> a phone on a plain white surface next to a window beats a light box.
+    Shoot portrait, fill about two-thirds of the frame with the product, and keep the same
+    background for every shot so the grid looks consistent.
+  </div>
+
+  <div class="bar" id="bar" hidden>
+    <h2 id="count"></h2>
+    <button class="btn btn--outline btn--sm" id="clear">Clear</button>
+    <button class="btn btn--primary" id="dlall">Download all renamed</button>
+  </div>
+
+  <div class="items" id="items"></div>
+
+  <details class="missing" id="missingBox">
+    <summary>Products still without a photo (<span id="missCount">0</span>)</summary>
+    <div class="mgrid" id="mgrid"></div>
+  </details>
+
+  <div class="note" style="margin-top:34px">
+    <b>After downloading:</b>
+    <ol class="steps">
+      <li>Move the downloaded files into <b>assets/img/products/</b></li>
+      <li>Run <b>node check-images.js</b> to confirm they are all seen</li>
+      <li>Run <b>node build.js</b></li>
+    </ol>
+  </div>
+</div>
+
+<script src="../data/catalog.js"></script>
+<script>
+(function () {
+  "use strict";
+  const PRODUCTS = window.SGPK.PRODUCTS;
+  const HAVE = new Set(window.SGPK.PHOTOS || []);
+  const OUT_W = 1000, OUT_H = 1200, QUALITY = 0.86;
+
+  const $ = (s) => document.querySelector(s);
+  const items = [];
+
+  /* ---------- matching ---------- */
+  const norm = (s) => String(s).toLowerCase().replace(/\.[a-z0-9]+$/, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const tokens = (s) => norm(s).split(" ").filter((t) => t.length > 2);
+
+  function scoreFor(fileName, p) {
+    const f = norm(fileName), ft = tokens(fileName);
+    const nameN = norm(p.name), slugN = norm(p.slug);
+    if (!f) return 0;
+    if (f === slugN || f === nameN) return 1000;
+    let s = 0;
+    if (f.includes(slugN) || slugN.includes(f)) s += 120;
+    const pt = new Set(tokens(p.name));
+    ft.forEach((t) => { if (pt.has(t)) s += 18; });
+    // reward long shared prefixes, which is how most exports are named
+    let i = 0; while (i < f.length && i < slugN.length && f[i] === slugN[i]) i++;
+    s += Math.min(i, 30);
+    return s;
+  }
+
+  function bestMatch(fileName) {
+    let best = null, bestScore = 0, second = 0;
+    PRODUCTS.forEach((p) => {
+      const s = scoreFor(fileName, p);
+      if (s > bestScore) { second = bestScore; bestScore = s; best = p; }
+      else if (s > second) second = s;
+    });
+    // confident only when it clearly beats the runner-up
+    const confident = bestScore >= 60 && bestScore >= second * 1.6;
+    return { product: bestScore >= 25 ? best : null, confident };
+  }
+
+  /* ---------- image processing ---------- */
+  function processFile(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        // centre-crop to 5:6 then draw at output size
+        const targetRatio = OUT_W / OUT_H;
+        let sw = img.naturalWidth, sh = img.naturalHeight;
+        let sx = 0, sy = 0;
+        if (sw / sh > targetRatio) { const w = sh * targetRatio; sx = (sw - w) / 2; sw = w; }
+        else { const h = sw / targetRatio; sy = (sh - h) / 2; sh = h; }
+
+        const c = document.createElement("canvas");
+        c.width = OUT_W; c.height = OUT_H;
+        const ctx = c.getContext("2d");
+        ctx.imageSmoothingQuality = "high";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, OUT_W, OUT_H);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, OUT_W, OUT_H);
+        URL.revokeObjectURL(url);
+        c.toBlob((blob) => blob ? resolve({ blob, url: c.toDataURL("image/jpeg", 0.6) })
+                                : reject(new Error("encode failed")), "image/jpeg", QUALITY);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read " + file.name)); };
+      img.src = url;
+    });
+  }
+
+  /* ---------- rendering ---------- */
+  function optionsHTML(selectedSlug) {
+    const byCat = {};
+    PRODUCTS.forEach((p) => { (byCat[p.categoryLabel] = byCat[p.categoryLabel] || []).push(p); });
+    let html = '<option value="">— skip this file —</option>';
+    Object.keys(byCat).forEach((cat) => {
+      html += `<optgroup label="${cat}">`;
+      byCat[cat].forEach((p) => {
+        html += `<option value="${p.slug}"${p.slug === selectedSlug ? " selected" : ""}>${
+          p.name.replace(/&/g, "&amp;").replace(/</g, "&lt;")}${HAVE.has(p.slug) ? " ✓" : ""}</option>`;
+      });
+      html += "</optgroup>";
+    });
+    return html;
+  }
+
+  function render() {
+    const box = $("#items");
+    box.innerHTML = "";
+    items.forEach((it, i) => {
+      const el = document.createElement("div");
+      el.className = "item";
+      const tag = !it.slug ? '<span class="item__tag t-none">unmatched</span>'
+        : it.confident ? '<span class="item__tag t-ok">matched</span>'
+        : '<span class="item__tag t-guess">check this</span>';
+      el.innerHTML = `
+        <div class="item__prev">${tag}<img src="${it.preview}" alt=""></div>
+        <div class="item__body">
+          <div class="item__file">${it.file.name}</div>
+          <select data-i="${i}">${optionsHTML(it.slug)}</select>
+          <div class="item__out">${it.slug ? it.slug + ".jpg" : "not assigned"}</div>
+          <button class="btn btn--outline btn--sm" data-dl="${i}" ${it.slug ? "" : "disabled"}>Download</button>
+        </div>`;
+      box.appendChild(el);
+    });
+
+    box.querySelectorAll("select").forEach((sel) =>
+      sel.addEventListener("change", () => {
+        const it = items[+sel.dataset.i];
+        it.slug = sel.value;
+        it.confident = true;
+        render();
+      })
+    );
+    box.querySelectorAll("[data-dl]").forEach((b) =>
+      b.addEventListener("click", () => download(items[+b.dataset.dl]))
+    );
+
+    const assigned = items.filter((x) => x.slug).length;
+    $("#bar").hidden = !items.length;
+    $("#count").textContent = `${items.length} file${items.length === 1 ? "" : "s"} · ${assigned} assigned`;
+    $("#dlall").disabled = !assigned;
+    updateStats();
+  }
+
+  function updateStats() {
+    const assignedSlugs = new Set(items.filter((x) => x.slug).map((x) => x.slug));
+    const have = new Set([...HAVE, ...assignedSlugs]);
+    const missing = PRODUCTS.filter((p) => !have.has(p.slug));
+    $("#stats").innerHTML = `
+      <div class="stat"><b>${PRODUCTS.length}</b><span>products in catalogue</span></div>
+      <div class="stat"><b>${HAVE.size}</b><span>already on disk</span></div>
+      <div class="stat"><b>${assignedSlugs.size}</b><span>ready to download</span></div>
+      <div class="stat"><b>${missing.length}</b><span>still to shoot</span></div>`;
+    $("#missCount").textContent = missing.length;
+    $("#mgrid").innerHTML = missing.map((p) =>
+      `<div class="mrow"><code>${p.slug}.jpg</code></div>`).join("");
+  }
+
+  function download(it) {
+    if (!it.slug) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(it.blob);
+    a.download = it.slug + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  async function addFiles(fileList) {
+    const files = Array.from(fileList).filter((f) => /^image\//.test(f.type));
+    for (const file of files) {
+      try {
+        const { blob, url } = await processFile(file);
+        const m = bestMatch(file.name);
+        items.push({
+          file, blob, preview: url,
+          slug: m.product ? m.product.slug : "",
+          confident: m.confident,
+        });
+        render();
+      } catch (err) {
+        console.warn(err);
+        alert(`Could not read ${file.name}. HEIC files sometimes need converting to JPG first.`);
+      }
+    }
+  }
+
+  /* ---------- wiring ---------- */
+  const drop = $("#drop"), fileInput = $("#file");
+  drop.addEventListener("click", () => fileInput.click());
+  drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fileInput.click(); });
+  fileInput.addEventListener("change", () => { addFiles(fileInput.files); fileInput.value = ""; });
+  ["dragenter", "dragover"].forEach((ev) =>
+    drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((ev) =>
+    drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+  window.addEventListener("dragover", (e) => e.preventDefault());
+  window.addEventListener("drop", (e) => e.preventDefault());
+
+  $("#clear").addEventListener("click", () => { items.length = 0; render(); });
+  $("#dlall").addEventListener("click", async () => {
+    const ready = items.filter((x) => x.slug);
+    for (let i = 0; i < ready.length; i++) {
+      download(ready[i]);
+      await new Promise((r) => setTimeout(r, 350)); // browsers throttle rapid downloads
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

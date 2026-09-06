@@ -1,0 +1,11 @@
+# Admin credentials — NEVER commit or deploy
+data/admin-auth.json
+
+# Local order store and automatic catalogue backups
+data/orders.json
+data/backups/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.tmp
