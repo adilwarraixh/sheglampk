@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Sign in — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login">
+    <div class="brand">SHEGLAM<span>.PK</span><em>ADMIN</em></div>
+    <h1>Sign in</h1>
+    <p class="sub">This portal manages live orders and stock.</p>
+
+    <div class="msg msg--err" id="err" hidden></div>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="u">Username</label>
+        <input id="u" name="username" autocomplete="username" autocapitalize="off"
+               autocorrect="off" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="p">Password</label>
+        <div class="pw">
+          <input id="p" name="password" type="password" autocomplete="current-password" required>
+          <button type="button" id="toggle" aria-label="Show password">Show</button>
+        </div>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit" id="go">Sign in</button>
+    </form>
+
+    <p class="hint">Trouble signing in? Contact the store owner.<br>
+      Repeated failed attempts lock this account for 15 minutes.</p>
+  </div>
+</div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const { $, esc } = window.Admin;
+  const next = new URLSearchParams(location.search).get("next") || "/admin";
+
+  const err = $("#err");
+  const showError = (m) => { err.textContent = m; err.hidden = !m; };
+
+  $("#toggle").addEventListener("click", () => {
+    const input = $("#p"), btn = $("#toggle");
+    const showing = input.type === "password";
+    input.type = showing ? "text" : "password";
+    btn.textContent = showing ? "Hide" : "Show";
+    input.focus();
+  });
+
+  /* Already signed in? Skip the form. */
+  fetch("/api/admin/session")
+    .then((r) => { if (r.ok) location.replace(next); })
+    .catch(() => {});
+
+  $("#form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showError("");
+    const btn = $("#go");
+    btn.disabled = true;
+    btn.textContent = "Signing in…";
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: $("#u").value, password: $("#p").value }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) { location.href = next; return; }
+      showError(data.error || "Sign in failed.");
+      $("#p").value = "";
+      $("#p").focus();
+    } catch {
+      showError("Could not reach the server. Check your connection and try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Sign in";
+    }
+  });
+
+  $("#u").focus();
+})();
+</script>
+</body>
+</html>

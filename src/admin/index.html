@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Dashboard — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1 id="greeting">Dashboard</h1>
+      <a class="btn btn--outline btn--sm" href="/" target="_blank" rel="noopener">View shop ↗</a>
+    </header>
+
+    <div class="content">
+      <div class="kpis" id="kpis"></div>
+      <div class="split">
+        <section class="card">
+          <div class="card__head"><h2>Recent orders</h2><a href="/admin/orders">View all</a></div>
+          <div class="scroll"><table class="tbl"><tbody id="recent"></tbody></table></div>
+        </section>
+        <div style="display:grid;gap:16px;align-content:start">
+          <section class="card">
+            <div class="card__head"><h2>Best sellers</h2></div>
+            <div class="card__body" id="best"></div>
+          </section>
+          <section class="card">
+            <div class="card__head"><h2>Last 14 days</h2></div>
+            <div class="card__body" id="series"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, esc, money, when } = A;
+
+  A.boot("/admin").then(async (session) => {
+    $("#greeting").textContent = "Welcome back, " + session.user.displayName;
+
+    const d = await A.api("/api/admin/dashboard");
+    const t = d.totals, p = d.products;
+
+    $("#kpis").innerHTML = [
+      ["Today's sales", money(t.sales_today), ""],
+      ["Orders today", t.orders_today, ""],
+      ["Pending", t.pending, t.pending > 0 ? "alert" : ""],
+      ["Processing", t.processing, ""],
+      ["Shipped", t.shipped, ""],
+      ["Delivered", t.delivered, "good"],
+      ["Products", p.total, ""],
+      ["Low / out of stock", p.low_stock + p.out_of_stock, (p.low_stock + p.out_of_stock) > 0 ? "alert" : ""],
+      ["Total sales", money(t.sales_total), ""],
+    ].map(([label, value, cls]) =>
+      `<div class="kpi ${cls}"><b>${esc(String(value))}</b><span>${esc(label)}</span></div>`
+    ).join("");
+
+    $("#recent").innerHTML = d.recent.length
+      ? d.recent.map((o) => `
+          <tr data-id="${o.id}">
+            <td data-label="Order"><b>${esc(o.reference)}</b><div class="sub">${esc(when(o.placed_at))}</div></td>
+            <td data-label="Customer">${esc(o.customer_name)}</td>
+            <td data-label="Status"><span class="pill p-${esc(o.status)}">${esc(o.status)}</span></td>
+            <td data-label="Total" class="num">${money(o.total)}</td>
+          </tr>`).join("")
+      : `<tr><td colspan="4"><div class="empty">No orders yet.</div></td></tr>`;
+
+    A.$$("#recent tr[data-id]").forEach((tr) =>
+      tr.addEventListener("click", () => { location.href = "/admin/orders?open=" + tr.dataset.id; })
+    );
+
+    const top = d.bestSellers;
+    const maxUnits = Math.max(1, ...top.map((b) => b.units));
+    $("#best").innerHTML = top.length
+      ? `<div class="bars">` + top.map((b) => `
+          <div class="barrow">
+            <span style="flex:0 0 42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                  title="${esc(b.product_name)}">${esc(b.product_name)}</span>
+            <span class="track"><span class="fill" style="width:${Math.round((b.units / maxUnits) * 100)}%"></span></span>
+            <span style="flex:0 0 46px;text-align:right">${b.units}</span>
+          </div>`).join("") + `</div>`
+      : `<div class="empty">Not enough sales yet.</div>`;
+
+    const series = d.salesSeries;
+    const maxRev = Math.max(1, ...series.map((s) => Number(s.revenue)));
+    $("#series").innerHTML = Number(maxRev) > 1
+      ? `<div style="display:flex;align-items:flex-end;gap:4px;height:120px">` + series.map((s) => {
+          const h = Math.max(2, Math.round((Number(s.revenue) / maxRev) * 100));
+          const day = new Date(s.day).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+          return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%"
+                       title="${esc(day)} — ${esc(money(s.revenue))}">
+                    <div style="height:${h}%;background:var(--pink);border-radius:3px 3px 0 0;min-height:2px"></div>
+                  </div>`;
+        }).join("") + `</div>
+        <div class="sub" style="display:flex;justify-content:space-between;margin-top:8px">
+          <span>${esc(when(series[0].day))}</span><span>${esc(when(series[series.length - 1].day))}</span>
+        </div>`
+      : `<div class="empty">No sales in the last 14 days.</div>`;
+  }).catch(() => { /* boot already reported it */ });
+})();
+</script>
+</body>
+</html>

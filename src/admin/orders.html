@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Orders — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Orders</h1>
+      <button class="btn btn--outline btn--sm" id="refresh">Refresh</button>
+    </header>
+
+    <div class="content">
+      <div class="bar">
+        <input type="search" id="q" placeholder="Search reference, name, phone or city…">
+        <select id="status"><option value="">All statuses</option></select>
+        <span class="spacer"></span>
+        <span class="sub" id="count"></span>
+      </div>
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr>
+              <th>Order</th><th>Customer</th><th>City</th>
+              <th class="num">Items</th><th class="num">Total</th><th>Payment</th><th>Status</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <div style="display:flex;justify-content:center;gap:10px;padding:18px 0">
+        <button class="btn btn--outline btn--sm" id="prev">← Newer</button>
+        <button class="btn btn--outline btn--sm" id="next">Older →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="mask"></div>
+
+<aside class="drawer" id="drawer">
+  <div class="drawer__head">
+    <h2 id="dTitle">Order</h2>
+    <button class="x" id="dClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="drawer__body" id="dBody"></div>
+  <div class="drawer__foot" id="dFoot"></div>
+</aside>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, money, when } = A;
+
+  let statuses = [];
+  let offset = 0;
+  const LIMIT = 25;
+  let current = null;
+
+  A.boot("/admin/orders").then(async () => {
+    const initial = new URLSearchParams(location.search).get("open");
+    await load();
+    if (initial) openOrder(initial);
+  }).catch(() => {});
+
+  /* ---------- list ---------- */
+  async function load() {
+    const params = new URLSearchParams();
+    if ($("#q").value.trim()) params.set("q", $("#q").value.trim());
+    if ($("#status").value) params.set("status", $("#status").value);
+    params.set("limit", LIMIT);
+    params.set("offset", offset);
+
+    const data = await A.api("/api/admin/orders?" + params.toString());
+
+    if (!statuses.length && data.statuses) {
+      statuses = data.statuses;
+      $("#status").innerHTML = '<option value="">All statuses</option>' +
+        statuses.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+    }
+
+    const from = data.total ? offset + 1 : 0;
+    const to = Math.min(offset + data.orders.length, data.total);
+    $("#count").textContent = data.total ? `${from}–${to} of ${data.total}` : "No orders";
+
+    $("#rows").innerHTML = data.orders.length
+      ? data.orders.map((o) => `
+          <tr data-id="${o.id}">
+            <td data-label="Order"><b>${esc(o.reference)}</b><div class="sub">${esc(when(o.placed_at))}</div></td>
+            <td data-label="Customer">${esc(o.customer_name)}<div class="sub">${esc(o.customer_phone)}</div></td>
+            <td data-label="City">${esc(o.shipping_city || "—")}</td>
+            <td data-label="Items" class="num">${o.item_count}</td>
+            <td data-label="Total" class="num">${money(o.total)}</td>
+            <td data-label="Payment"><span class="pill p-${esc(o.payment_status)}">${esc(o.payment_status)}</span></td>
+            <td data-label="Status"><span class="pill p-${esc(o.status)}">${esc(o.status)}</span></td>
+          </tr>`).join("")
+      : `<tr><td colspan="7"><div class="empty">No orders match those filters.</div></td></tr>`;
+
+    $$("#rows tr[data-id]").forEach((tr) =>
+      tr.addEventListener("click", () => openOrder(tr.dataset.id))
+    );
+
+    $("#prev").disabled = offset === 0;
+    $("#next").disabled = offset + LIMIT >= data.total;
+  }
+
+  let debounce;
+  $("#q").addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { offset = 0; load(); }, 250);
+  });
+  $("#status").addEventListener("change", () => { offset = 0; load(); });
+  $("#refresh").addEventListener("click", () => load());
+  $("#prev").addEventListener("click", () => { offset = Math.max(0, offset - LIMIT); load(); });
+  $("#next").addEventListener("click", () => { offset += LIMIT; load(); });
+
+  /* ---------- detail ---------- */
+  async function openOrder(id) {
+    const data = await A.api("/api/admin/orders/" + encodeURIComponent(id));
+    current = data.order;
+    const o = current;
+
+    $("#dTitle").textContent = o.reference;
+
+    const items = o.items.map((i) => `
+      <div class="line">
+        <span>${esc(i.product_name)}${i.variant_name ? " — " + esc(i.variant_name) : ""}
+          <span class="sub">× ${i.quantity} @ ${money(i.unit_price)}</span></span>
+        <span>${money(i.line_total)}</span>
+      </div>`).join("");
+
+    const wa = o.customer_phone
+      ? "https://wa.me/" + String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "92")
+      : null;
+
+    $("#dBody").innerHTML = `
+      <dl class="meta">
+        <dt>Placed</dt><dd>${esc(when(o.placed_at, true))}</dd>
+        <dt>Customer</dt><dd>${esc(o.customer_name)}</dd>
+        <dt>Phone</dt><dd>${esc(o.customer_phone)}${wa ? ` · <a href="${wa}" target="_blank" rel="noopener">WhatsApp ↗</a>` : ""}</dd>
+        <dt>Email</dt><dd>${esc(o.customer_email || "—")}</dd>
+        <dt>Address</dt><dd>${esc(o.shipping_address)}${o.shipping_city ? ", " + esc(o.shipping_city) : ""}</dd>
+        <dt>Payment</dt><dd>${esc(o.payment_method)} · <span class="pill p-${esc(o.payment_status)}">${esc(o.payment_status)}</span></dd>
+        ${o.customer_note ? `<dt>Customer note</dt><dd>${esc(o.customer_note)}</dd>` : ""}
+      </dl>
+
+      <h3 style="font-size:15px;margin-bottom:8px">Items</h3>
+      ${items}
+      <div class="line"><span>Subtotal</span><span>${money(o.subtotal)}</span></div>
+      <div class="line"><span>Delivery</span><span>${Number(o.shipping_fee) ? money(o.shipping_fee) : "Free"}</span></div>
+      ${Number(o.discount) ? `<div class="line"><span>Discount</span><span>− ${money(o.discount)}</span></div>` : ""}
+      <div class="line total"><span>Total</span><span>${money(o.total)}</span></div>
+
+      <h3 style="font-size:15px;margin:22px 0 8px">Update</h3>
+      <div class="field">
+        <label for="fStatus">Order status</label>
+        <select id="fStatus">${(data.statuses || []).map((s) =>
+          `<option value="${esc(s)}"${s === o.status ? " selected" : ""}>${esc(s)}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label for="fPayment">Payment status</label>
+        <select id="fPayment">${(data.paymentStatuses || []).map((s) =>
+          `<option value="${esc(s)}"${s === o.payment_status ? " selected" : ""}>${esc(s)}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label for="fTracking">Tracking number</label>
+        <input id="fTracking" value="${esc(o.tracking_number || "")}" placeholder="Courier tracking number">
+      </div>
+      <div class="field">
+        <label for="fNote">Internal note <span class="sub">(never shown to the customer)</span></label>
+        <textarea id="fNote" rows="3">${esc(o.internal_note || "")}</textarea>
+      </div>
+
+      <h3 style="font-size:15px;margin:22px 0 8px">Timeline</h3>
+      <div class="timeline">
+        ${o.history.map((h) => `
+          <div class="tl"><i></i><div>
+            <b>${esc(h.to_status)}</b>
+            <span>${esc(when(h.created_at, true))} · ${esc(h.changed_by || "system")}</span>
+            ${h.note ? `<span>${esc(h.note)}</span>` : ""}
+          </div></div>`).join("")}
+      </div>`;
+
+    /* Delete is Super Admin only. Even so, the API re-checks — this just
+       avoids showing Ashba a button that would fail. */
+    $("#dFoot").innerHTML =
+      (A.can("orders:delete") ? `<button class="btn btn--danger" id="dDelete">Delete</button>` : "") +
+      `<span style="flex:1"></span>
+       <button class="btn btn--outline" id="dCancel">Close</button>
+       <button class="btn btn--primary" id="dSave">Save changes</button>`;
+
+    $("#dSave").addEventListener("click", saveOrder);
+    $("#dCancel").addEventListener("click", closeDrawer);
+    const del = $("#dDelete");
+    if (del) del.addEventListener("click", deleteOrder);
+
+    $("#drawer").classList.add("is-on");
+    $("#mask").classList.add("is-on");
+  }
+
+  async function saveOrder() {
+    const btn = $("#dSave");
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      await A.api("/api/admin/orders/" + current.id, {
+        method: "PATCH",
+        body: {
+          status: $("#fStatus").value,
+          paymentStatus: $("#fPayment").value,
+          trackingNumber: $("#fTracking").value.trim(),
+          internalNote: $("#fNote").value,
+        },
+      });
+      A.toast("Order updated");
+      closeDrawer();
+      load();
+    } catch (e) {
+      A.toast(e.message, true);
+    } finally {
+      btn.disabled = false; btn.textContent = "Save changes";
+    }
+  }
+
+  async function deleteOrder() {
+    if (!confirm(`Delete order ${current.reference}?\n\nThis removes the financial record permanently and cannot be undone. Cancelling the order is usually the better choice.`)) return;
+    try {
+      await A.api("/api/admin/orders/" + current.id, { method: "DELETE" });
+      A.toast("Order deleted");
+      closeDrawer();
+      load();
+    } catch (e) {
+      A.toast(e.message, true);
+    }
+  }
+
+  function closeDrawer() {
+    $("#drawer").classList.remove("is-on");
+    $("#mask").classList.remove("is-on");
+    $("#side").classList.remove("is-on");
+    current = null;
+    if (new URLSearchParams(location.search).get("open")) history.replaceState(null, "", "/admin/orders");
+  }
+
+  $("#dClose").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+  /* New orders arrive while the page is open — poll quietly when the
+     drawer is closed and the tab is visible. */
+  setInterval(() => {
+    if (!current && !document.hidden) load().catch(() => {});
+  }, 30000);
+})();
+</script>
+</body>
+</html>
