@@ -319,15 +319,57 @@
     const tint = (p.shades && p.shades.length && p.shades[v % p.shades.length].hex) || CAT_TINT[p.category];
     const safeTint = /^#[0-9a-f]{6}$/i.test(tint || "") ? tint : "#d8b79a";
 
-    /* Abstract vessel, silhouette varying per gallery slot. No product name:
-       a card is only ~200px wide, so tile text renders at ~8px and reads as
-       a smudge — and the name already sits directly beneath the image. */
-    const shapes = [
-      `<rect x="176" y="150" width="148" height="250" rx="26" fill="url(#g2)"/><rect x="214" y="104" width="72" height="56" rx="12" fill="${safeTint}" opacity=".85"/>`,
-      `<rect x="196" y="120" width="108" height="290" rx="54" fill="url(#g2)"/><circle cx="250" cy="118" r="30" fill="${safeTint}" opacity=".8"/>`,
-      `<circle cx="250" cy="264" r="116" fill="url(#g2)"/><rect x="222" y="126" width="56" height="46" rx="10" fill="${safeTint}" opacity=".8"/>`,
-      `<rect x="186" y="168" width="128" height="216" rx="18" fill="url(#g2)"/><rect x="230" y="120" width="40" height="60" rx="8" fill="${safeTint}" opacity=".85"/>`,
-    ];
+    /* Illustration matched to the product TYPE, tinted with the product's own
+       shade. A lipstick reads as a lipstick and a palette as a palette, so a
+       grid of these looks like a designed catalogue rather than a wall of
+       identical placeholders. No product name: a card is ~200px wide, so tile
+       text renders at ~8px and reads as a smudge — the name sits beneath the
+       image anyway. Replaced automatically as soon as a real photo exists. */
+    const cap = `<rect x="214" y="96" width="72" height="62" rx="12" fill="${safeTint}" opacity=".9"/>`;
+    const SHAPES = {
+      // tall bottle with a pump — bases and complexion
+      Primer:      `<rect x="178" y="152" width="144" height="252" rx="24" fill="url(#g2)"/>${cap}<rect x="236" y="72" width="28" height="30" rx="6" fill="${safeTint}" opacity=".75"/>`,
+      Foundation:  `<path d="M182 190h136v190a24 24 0 0 1-24 24H206a24 24 0 0 1-24-24Z" fill="url(#g2)"/><rect x="222" y="120" width="56" height="74" rx="8" fill="${safeTint}" opacity=".85"/><rect x="210" y="96" width="80" height="30" rx="8" fill="${safeTint}" opacity=".7"/>`,
+      // fine-mist bottle
+      "Setting Spray": `<rect x="184" y="176" width="132" height="230" rx="20" fill="url(#g2)"/><rect x="224" y="118" width="52" height="60" rx="8" fill="${safeTint}" opacity=".85"/><rect x="206" y="92" width="88" height="30" rx="10" fill="${safeTint}" opacity=".7"/><circle cx="316" cy="104" r="5" fill="${safeTint}" opacity=".5"/><circle cx="336" cy="92" r="4" fill="${safeTint}" opacity=".35"/>`,
+      // squeeze tube with a doe-foot
+      Concealer:   `<path d="M200 196h100l-10 196a20 20 0 0 1-20 18h-40a20 20 0 0 1-20-18Z" fill="url(#g2)"/><rect x="226" y="112" width="48" height="88" rx="10" fill="${safeTint}" opacity=".85"/>`,
+      // round pressed compact
+      Powder:      `<circle cx="250" cy="286" r="112" fill="url(#g2)"/><circle cx="250" cy="286" r="72" fill="${safeTint}" opacity=".45"/><rect x="150" y="150" width="200" height="26" rx="13" fill="${safeTint}" opacity=".6"/>`,
+      Blush:       `<circle cx="250" cy="284" r="106" fill="url(#g2)"/><circle cx="250" cy="284" r="64" fill="${safeTint}" opacity=".5"/><rect x="158" y="156" width="184" height="24" rx="12" fill="${safeTint}" opacity=".55"/>`,
+      Highlighter: `<circle cx="250" cy="284" r="106" fill="url(#g2)"/><path d="M250 200a84 84 0 0 1 0 168 60 60 0 0 0 0-168Z" fill="#fff" opacity=".28"/><rect x="158" y="156" width="184" height="24" rx="12" fill="${safeTint}" opacity=".55"/>`,
+      "Contour & Bronzer": `<rect x="192" y="168" width="116" height="240" rx="26" fill="url(#g2)"/><rect x="216" y="108" width="68" height="62" rx="10" fill="${safeTint}" opacity=".85"/>`,
+      // slim tall tube
+      Mascara:     `<rect x="212" y="182" width="76" height="226" rx="16" fill="url(#g2)"/><rect x="222" y="82" width="56" height="104" rx="12" fill="${safeTint}" opacity=".9"/><rect x="243" y="60" width="14" height="28" rx="5" fill="${safeTint}" opacity=".6"/>`,
+      // tapered pen
+      Eyeliner:    `<path d="M232 168h36v190l-18 52-18-52Z" fill="url(#g2)"/><rect x="228" y="86" width="44" height="86" rx="10" fill="${safeTint}" opacity=".9"/>`,
+      Brows:       `<path d="M234 176h32v168l-16 46-16-46Z" fill="url(#g2)"/><rect x="230" y="96" width="40" height="84" rx="9" fill="${safeTint}" opacity=".9"/>`,
+      "Eye Primer":`<rect x="206" y="186" width="88" height="216" rx="18" fill="url(#g2)"/><rect x="224" y="110" width="52" height="80" rx="10" fill="${safeTint}" opacity=".85"/>`,
+      // flat palette with pans
+      Eyeshadow:   `<rect x="140" y="196" width="220" height="176" rx="18" fill="url(#g2)"/><g fill="${safeTint}" opacity=".55"><circle cx="192" cy="252" r="26"/><circle cx="250" cy="252" r="26"/><circle cx="308" cy="252" r="26"/><circle cx="192" cy="318" r="26"/><circle cx="250" cy="318" r="26"/><circle cx="308" cy="318" r="26"/></g><rect x="140" y="168" width="220" height="30" rx="12" fill="${safeTint}" opacity=".4"/>`,
+      // bullet
+      Lipstick:    `<rect x="206" y="238" width="88" height="170" rx="14" fill="url(#g2)"/><path d="M216 238v-92a34 34 0 0 1 68 0v92Z" fill="${safeTint}" opacity=".92"/><path d="M216 152c14-22 54-22 68 0v18h-68Z" fill="#fff" opacity=".18"/>`,
+      // gloss tube with wand
+      "Lip Gloss": `<rect x="204" y="200" width="92" height="206" rx="20" fill="url(#g2)"/><rect x="228" y="104" width="44" height="100" rx="10" fill="${safeTint}" opacity=".9"/><ellipse cx="250" cy="96" rx="16" ry="24" fill="${safeTint}" opacity=".6"/>`,
+      "Lip Tint":  `<rect x="208" y="204" width="84" height="202" rx="18" fill="url(#g2)"/><rect x="230" y="110" width="40" height="98" rx="9" fill="${safeTint}" opacity=".9"/>`,
+      "Lip Liner": `<path d="M234 180h32v170l-16 48-16-48Z" fill="url(#g2)"/><rect x="230" y="100" width="40" height="82" rx="9" fill="${safeTint}" opacity=".9"/>`,
+      // squat pot
+      "Lip Balm":  `<rect x="176" y="240" width="148" height="132" rx="22" fill="url(#g2)"/><rect x="168" y="196" width="164" height="52" rx="18" fill="${safeTint}" opacity=".85"/>`,
+      // tools
+      Brushes:     `<path d="M236 300h28v104a14 14 0 0 1-28 0Z" fill="${safeTint}" opacity=".85"/><rect x="232" y="272" width="36" height="34" rx="6" fill="${safeTint}" opacity=".6"/><path d="M250 116c26 34 34 92 18 156h-36c-16-64-8-122 18-156Z" fill="url(#g2)"/>`,
+      Sponges:     `<path d="M250 132c58 0 96 62 96 122 0 62-42 106-96 106s-96-44-96-106c0-60 38-122 96-122Z" fill="url(#g2)"/>`,
+      Accessories: `<rect x="150" y="212" width="200" height="152" rx="24" fill="url(#g2)"/><path d="M198 212v-24a52 52 0 0 1 104 0v24" fill="none" stroke="${safeTint}" stroke-width="14" opacity=".8"/>`,
+    };
+    const shape = SHAPES[p.sub] || SHAPES.Primer;
+
+    /* Gallery slots nudge the illustration so the four thumbnails differ. */
+    const V = [
+      "",
+      `<g transform="translate(250 280) scale(.88) translate(-250 -280)">`,
+      `<g transform="translate(250 280) rotate(-6) translate(-250 -280)">`,
+      `<g transform="translate(250 280) scale(1.06) translate(-250 -280)">`,
+    ][v % 4];
+    const shapes = [V ? V + shape + "</g>" : shape];
 
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="500" height="600">` +
