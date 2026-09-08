@@ -76,10 +76,24 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: $("#u").value, password: $("#p").value }),
       });
-      const data = await res.json().catch(() => ({}));
+      let data = null;
+      try { data = await res.json(); } catch { /* not JSON — see below */ }
 
-      if (res.ok && data.ok) { location.href = next; return; }
-      showError(data.error || "Sign in failed.");
+      if (res.ok && data && data.ok) { location.href = next; return; }
+
+      /* A wrong password comes back as JSON carrying its own message. A
+         reply that is not JSON, or a 5xx, means the API itself failed to
+         run — most often DATABASE_URL missing from the deployment, where
+         db/client.js throws while the module loads. Saying "sign in
+         failed" there sends you hunting for a password problem that does
+         not exist, so name the real cause. */
+      if (!data) {
+        showError(res.status >= 500 || res.status === 0
+          ? "The server could not complete the request. This is usually a missing DATABASE_URL in the deployment settings, not a wrong password."
+          : `Unexpected response from the server (HTTP ${res.status}).`);
+      } else {
+        showError(data.error || `Sign in failed (HTTP ${res.status}).`);
+      }
       $("#p").value = "";
       $("#p").focus();
     } catch {
