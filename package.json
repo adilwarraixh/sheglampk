@@ -1,0 +1,18 @@
+{
+  "name": "sheglampk",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SHEGLAM PK storefront and admin portal",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node build.js && node deploy-prepare.js",
+    "dev": "node server.js",
+    "admin": "node admin-server.js",
+    "db:migrate": "node db/migrate.js",
+    "db:seed": "node db/seed.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  },
+  "engines": { "node": ">=20" }
+}
