@@ -24,13 +24,22 @@ const COPY_FILES = [
   "data/templates.js",   // shared card markup
 ];
 
+/* The online admin portal ships (it is a normal web page whose data comes
+   from the authenticated API). The LOCAL admin tool and every credential
+   file must never leave this machine. */
+const COPY_TREES = [
+  { from: path.join("src", "admin"), to: "admin" },   // /admin/login, /admin, /admin/orders
+];
+
 /* Never shipped, even if something above would otherwise sweep them in. */
 const DENY = [
-  /^data[\\/]products\.json$/i,   // source of truth, not needed by the browser
-  /^data[\\/]orders\.json$/i,     // customer names, phones, addresses
-  /^data[\\/]admin-auth\.json$/i, // password hash
+  /^data[\\/]products\.json$/i,     // source of truth, not needed by the browser
+  /^data[\\/]orders\.json$/i,       // local order store
+  /^data[\\/]admin-auth\.json$/i,   // local password hash
   /^data[\\/]backups[\\/]/i,
-  /^admin[\\/]/i,
+  /(^|[\\/])admin-auth\./i,         // the local auth module
+  /(^|[\\/])admin-server\./i,       // the local admin server
+  /(^|[\\/])set-admin-password\./i,
   /(^|[\\/])\.env/i,
 ];
 
@@ -46,6 +55,22 @@ function copyFile(rel) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(src, dest);
   copied++;
+}
+
+/* Copies a folder to a DIFFERENT destination path (src/admin -> admin). */
+function copyTree(fromDir, toDir) {
+  const abs = path.join(ROOT, fromDir);
+  if (!fs.existsSync(abs)) return;
+  for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+    const rel = path.join(fromDir, entry.name);
+    const dest = path.join(toDir, entry.name);
+    if (entry.isDirectory()) { copyTree(rel, dest); continue; }
+    if (denied(dest)) { skipped++; continue; }
+    const target = path.join(OUT, dest);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, rel), target);
+    copied++;
+  }
 }
 
 function copyDir(relDir) {
@@ -69,6 +94,7 @@ fs.readdirSync(ROOT, { withFileTypes: true })
 
 COPY_DIRS.forEach(copyDir);
 COPY_FILES.forEach(copyFile);
+COPY_TREES.forEach(({ from, to }) => copyTree(from, to));
 
 /* ---- verify nothing sensitive slipped through ---- */
 const leaked = [];
@@ -77,7 +103,12 @@ const leaked = [];
     const abs = path.join(dir, entry.name);
     if (entry.isDirectory()) { walk(abs); continue; }
     const rel = path.relative(OUT, abs);
-    if (denied(rel) || /admin|\.env|orders\.json|products\.json/i.test(rel)) leaked.push(rel);
+    /* Look for credential material and the local-only server, not merely
+       the word "admin" — the admin PORTAL is a public page whose data
+       comes from the authenticated API. */
+    if (denied(rel) || /admin-auth|admin-server|set-admin-password|\.env|orders\.json|products\.json/i.test(rel)) {
+      leaked.push(rel);
+    }
   }
 })(OUT);
 
