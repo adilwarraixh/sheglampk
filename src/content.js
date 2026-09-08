@@ -54,51 +54,52 @@ function home() {
   const fresh = FEEDS.new().slice(0, 5);
   const onSale = FEEDS.sale().slice(0, 5);
 
-  const slides = [
-    {
-      eyebrow: "Genuine stock · Cash on delivery",
-      title: "Bold beauty,<br>honest prices",
-      sub: "The full SHEGLAM range, stocked in Pakistan and delivered to your door in 2–5 days.",
-      cta: ["Shop bestsellers", "best-sellers.html"],
-      cta2: ["New arrivals", "new-in.html"],
-      img: photoFor(0, 1000),
-    },
-    {
-      eyebrow: "The Camera On Edit",
-      title: "A base that<br>survives the heat",
-      sub: "Blurring primer, powder balm and a setting spray built for Pakistani summers.",
-      cta: ["Shop the edit", "collection-camera-on-complexion.html"],
-      cta2: ["All face makeup", "face.html"],
-      img: photoFor(5, 1000),
-    },
-    {
-      eyebrow: "Under Rs. 2,000",
-      title: "Build a full kit<br>for less",
-      sub: "A complete face of makeup that still leaves change from a five thousand rupee note.",
-      cta: ["Shop under Rs. 2,000", "collection-under-2000.html"],
-      cta2: ["View sale", "sale.html"],
-      img: photoFor(9, 1000),
-    },
-  ];
+  /* Hero content comes from data/hero.json so it can be edited in the admin
+     without touching code. Disabled slides are dropped at build time. */
+  const HERO = require("../data/hero.json");
+  const slides = (HERO.slides || []).filter((s) => s.enabled !== false);
+
+  /* The supplied clips are 576x1024 (9:16 portrait). Stretching those across
+     a 16:9 desktop hero would crop away ~90% of the frame, so the video keeps
+     its own portrait frame beside the copy on desktop and goes full-bleed on
+     mobile, where 9:16 is native. Nothing is ever cropped destructively. */
+  const posterFor = (s, i) =>
+    s.poster ||
+    "data:image/svg+xml," +
+      encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 1024">` +
+          `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
+          `<stop offset="0" stop-color="#fdf4f7"/><stop offset="1" stop-color="#f2cdd9"/>` +
+          `</linearGradient></defs><rect width="576" height="1024" fill="url(#g)"/></svg>`
+      );
 
   return `
-<section class="hero">
+<section class="hero" id="hero">
   ${slides
     .map(
       (s, i) => `
-  <div class="hero__slide${i === 0 ? " is-active" : ""}">
+  <div class="hero__slide${i === 0 ? " is-active" : ""}" data-slide="${esc(s.id || "slide-" + (i + 1))}">
     <div class="container hero__inner">
-      <div>
-        <span class="hero__eyebrow">${esc(s.eyebrow)}</span>
-        <h1 class="hero__title">${s.title}</h1>
-        <p class="hero__sub">${esc(s.sub)}</p>
+      <div class="hero__copy">
+        ${s.eyebrow ? `<span class="hero__eyebrow">${esc(s.eyebrow)}</span>` : ""}
+        <h1 class="hero__title">${esc(s.headline || "").replace(/\n/g, "<br>")}</h1>
+        ${s.sub ? `<p class="hero__sub">${esc(s.sub)}</p>` : ""}
         <div class="hero__btns">
-          <a class="btn btn--primary btn--lg" href="${s.cta[1]}">${esc(s.cta[0])}</a>
-          <a class="btn btn--outline btn--lg" href="${s.cta2[1]}">${esc(s.cta2[0])}</a>
+          ${s.ctaLabel ? `<a class="btn btn--primary btn--lg" href="${esc(s.ctaHref || "#")}">${esc(s.ctaLabel)}</a>` : ""}
+          ${s.cta2Label ? `<a class="btn btn--outline btn--lg" href="${esc(s.cta2Href || "#")}">${esc(s.cta2Label)}</a>` : ""}
         </div>
       </div>
       <div class="hero__art">
-        <img src="${s.img}" alt="" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} width="1000" height="1200" data-fallback="SG">
+        <video
+          class="hero__video"
+          ${i === 0 ? 'preload="auto"' : 'preload="none"'}
+          data-src="${esc(s.video)}"
+          ${s.videoMobile ? `data-src-mobile="${esc(s.videoMobile)}"` : ""}
+          ${i === 0 ? `src="${esc(s.video)}"` : ""}
+          poster="${posterFor(s, i)}"
+          muted playsinline loop disablepictureinpicture
+          tabindex="-1" aria-hidden="true"
+          style="object-position:${esc(s.focal || "center")}"></video>
       </div>
     </div>
   </div>`
@@ -106,7 +107,7 @@ function home() {
     .join("")}
   <button class="hero__arrow hero__arrow--prev" id="heroPrev" aria-label="Previous slide">${icon("chevronR", 18, 2)}</button>
   <button class="hero__arrow hero__arrow--next" id="heroNext" aria-label="Next slide">${icon("chevronR", 18, 2)}</button>
-  <div class="hero__dots" id="heroDots"></div>
+  <div class="hero__dots" id="heroDots" role="tablist" aria-label="Hero slides"></div>
 </section>
 
 <section class="services">

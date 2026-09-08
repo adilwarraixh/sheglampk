@@ -120,6 +120,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pink);}
 .note{background:var(--bg-alt);border-left:3px solid var(--pink);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin-bottom:16px;font-size:13.5px;color:var(--muted);}
 .note b{color:var(--ink);}
 
+.heroslide.is-off{opacity:.55;}
+.heroprev{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:var(--r-sm);background:var(--bg-alt);display:block;}
+@media(max-width:820px){.heroslide>div{grid-template-columns:1fr!important;}}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,160%);background:var(--ink);color:#fff;
   padding:12px 18px;border-radius:var(--r-sm);z-index:90;transition:transform .3s cubic-bezier(.22,1,.36,1);font-size:14px;max-width:90vw;}
 .toast.is-on{transform:translate(-50%,0);}
@@ -146,6 +149,7 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
       <button class="tab is-on" data-tab="dash">Dashboard</button>
       <button class="tab" data-tab="products">Products</button>
       <button class="tab" data-tab="orders">Orders</button>
+      <button class="tab" data-tab="hero">Homepage</button>
     </div>
     <div class="spacer"></div>
     <span class="dirty" id="dirty" hidden><i class="dot"></i> Unsaved changes</span>
@@ -226,6 +230,21 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
         <tbody id="oRows"></tbody>
       </table>
     </div>
+  </section>
+
+  <!-- ================= HOMEPAGE / HERO ================= -->
+  <section id="tab-hero" hidden>
+    <div class="note">
+      <b>Hero slides.</b> These are the three videos on your homepage. Each slide plays only while it
+      is on screen. Portrait clips (9:16) sit beside the copy on desktop and fill the screen on mobile.
+      After saving, use <b>Publish live</b> to push the change.
+    </div>
+    <div class="bar">
+      <span class="spacer"></span>
+      <span id="heroCount" style="color:var(--muted);font-size:13.5px"></span>
+      <button class="btn btn--primary btn--sm" id="heroSave">Save hero</button>
+    </div>
+    <div id="heroList" style="display:grid;gap:16px"></div>
   </section>
 
 </div>
@@ -317,8 +336,9 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
   /* ---------- tabs ---------- */
   $$(".tab").forEach((b) => b.addEventListener("click", () => {
     $$(".tab").forEach((x) => x.classList.toggle("is-on", x === b));
-    ["dash","products","orders"].forEach((t) => { $("#tab-" + t).hidden = (t !== b.dataset.tab); });
+    ["dash","products","orders","hero"].forEach((t) => { $("#tab-" + t).hidden = (t !== b.dataset.tab); });
     if (b.dataset.tab === "dash") renderDash();
+    if (b.dataset.tab === "hero") renderHero();
   }));
 
   /* ---------- product helpers ---------- */
@@ -612,6 +632,10 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
   /* ---------- save / publish ---------- */
   async function save() {
     const r = await api("/api/products", { method: "PUT", body: JSON.stringify({ products: PRODUCTS }) });
+    // Hero edits share the same dirty flag, so persist them together.
+    if (HERO && HERO.slides && HERO.slides.length) {
+      await api("/api/hero", { method: "PUT", body: JSON.stringify({ slides: HERO.slides }) });
+    }
     setDirty(false);
     return r;
   }
@@ -808,6 +832,107 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
 
   ["oSearch","oStatus"].forEach((id) => $("#" + id).addEventListener("input", renderOrders));
 
+  /* ---------- hero slides ---------- */
+  let HERO = { slides: [] };
+
+  function renderHero() {
+    const box = $("#heroList");
+    $("#heroCount").textContent = `${HERO.slides.filter((s) => s.enabled !== false).length} of ${HERO.slides.length} enabled`;
+    box.innerHTML = HERO.slides.map((s, i) => `
+      <div class="card pad heroslide${s.enabled === false ? " is-off" : ""}" data-i="${i}">
+        <div style="display:grid;grid-template-columns:190px 1fr;gap:20px">
+          <div>
+            <video class="heroprev" src="${esc(s.video || "")}" muted playsinline loop preload="metadata"></video>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <button class="btn btn--outline btn--sm" data-play="${i}" style="flex:1">Preview</button>
+              <button class="btn btn--outline btn--sm" data-upload="${i}" style="flex:1">Replace</button>
+            </div>
+            <div class="psub" style="margin-top:6px;word-break:break-all">${esc(s.video || "no video")}</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <b style="font-size:15px">Slide ${i + 1}</b>
+              <label class="check" style="font-size:13px"><input type="checkbox" data-en="${i}" ${s.enabled === false ? "" : "checked"}> Enabled</label>
+              <span class="spacer" style="flex:1"></span>
+              <button class="btn btn--outline btn--sm" data-mv="${i}" data-dir="-1" ${i === 0 ? "disabled" : ""}>↑</button>
+              <button class="btn btn--outline btn--sm" data-mv="${i}" data-dir="1" ${i === HERO.slides.length - 1 ? "disabled" : ""}>↓</button>
+            </div>
+            <div class="field"><label>Eyebrow</label><input data-f="eyebrow" data-i="${i}" value="${esc(s.eyebrow || "")}"></div>
+            <div class="field"><label>Headline <span class="hint">(one line break allowed)</span></label>
+              <textarea data-f="headline" data-i="${i}" rows="2">${esc(s.headline || "")}</textarea></div>
+            <div class="field"><label>Supporting text</label>
+              <textarea data-f="sub" data-i="${i}" rows="2">${esc(s.sub || "")}</textarea></div>
+            <div class="row2">
+              <div class="field"><label>Button label</label><input data-f="ctaLabel" data-i="${i}" value="${esc(s.ctaLabel || "")}"></div>
+              <div class="field"><label>Button link</label><input data-f="ctaHref" data-i="${i}" value="${esc(s.ctaHref || "")}"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label>Second button label</label><input data-f="cta2Label" data-i="${i}" value="${esc(s.cta2Label || "")}"></div>
+              <div class="field"><label>Second button link</label><input data-f="cta2Href" data-i="${i}" value="${esc(s.cta2Href || "")}"></div>
+            </div>
+          </div>
+        </div>
+      </div>`).join("");
+
+    $$("[data-f]", box).forEach((el) =>
+      el.addEventListener("input", () => { HERO.slides[+el.dataset.i][el.dataset.f] = el.value; setDirty(true); }));
+    $$("[data-en]", box).forEach((el) =>
+      el.addEventListener("change", () => { HERO.slides[+el.dataset.en].enabled = el.checked; setDirty(true); renderHero(); }));
+    $$("[data-mv]", box).forEach((el) =>
+      el.addEventListener("click", () => {
+        const i = +el.dataset.mv, j = i + +el.dataset.dir;
+        if (j < 0 || j >= HERO.slides.length) return;
+        [HERO.slides[i], HERO.slides[j]] = [HERO.slides[j], HERO.slides[i]];
+        setDirty(true); renderHero();
+      }));
+    $$("[data-play]", box).forEach((el) =>
+      el.addEventListener("click", () => {
+        const v = box.querySelector(`.heroslide[data-i="${el.dataset.play}"] .heroprev`);
+        $$(".heroprev", box).forEach((o) => { if (o !== v) o.pause(); });
+        if (v.paused) { v.play(); el.textContent = "Pause"; } else { v.pause(); el.textContent = "Preview"; }
+      }));
+    $$("[data-upload]", box).forEach((el) =>
+      el.addEventListener("click", () => pickVideo(+el.dataset.upload)));
+  }
+
+  function pickVideo(i) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "video/mp4,video/webm";
+    input.addEventListener("change", async () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      if (file.size > 40e6) return toast("That video is over 40MB — compress it first.", true);
+      toast(`Uploading ${file.name}…`);
+      try {
+        const res = await fetch("/api/upload?kind=video", {
+          method: "POST",
+          headers: { "Content-Type": "application/octet-stream", "X-Filename": file.name },
+          body: file,
+        });
+        const j = await res.json();
+        if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+        HERO.slides[i].video = j.path;
+        setDirty(true); renderHero();
+        toast(`Uploaded — ${Math.round(j.bytes / 1024)}KB`);
+      } catch (e) { toast("Upload failed: " + e.message, true); }
+    });
+    input.click();
+  }
+
+  $("#heroSave").addEventListener("click", async () => {
+    try {
+      await api("/api/hero", { method: "PUT", body: JSON.stringify({ slides: HERO.slides }) });
+      setDirty(false);
+      toast("Hero saved — use “Publish live” to push it");
+    } catch (e) { toast(e.message, true); }
+  });
+
+  async function loadHero() {
+    HERO = await api("/api/hero");
+    HERO.slides = HERO.slides || [];
+  }
+
   /* ---------- load ---------- */
   async function loadMeta() {
     META = await api("/api/meta");
@@ -835,7 +960,7 @@ pre.out{background:#111;color:#d6ffd6;padding:14px;border-radius:var(--r-sm);fon
   (async function init() {
     try {
       await loadMeta();
-      await Promise.all([loadProducts(), loadOrders()]);
+      await Promise.all([loadProducts(), loadOrders(), loadHero()]);
       renderDash();
     } catch (e) {
       toast("Could not reach the admin server: " + e.message, true);

@@ -1260,30 +1260,159 @@
   /* ---------------------------------------------------------
      Hero slider
      --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     Hero slider with video slides
+
+     Rules that matter here:
+     · only the active slide's video is ever playing
+     · a slide's video is not even downloaded until it is needed
+     · autoplay is best-effort — if the browser blocks it the poster
+       stays and the slider keeps advancing on a timer
+     --------------------------------------------------------- */
   function initHero() {
+    const hero = $("#hero");
     const slides = $$(".hero__slide");
-    if (slides.length < 2) return;
+    if (!hero || !slides.length) return;
+
     const dots = $("#heroDots");
-    let i = 0, timer;
+    const videos = slides.map((s) => $(".hero__video", s));
+    const isMobile = () => window.matchMedia("(max-width:900px)").matches;
+    let i = 0, timer = null, paused = false;
+
+    const AUTOPLAY_MS = 7000;
+
+    /* Point the element at the right file for this viewport, once. */
+    function ensureSource(v) {
+      if (!v) return;
+      const wanted = (isMobile() && v.dataset.srcMobile) || v.dataset.src;
+      if (!wanted) return;
+      if (!v.getAttribute("src")) { v.preload = "auto"; v.src = wanted; }
+      else if (!v.src.endsWith(wanted)) { v.src = wanted; }
+    }
+
+    /* Warm the next slide so switching does not stall on a cold fetch. */
+    function preloadNeighbour(n) {
+      const v = videos[(n + 1) % videos.length];
+      if (v && !v.getAttribute("src")) { v.preload = "metadata"; v.src = (isMobile() && v.dataset.srcMobile) || v.dataset.src; }
+    }
+
+    function playActive() {
+      videos.forEach((v, n) => {
+        if (!v) return;
+        if (n === i) {
+          ensureSource(v);
+          v.muted = true;                       // required for autoplay
+          const p = v.play();
+          if (p && p.catch) p.catch(() => { /* blocked: poster stays, slider still advances */ });
+        } else {
+          // Reset unconditionally: the browser may have paused this itself
+          // (hidden tab, power saving), and we still want a clean restart.
+          if (!v.paused) v.pause();
+          if (v.currentTime) { try { v.currentTime = 0; } catch {} }
+        }
+      });
+    }
+
+    /* A play() issued before the file is decodable resolves into nothing.
+       Retry once the browser says it can actually play, if still on screen. */
+    videos.forEach((v, n) =>
+      on(v, "canplay", () => {
+        if (n === i && !paused && v.paused) {
+          const p = v.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+      })
+    );
+
     slides.forEach((_, n) => {
       const d = document.createElement("button");
       d.className = "hero__dot" + (n === 0 ? " is-active" : "");
+      d.setAttribute("role", "tab");
       d.setAttribute("aria-label", "Slide " + (n + 1));
-      on(d, "click", () => go(n));
+      d.setAttribute("aria-selected", String(n === 0));
+      on(d, "click", () => { go(n); restart(); });
       dots.appendChild(d);
     });
     const allDots = $$(".hero__dot", dots);
+
     function go(n) {
       slides[i].classList.remove("is-active");
       allDots[i].classList.remove("is-active");
+      allDots[i].setAttribute("aria-selected", "false");
       i = (n + slides.length) % slides.length;
       slides[i].classList.add("is-active");
       allDots[i].classList.add("is-active");
-      restart();
+      allDots[i].setAttribute("aria-selected", "true");
+      playActive();
+      preloadNeighbour(i);
     }
-    function restart() { clearInterval(timer); timer = setInterval(() => go(i + 1), 6500); }
-    on($("#heroNext"), "click", () => go(i + 1));
-    on($("#heroPrev"), "click", () => go(i - 1));
+
+    function restart() {
+      clearInterval(timer);
+      if (paused || slides.length < 2) return;
+      timer = setInterval(() => go(i + 1), AUTOPLAY_MS);
+    }
+
+    on($("#heroNext"), "click", () => { go(i + 1); restart(); });
+    on($("#heroPrev"), "click", () => { go(i - 1); restart(); });
+
+    /* Pause on hover so a shopper reading the copy is not yanked away. */
+    on(hero, "mouseenter", () => { paused = true; clearInterval(timer); });
+    on(hero, "mouseleave", () => { paused = false; restart(); });
+
+    /* Swipe on touch devices. */
+    let x0 = null, y0 = null;
+    on(hero, "touchstart", (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    on(hero, "touchend", (e) => {
+      if (x0 == null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) { go(i + (dx < 0 ? 1 : -1)); restart(); }
+      x0 = y0 = null;
+    }, { passive: true });
+
+    /* Nothing should play while the hero is scrolled away or the tab is hidden.
+       The observer only ever *pauses* something it previously saw playing —
+       its first callback can report "not intersecting" before layout settles,
+       and acting on that would stop the video the moment it started. */
+    if ("IntersectionObserver" in window) {
+      let seenVisible = false;
+      new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            seenVisible = true;
+            playActive();
+            restart();
+          } else if (seenVisible) {
+            clearInterval(timer);
+            videos.forEach((v) => v && !v.paused && v.pause());
+          }
+        });
+      }, { threshold: 0.15 }).observe(hero);
+    }
+    on(document, "visibilitychange", () => {
+      if (document.hidden) { clearInterval(timer); videos.forEach((v) => v && !v.paused && v.pause()); }
+      else { playActive(); restart(); }
+    });
+
+    /* Crossing the mobile/desktop boundary can mean a different file. */
+    let wasMobile = isMobile();
+    on(window, "resize", () => {
+      if (isMobile() === wasMobile) return;
+      wasMobile = isMobile();
+      videos.forEach((v, n) => { if (v && n !== i) { v.removeAttribute("src"); v.preload = "none"; } });
+      playActive();
+    });
+
+    /* Respect a reduced-motion preference: no autoplay, no auto-advance. */
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      paused = true;
+      videos.forEach((v) => v && v.pause());
+      return;
+    }
+
+    playActive();
+    preloadNeighbour(0);
     restart();
   }
 

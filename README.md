@@ -92,6 +92,29 @@ rejected before anything is written.
 A save that would empty the catalogue, or delete more than half of it at once, is refused —
 that is almost always a bug or a truncated payload rather than something you meant.
 
+### Homepage hero videos
+
+Three video slides, configured in `data/hero.json` and edited in **Admin → Homepage**.
+
+The supplied clips are **576×1024 (9:16 portrait)**. Stretching those across a 16:9 desktop
+hero would crop away roughly 90% of each frame, so:
+
+- **Desktop** — the video keeps its own portrait frame beside the copy. Nothing is cropped.
+- **Mobile** — the video goes full-bleed behind the copy, which is where 9:16 belongs.
+
+Behaviour: muted, looping, `playsinline`, autoplay best-effort. Only the active slide ever
+plays; leaving a slide pauses and rewinds it. Slide 2 preloads while slide 1 plays and slide 3
+is not fetched until needed, so a page load costs ~2.4MB of video rather than 8.2MB. Playback
+stops when the hero scrolls away or the tab is hidden, and `prefers-reduced-motion` disables
+autoplay and auto-advance entirely.
+
+To replace a video: **Admin → Homepage → Replace** (MP4/WebM, 40MB limit; the upload validates
+the file's actual bytes, not just its extension). Or drop a file into `assets/video/` and point
+the slide at it.
+
+For a real poster frame, add `"poster": "assets/img/hero/slide-1.jpg"` to a slide. Without one
+a lightweight brand gradient is used, so nothing flashes while the video loads.
+
 ### Making orders show up here
 
 Email tells you an order happened; it cannot be listed, filtered or marked "Shipped". For that,

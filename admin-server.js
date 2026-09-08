@@ -78,6 +78,7 @@ const lockRemaining = () => Math.max(0, lockedUntil - Date.now());
 
 const PRODUCTS_FILE = path.join(ROOT, "data", "products.json");
 const ORDERS_FILE = path.join(ROOT, "data", "orders.json");
+const HERO_FILE = path.join(ROOT, "data", "hero.json");
 const BACKUP_DIR = path.join(ROOT, "data", "backups");
 
 const TYPES = {
@@ -292,6 +293,91 @@ async function api(req, res, url) {
       });
   }
 
+  /* --- hero slides --- */
+  if (route === "/api/hero" && req.method === "GET") {
+    return send(res, 200, readJSON(HERO_FILE, { slides: [] }));
+  }
+
+  if (route === "/api/hero" && req.method === "PUT") {
+    const data = await body(req);
+    const slides = data.slides;
+    if (!Array.isArray(slides) || !slides.length) {
+      return send(res, 400, { ok: false, error: "At least one hero slide is required." });
+    }
+    const errors = [];
+    slides.forEach((s, i) => {
+      const at = `slide ${i + 1}`;
+      if (!s.headline || !String(s.headline).trim()) errors.push(`${at}: a headline is required`);
+      if (!s.video) errors.push(`${at}: a video is required`);
+      if (s.video && !fs.existsSync(path.join(ROOT, s.video))) errors.push(`${at}: video file "${s.video}" not found`);
+      if (s.ctaLabel && !s.ctaHref) errors.push(`${at}: the button needs a link`);
+    });
+    if (errors.length) return send(res, 400, { ok: false, errors });
+    if (!slides.some((s) => s.enabled !== false)) {
+      return send(res, 400, { ok: false, error: "At least one slide must stay enabled." });
+    }
+    backup(HERO_FILE);
+    const cur = readJSON(HERO_FILE, {});
+    writeJSONAtomic(HERO_FILE, {
+      _comment: cur._comment, version: cur.version || 1,
+      settings: cur.settings || {}, updated: new Date().toISOString(), slides,
+    });
+    return send(res, 200, { ok: true, count: slides.length });
+  }
+
+  /* --- media upload (video / image) ---
+     Raw body upload: the browser sends the bytes with the name in a header,
+     which avoids hand-rolling a multipart parser for a single-file form. */
+  if (route === "/api/upload" && req.method === "POST") {
+    const kind = url.searchParams.get("kind") === "image" ? "image" : "video";
+    const raw = String(req.headers["x-filename"] || "");
+    const ext = path.extname(raw).toLowerCase();
+
+    const ALLOWED = kind === "video"
+      ? { ".mp4": "video/mp4", ".webm": "video/webm" }
+      : { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp" };
+    if (!ALLOWED[ext]) {
+      return send(res, 400, { ok: false, error: `Only ${Object.keys(ALLOWED).join(", ")} allowed for ${kind}.` });
+    }
+
+    const MAX = kind === "video" ? 40e6 : 8e6;
+    const chunks = [];
+    let total = 0;
+    const aborted = await new Promise((resolve) => {
+      req.on("data", (c) => {
+        total += c.length;
+        if (total > MAX) { resolve(true); req.destroy(); return; }
+        chunks.push(c);
+      });
+      req.on("end", () => resolve(false));
+      req.on("error", () => resolve(true));
+    });
+    if (aborted) return send(res, 413, { ok: false, error: `File too large (limit ${MAX / 1e6}MB).` });
+
+    const buf = Buffer.concat(chunks);
+    if (!buf.length) return send(res, 400, { ok: false, error: "Empty upload." });
+
+    /* Check the bytes, not just the filename. */
+    const head = buf.slice(0, 16);
+    const looksRight =
+      ext === ".mp4"  ? head.slice(4, 8).toString("ascii") === "ftyp"
+    : ext === ".webm" ? head[0] === 0x1a && head[1] === 0x45
+    : ext === ".png"  ? head.slice(0, 8).toString("hex") === "89504e470d0a1a0a"
+    : ext === ".webp" ? head.slice(0, 4).toString("ascii") === "RIFF"
+    :                   head[0] === 0xff && head[1] === 0xd8;   // jpeg
+    if (!looksRight) return send(res, 400, { ok: false, error: `That file is not a valid ${ext.slice(1).toUpperCase()}.` });
+
+    // Ignore any client-supplied path; we choose where it lands.
+    const safe = path.basename(raw, ext).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60)
+      || `upload-${Date.now()}`;
+    const relDir = kind === "video" ? path.join("assets", "video") : path.join("assets", "img", "hero");
+    fs.mkdirSync(path.join(ROOT, relDir), { recursive: true });
+    const rel = path.join(relDir, safe + ext).replace(/\\/g, "/");
+    fs.writeFileSync(path.join(ROOT, rel), buf);
+
+    return send(res, 200, { ok: true, path: rel, bytes: buf.length });
+  }
+
   /* --- deploy: rebuild, then push so the host redeploys --- */
   if (route === "/api/deploy" && req.method === "POST") {
     const run = (cmd, args) =>
@@ -451,6 +537,7 @@ async function api(req, res, url) {
       site: { name: D.SITE.name, currency: D.SITE.currency, freeShippingOver: D.SITE.freeShippingOver, flatShipping: D.SITE.flatShipping },
       ordersApiConfigured: !!D.SITE.ordersApi,
       deployConfigured: fs.existsSync(path.join(ROOT, ".git")) && fs.existsSync(path.join(ROOT, "vercel.json")),
+      videos: (() => { try { return fs.readdirSync(path.join(ROOT, "assets", "video")).filter((f) => /.(mp4|webm)$/i.test(f)).map((f) => "assets/video/" + f); } catch { return []; } })(),
     });
   }
 
