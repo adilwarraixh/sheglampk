@@ -20,6 +20,12 @@
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
+  /* Product image paths are stored relative to the site root. Pages in a
+     subfolder (product/*.html) need the base prefix or the browser resolves
+     them against the subfolder and 404s. Data URIs are already complete. */
+  const imgSrc = (src, base) =>
+    !src || /^(data:|https?:|\/)/.test(src) ? src : (base || "") + src;
+
   /* ---------- Icon set ---------- */
   const ICONS = {
     search: '<circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>',
@@ -117,7 +123,7 @@
     return `<article class="card" data-id="${p.id}">
   <div class="card__media">
     <a href="${href}" aria-label="${esc(p.name)}">
-      <img src="${p.image}" alt="${esc(p.name)}" loading="lazy" width="500" height="600"
+      <img src="${imgSrc(p.image, base)}" alt="${esc(p.name)}" loading="lazy" width="500" height="600"
            data-tile="${p.tile}" data-fallback="${esc(p.name.charAt(0))}">
     </a>
     ${flags(p)}
@@ -159,5 +165,5 @@
     return `<nav class="crumbs container" aria-label="Breadcrumb">${parts.join("")}</nav>`;
   }
 
-  return { esc, icon, brandIcon, logo, stars, priceBlock, swatchRow, flags, card, grid, reviewItem, crumbs, money };
+  return { esc, imgSrc, icon, brandIcon, logo, stars, priceBlock, swatchRow, flags, card, grid, reviewItem, crumbs, money };
 });

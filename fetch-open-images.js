@@ -43,24 +43,44 @@ function similarity(a, b) {
   return shared / Math.min(A.size, B.size);        // how much of the shorter name is covered
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* Keep pages small (larger sizes 500) and back off on failure: this endpoint
+   rate-limits bursts and answers 500 rather than 429 when it is unhappy. */
 async function search(page) {
-  const url = `${API}?search_terms=sheglam&search_simple=1&action=process&json=1&page_size=100&page=${page}`;
-  const res = await fetch(url, { headers: { "User-Agent": "SheglamPK-catalogue/1.0 (reseller storefront)" } });
-  if (!res.ok) throw new Error(`Open Beauty Facts returned ${res.status}`);
-  return res.json();
+  const url = `${API}?search_terms=sheglam&search_simple=1&action=process&json=1&page_size=20&page=${page}`;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; SheglamPK/1.0)", Accept: "application/json" },
+      });
+      if (res.ok) return await res.json();
+      if (attempt === 4) { console.log(`  (page ${page}: ${res.status} after 4 tries — stopping)`); return null; }
+      await sleep(attempt * 2000);
+    } catch (e) {
+      if (attempt === 4) { console.log(`  (page ${page} failed: ${e.message})`); return null; }
+      await sleep(attempt * 2000);
+    }
+  }
+  return null;
 }
 
 (async () => {
   console.log("\nOpen Beauty Facts — licensed product photos\n");
 
   let remote = [];
-  for (let page = 1; page <= 3; page++) {
+  for (let page = 1; page <= 5; page++) {
     const j = await search(page);
+    if (!j) break;
     const batch = (j.products || []).filter((p) => p.image_front_url);
     remote = remote.concat(batch);
-    if (remote.length >= (j.count || 0) || !batch.length) break;
+    if (!batch.length || remote.length >= (j.count || 0)) break;
   }
   console.log(`  candidates with a photo: ${remote.length}`);
+  if (!remote.length) {
+    console.log("\n  Nothing available from this source right now.\n");
+    process.exit(0);
+  }
 
   /* Best match per catalogue product, above a confidence floor. */
   const MIN = 0.6;

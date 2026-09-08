@@ -181,7 +181,7 @@
         if (!p) return "";
         const key = lineKey(l.id, l.shade);
         return `<div class="lineitem">
-          <img class="lineitem__img" src="${p.image}" alt="${T.esc(p.name)}" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
+          <img class="lineitem__img" src="${T.imgSrc(p.image, BASE)}" alt="${T.esc(p.name)}" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
           <div>
             <div class="lineitem__name"><a href="${BASE}product/${p.slug}.html">${T.esc(p.name)}</a></div>
             ${l.shade ? `<div class="lineitem__variant">Shade: ${T.esc(l.shade)}</div>` : ""}
@@ -249,7 +249,7 @@
       const p = byId(id);
       if (!p) return "";
       return `<div class="lineitem">
-        <img class="lineitem__img" src="${p.image}" alt="${T.esc(p.name)}" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
+        <img class="lineitem__img" src="${T.imgSrc(p.image, BASE)}" alt="${T.esc(p.name)}" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
         <div>
           <div class="lineitem__name"><a href="${BASE}product/${p.slug}.html">${T.esc(p.name)}</a></div>
           <div class="lineitem__price">${money(p.price)}</div>
@@ -403,7 +403,7 @@
         track("search", { search_term: q });
         res.innerHTML = hits.length
           ? hits.slice(0, 6).map((p) => `<a class="searchres__item" href="${BASE}product/${p.slug}.html">
-              <img class="searchres__thumb" src="${p.image}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
+              <img class="searchres__thumb" src="${T.imgSrc(p.image, BASE)}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
               <div><div class="searchres__name">${T.esc(p.name)}</div>
               <div class="searchres__meta">${T.esc(p.sub)} · ${money(p.price)}</div></div></a>`).join("")
             + `<a class="searchres__all" href="${BASE}search.html?q=${encodeURIComponent(q)}">See all ${hits.length} results</a>`
@@ -647,7 +647,7 @@
     if (!p || !m) return;
     $("#qvBody").innerHTML = `
       <div class="qv">
-        <div class="qv__media"><img src="${p.imageLarge}" alt="${T.esc(p.name)}" data-tile="${p.galleryTiles[0]}" data-fallback="${T.esc(p.name.charAt(0))}"></div>
+        <div class="qv__media"><img src="${T.imgSrc(p.imageLarge, BASE)}" alt="${T.esc(p.name)}" data-tile="${p.galleryTiles[0]}" data-fallback="${T.esc(p.name.charAt(0))}"></div>
         <div class="qv__info">
           <span class="pdp__cat">${T.esc(p.categoryLabel)} · ${T.esc(p.sub)}</span>
           <h2 class="pdp__name">${T.esc(p.name)}</h2>
@@ -912,7 +912,7 @@
     box.innerHTML = cart.map((l) => {
       const p = byId(l.id);
       return `<div class="coline">
-        <img src="${p.image}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
+        <img src="${T.imgSrc(p.image, BASE)}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
         <div><div>${T.esc(p.name)}</div>
           ${l.shade ? `<div class="coline__v">${T.esc(l.shade)} · Qty ${l.qty}</div>` : `<div class="coline__v">Qty ${l.qty}</div>`}</div>
         <strong>${money(p.price * l.qty)}</strong>

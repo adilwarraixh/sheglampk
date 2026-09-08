@@ -702,7 +702,8 @@ PRODUCTS.forEach((p) => {
     { label: p.name },
   ];
 
-  const galleryImgs = p.gallery;
+  // Product pages sit in /product/, so local image paths need the ../ prefix.
+  const galleryImgs = p.gallery.map((src) => T.imgSrc(src, "../"));
 
   const ratingLd = p.reviewCount
     ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviewCount } }
@@ -720,7 +721,7 @@ ${crumbHTML(crumbs)}
           </button>`).join("")}
       </div>
       <div class="gallery__main" id="galleryMainWrap">
-        <img id="galleryMain" src="${p.imageLarge}" alt="${esc(p.name)}" width="900" height="1035" data-tile="${p.galleryTiles[0]}" data-fallback="${esc(p.name.charAt(0))}">
+        <img id="galleryMain" src="${T.imgSrc(p.imageLarge, "../")}" alt="${esc(p.name)}" width="900" height="1035" data-tile="${p.galleryTiles[0]}" data-fallback="${esc(p.name.charAt(0))}">
       </div>
     </div>
 
