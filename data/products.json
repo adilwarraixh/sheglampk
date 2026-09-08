@@ -1508,6 +1508,2635 @@
       "shades": null,
       "slug": "silicone-brush-cleaning-mat",
       "sku": "SGPK-1059"
+    },
+    {
+      "name": "Wake Up Call Undereye Color Corrector",
+      "slug": "wake-up-call-undereye-color-corrector",
+      "category": "face",
+      "sub": "Concealer",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A creamy concealer that lifts shadow without caking. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Peach",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1061",
+      "needsReview": true
+    },
+    {
+      "name": "Triple Threat Correcting Primer",
+      "slug": "triple-threat-correcting-primer",
+      "category": "face",
+      "sub": "Primer",
+      "price": 2790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A smoothing base that evens out texture before colour goes on. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1062",
+      "needsReview": true
+    },
+    {
+      "name": "Good Grip Hydrating Primer-Travel Size",
+      "slug": "good-grip-hydrating-primer-travel-size",
+      "category": "face",
+      "sub": "Primer",
+      "price": 3090,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A lightweight base layer that buys your makeup extra hours. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1063",
+      "needsReview": true
+    },
+    {
+      "name": "Press Refresh Setting Spray",
+      "slug": "press-refresh-setting-spray",
+      "category": "face",
+      "sub": "Setting Spray",
+      "price": 6090,
+      "oldPrice": 7590,
+      "finish": "Natural",
+      "size": "80ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "The last step: a fine mist that stops makeup shifting. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1064",
+      "needsReview": true
+    },
+    {
+      "name": "Good Grip Hydrating Primer-Blueberry + AHA",
+      "slug": "good-grip-hydrating-primer-blueberry-aha",
+      "category": "face",
+      "sub": "Primer",
+      "price": 1390,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A grip primer that gives foundation something to hold onto. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1065",
+      "needsReview": true
+    },
+    {
+      "name": "Good Grip Hydrating Prime & Set Spray",
+      "slug": "good-grip-hydrating-prime-set-spray",
+      "category": "face",
+      "sub": "Setting Spray",
+      "price": 4690,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "80ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A fine-mist finishing spray that locks the whole face down. Blend while it is still moving; it sets quickly once placed.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1066",
+      "needsReview": true
+    },
+    {
+      "name": "Berry Cute Cake Blush",
+      "slug": "berry-cute-cake-blush",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2290,
+      "oldPrice": 2890,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A blendable blush that builds from a hint to a statement. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1067",
+      "needsReview": true
+    },
+    {
+      "name": "Glowchi Bouncy Highlighter",
+      "slug": "glowchi-bouncy-highlighter",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 1990,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A luminous finish for the high points of the face. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Cherry Blossom",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1068",
+      "needsReview": true
+    },
+    {
+      "name": "Buttercream Bliss Canvas Primer",
+      "slug": "buttercream-bliss-canvas-primer",
+      "category": "face",
+      "sub": "Primer",
+      "price": 1290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A grip primer that gives foundation something to hold onto. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1069",
+      "needsReview": true
+    },
+    {
+      "name": "Lucky Duck 3D Highlighter",
+      "slug": "lucky-duck-3d-highlighter",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A glow that catches the light without glitter. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1070",
+      "needsReview": true
+    },
+    {
+      "name": "Beaming Butterfly Highlighter",
+      "slug": "beaming-butterfly-highlighter",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A glow that catches the light without glitter. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1071",
+      "needsReview": true
+    },
+    {
+      "name": "Fine Line 2-In-1 Nose Contour & Highlight Pen",
+      "slug": "fine-line-2-in-1-nose-contour-highlight-pen",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A glow that catches the light without glitter. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1072",
+      "needsReview": true
+    },
+    {
+      "name": "Multi-Fix Concealer And Color Corrector",
+      "slug": "multi-fix-concealer-and-color-corrector",
+      "category": "face",
+      "sub": "Concealer",
+      "price": 1890,
+      "oldPrice": 2390,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A concealer that brightens without settling into lines. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Vanilla",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1073",
+      "needsReview": true
+    },
+    {
+      "name": "All About That Face Multifunctional Face Palette",
+      "slug": "all-about-that-face-multifunctional-face-palette",
+      "category": "face",
+      "sub": "Contour & Bronzer",
+      "price": 3390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Definition that mimics real shadow. A little goes a long way — start with less than you think you need.",
+      "shades": [
+        {
+          "name": "Vanilla Sculpt",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1074",
+      "needsReview": true
+    },
+    {
+      "name": "Sunkissed Body Highlighter",
+      "slug": "sunkissed-body-highlighter",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 1790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A glow that catches the light without glitter. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Eros",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1075",
+      "needsReview": true
+    },
+    {
+      "name": "Insta-Ready Sunset Blur Setting Powder",
+      "slug": "insta-ready-sunset-blur-setting-powder",
+      "category": "face",
+      "sub": "Powder",
+      "price": 3190,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "8g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A finely milled powder that sets without flashback. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Bisque",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1076",
+      "needsReview": true
+    },
+    {
+      "name": "Multi-Glam Face Pen",
+      "slug": "multi-glam-face-pen",
+      "category": "face",
+      "sub": "Contour & Bronzer",
+      "price": 2090,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "10ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A sculpting shade for cheekbones, jaw and nose. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Tan",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1077",
+      "needsReview": true
+    },
+    {
+      "name": "Cutie Paw Blush Stamp",
+      "slug": "cutie-paw-blush-stamp",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2090,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Colour that reads like a natural flush. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Love Cake",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1078",
+      "needsReview": true
+    },
+    {
+      "name": "Insta-Ready Face & Under Eye Setting Powder Duo",
+      "slug": "insta-ready-face-under-eye-setting-powder-duo",
+      "category": "face",
+      "sub": "Powder",
+      "price": 5090,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A soft-focus powder for setting and baking. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Taro",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1079",
+      "needsReview": true
+    },
+    {
+      "name": "Melon Melt Niacinamide Serum Primer",
+      "slug": "melon-melt-niacinamide-serum-primer",
+      "category": "face",
+      "sub": "Primer",
+      "price": 2390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A smoothing base that evens out texture before colour goes on. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1080",
+      "needsReview": true
+    },
+    {
+      "name": "Even Better Color Correcting Primer",
+      "slug": "even-better-color-correcting-primer",
+      "category": "face",
+      "sub": "Primer",
+      "price": 1990,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A grip primer that gives foundation something to hold onto. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Green",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1081",
+      "needsReview": true
+    },
+    {
+      "name": "Go Go Glow Highlighting Body Mist",
+      "slug": "go-go-glow-highlighting-body-mist",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 2390,
+      "oldPrice": 2990,
+      "finish": "Dewy",
+      "size": "10ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A soft-focus sheen rather than a hard shimmer. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Gold",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1082",
+      "needsReview": true
+    },
+    {
+      "name": "Sun Beam Matte Liquid Bronzer",
+      "slug": "sun-beam-matte-liquid-bronzer",
+      "category": "face",
+      "sub": "Contour & Bronzer",
+      "price": 2390,
+      "oldPrice": 2990,
+      "finish": "Matte",
+      "size": "10ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Warmth and structure without going orange. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "Toffee",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1083",
+      "needsReview": true
+    },
+    {
+      "name": "Chroma Zone Multichrome Highlighter",
+      "slug": "chroma-zone-multichrome-highlighter",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 2290,
+      "oldPrice": 2890,
+      "finish": "Shimmer",
+      "size": "10ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A soft-focus sheen rather than a hard shimmer. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Lucid",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1084",
+      "needsReview": true
+    },
+    {
+      "name": "Floral Flush Blush Palette",
+      "slug": "floral-flush-blush-palette",
+      "category": "face",
+      "sub": "Blush",
+      "price": 3790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Colour that reads like a natural flush. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Blushing Bouquet",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1085",
+      "needsReview": true
+    },
+    {
+      "name": "Glam 101 Hybrid Highlighter & Blush Duo",
+      "slug": "glam-101-hybrid-highlighter-blush-duo",
+      "category": "face",
+      "sub": "Blush",
+      "price": 3390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A pigmented flush that blends into the skin, not onto it. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "St. Tropez",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1086",
+      "needsReview": true
+    },
+    {
+      "name": "Cheek 2 Cheek Blush Duo",
+      "slug": "cheek-2-cheek-blush-duo",
+      "category": "face",
+      "sub": "Blush",
+      "price": 3790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Colour that reads like a natural flush. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Pink Sprinkles",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1087",
+      "needsReview": true
+    },
+    {
+      "name": "Lash Besties 2-In-1 Mascara",
+      "slug": "lash-besties-2-in-1-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1890,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Length and lift from the first coat. Pairs well with the rest of the range without pilling.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1088",
+      "needsReview": true
+    },
+    {
+      "name": "Insta-Wing Heart Stamp Eyeliner",
+      "slug": "insta-wing-heart-stamp-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Longwear colour that survives a full day. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1089",
+      "needsReview": true
+    },
+    {
+      "name": "Brow Behavior Taming Gel",
+      "slug": "brow-behavior-taming-gel",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 1390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Hold and definition for natural-looking brows. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1090",
+      "needsReview": true
+    },
+    {
+      "name": "Dark Romantasy Eyeshadow Palette",
+      "slug": "dark-romantasy-eyeshadow-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Blend while it is still moving; it sets quickly once placed.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1091",
+      "needsReview": true
+    },
+    {
+      "name": "Micro Precision Ultra-Long Tip Eyeliner",
+      "slug": "micro-precision-ultra-long-tip-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A precise line that stays where you put it. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1092",
+      "needsReview": true
+    },
+    {
+      "name": "Stay Inked Waterproof Eyeliner Pen",
+      "slug": "stay-inked-waterproof-eyeliner-pen",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1790,
+      "oldPrice": 2190,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Longwear colour that survives a full day. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1093",
+      "needsReview": true
+    },
+    {
+      "name": "All-In-One Volume & Length Mascara",
+      "slug": "all-in-one-volume-length-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1890,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A brush shaped to separate rather than clump. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1094",
+      "needsReview": true
+    },
+    {
+      "name": "Lashlighter Iron Curl Mascara",
+      "slug": "lashlighter-iron-curl-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1990,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A brush shaped to separate rather than clump. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1095",
+      "needsReview": true
+    },
+    {
+      "name": "Big Energy Mascara",
+      "slug": "big-energy-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 2190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Volume that holds its curl all day. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Black",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1096",
+      "needsReview": true
+    },
+    {
+      "name": "Lift & Elevate Lengthening Mascara",
+      "slug": "lift-elevate-lengthening-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 2390,
+      "oldPrice": 2990,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Volume that holds its curl all day. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1097",
+      "needsReview": true
+    },
+    {
+      "name": "Stick Em Up Lifting Brow Soap",
+      "slug": "stick-em-up-lifting-brow-soap",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Shapes and sets brow hairs in one pass. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1098",
+      "needsReview": true
+    },
+    {
+      "name": "Glimmer & Gleam 9-Pan Eyeshadow Palette",
+      "slug": "glimmer-gleam-9-pan-eyeshadow-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1099",
+      "needsReview": true
+    },
+    {
+      "name": "Pro-Flex Angled Eyeliner",
+      "slug": "pro-flex-angled-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A precise line that stays where you put it. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1100",
+      "needsReview": true
+    },
+    {
+      "name": "Moonlight Eyeshadow Palette",
+      "slug": "moonlight-eyeshadow-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 4190,
+      "oldPrice": 5190,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Blend while it is still moving; it sets quickly once placed.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1101",
+      "needsReview": true
+    },
+    {
+      "name": "Berry Palette",
+      "slug": "berry-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1102",
+      "needsReview": true
+    },
+    {
+      "name": "Showtime In Seattle 15-Pan Palette",
+      "slug": "showtime-in-seattle-15-pan-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1103",
+      "needsReview": true
+    },
+    {
+      "name": "Oh So Rich Matte Eyeliner",
+      "slug": "oh-so-rich-matte-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Longwear colour that survives a full day. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1104",
+      "needsReview": true
+    },
+    {
+      "name": "Lashlighter Mega Boost Mascara",
+      "slug": "lashlighter-mega-boost-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Length and lift from the first coat. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1105",
+      "needsReview": true
+    },
+    {
+      "name": "Gel Glide Eyeliner Pencil",
+      "slug": "gel-glide-eyeliner-pencil",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A tip fine enough for a clean wing. A little goes a long way — start with less than you think you need.",
+      "shades": [
+        {
+          "name": "Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1106",
+      "needsReview": true
+    },
+    {
+      "name": "Chroma Zone Multichrome Gel Liner-On A Trip",
+      "slug": "chroma-zone-multichrome-gel-liner-on-a-trip",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1190,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A precise line that stays where you put it. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1107",
+      "needsReview": true
+    },
+    {
+      "name": "Lash Ritual Nourishing Serum",
+      "slug": "lash-ritual-nourishing-serum",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 2190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Volume that holds its curl all day. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Clear",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1108",
+      "needsReview": true
+    },
+    {
+      "name": "All-In-One 24k Multi-Effect Mascara",
+      "slug": "all-in-one-24k-multi-effect-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Length and lift from the first coat. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1109",
+      "needsReview": true
+    },
+    {
+      "name": "Gro-Pro Nourishing Lash Serum",
+      "slug": "gro-pro-nourishing-lash-serum",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 2290,
+      "oldPrice": 2890,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Volume that holds its curl all day. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1110",
+      "needsReview": true
+    },
+    {
+      "name": "Stay Inked Liquid Eyeliner",
+      "slug": "stay-inked-liquid-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A precise line that stays where you put it. Pairs well with the rest of the range without pilling.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1111",
+      "needsReview": true
+    },
+    {
+      "name": "Cursed Chrysalis Palette",
+      "slug": "cursed-chrysalis-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3990,
+      "oldPrice": 4990,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1112",
+      "needsReview": true
+    },
+    {
+      "name": "Wing It Waterproof Liner Duo",
+      "slug": "wing-it-waterproof-liner-duo",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 2590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A precise line that stays where you put it. A little goes a long way — start with less than you think you need.",
+      "shades": [
+        {
+          "name": "Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1113",
+      "needsReview": true
+    },
+    {
+      "name": "Big Time Eyes Volumizing Mascara",
+      "slug": "big-time-eyes-volumizing-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1890,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Length and lift from the first coat. Patch test before first use if your skin is sensitive.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1114",
+      "needsReview": true
+    },
+    {
+      "name": "Dark Romantasy Duochrome Eyeshadow",
+      "slug": "dark-romantasy-duochrome-eyeshadow",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 2790,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Blendable colour that layers without going muddy. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Garnet Eyes",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1115",
+      "needsReview": true
+    },
+    {
+      "name": "Set Me Up Brow Hold",
+      "slug": "set-me-up-brow-hold",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 2590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Hold and definition for natural-looking brows. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Crystal Clear",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1116",
+      "needsReview": true
+    },
+    {
+      "name": "Max Impact Extreme Volumizing Mascara",
+      "slug": "max-impact-extreme-volumizing-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1890,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Length and lift from the first coat. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1117",
+      "needsReview": true
+    },
+    {
+      "name": "Desert Hues Palette",
+      "slug": "desert-hues-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1118",
+      "needsReview": true
+    },
+    {
+      "name": "Puff Brow Palette",
+      "slug": "puff-brow-palette",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 2590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Hold and definition for natural-looking brows. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1119",
+      "needsReview": true
+    },
+    {
+      "name": "Bold Moves Kohl Cream Eyeliner Pencil",
+      "slug": "bold-moves-kohl-cream-eyeliner-pencil",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A tip fine enough for a clean wing. A little goes a long way — start with less than you think you need.",
+      "shades": [
+        {
+          "name": "Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1120",
+      "needsReview": true
+    },
+    {
+      "name": "Think Sharp Eyeliner",
+      "slug": "think-sharp-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A tip fine enough for a clean wing. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1121",
+      "needsReview": true
+    },
+    {
+      "name": "Intensify Smudge-Proof Eyeliner Gel",
+      "slug": "intensify-smudge-proof-eyeliner-gel",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Longwear colour that survives a full day. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1122",
+      "needsReview": true
+    },
+    {
+      "name": "Clean Queen Mascara Remover",
+      "slug": "clean-queen-mascara-remover",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Length and lift from the first coat. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1123",
+      "needsReview": true
+    },
+    {
+      "name": "Stone Cold Eyeshadow Palette",
+      "slug": "stone-cold-eyeshadow-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1124",
+      "needsReview": true
+    },
+    {
+      "name": "Crystal Gaze Glitter Mascara",
+      "slug": "crystal-gaze-glitter-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 2390,
+      "oldPrice": 2990,
+      "finish": "Shimmer",
+      "size": "8ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Volume that holds its curl all day. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1125",
+      "needsReview": true
+    },
+    {
+      "name": "Starry Wish Liquid Eyeshadow Trio",
+      "slug": "starry-wish-liquid-eyeshadow-trio",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3990,
+      "oldPrice": 4990,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "North Star",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1126",
+      "needsReview": true
+    },
+    {
+      "name": "Lashlighter Extend Enriching Lash Primer",
+      "slug": "lashlighter-extend-enriching-lash-primer",
+      "category": "face",
+      "sub": "Primer",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A grip primer that gives foundation something to hold onto. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "White",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1127",
+      "needsReview": true
+    },
+    {
+      "name": "Boss Brow Waterproof Pomade",
+      "slug": "boss-brow-waterproof-pomade",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 1790,
+      "oldPrice": 2190,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A groomed brow that stays put. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "Soft Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1128",
+      "needsReview": true
+    },
+    {
+      "name": "Live To Roam Palette",
+      "slug": "live-to-roam-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1129",
+      "needsReview": true
+    },
+    {
+      "name": "Insta-Eyes Dual Tone Shadow Stick",
+      "slug": "insta-eyes-dual-tone-shadow-stick",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "Rose",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1130",
+      "needsReview": true
+    },
+    {
+      "name": "Chill Track Palette",
+      "slug": "chill-track-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 2790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Blendable colour that layers without going muddy. A little goes a long way — start with less than you think you need.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1131",
+      "needsReview": true
+    },
+    {
+      "name": "Better Brows Long Lasting Eyebrow Pencil",
+      "slug": "better-brows-long-lasting-eyebrow-pencil",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 1790,
+      "oldPrice": 2190,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A groomed brow that stays put. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Taupe",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1132",
+      "needsReview": true
+    },
+    {
+      "name": "Line & Define Waterproof Liquid Eyeliner",
+      "slug": "line-define-waterproof-liquid-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A precise line that stays where you put it. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Brown",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1133",
+      "needsReview": true
+    },
+    {
+      "name": "Enigma Sparkly Eyeshadow",
+      "slug": "enigma-sparkly-eyeshadow",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 2090,
+      "oldPrice": 2590,
+      "finish": "Shimmer",
+      "size": "1.4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Such A Prize",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1134",
+      "needsReview": true
+    },
+    {
+      "name": "Zen Out, Shangri-La Palette",
+      "slug": "zen-out-shangri-la-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Blend while it is still moving; it sets quickly once placed.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1135",
+      "needsReview": true
+    },
+    {
+      "name": "Smart Cookie Palette",
+      "slug": "smart-cookie-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 4190,
+      "oldPrice": 5190,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1136",
+      "needsReview": true
+    },
+    {
+      "name": "Silver Strobe Metallic Eyeliner",
+      "slug": "silver-strobe-metallic-eyeliner",
+      "category": "face",
+      "sub": "Highlighter",
+      "price": 2390,
+      "oldPrice": 2990,
+      "finish": "Shimmer",
+      "size": "10ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A soft-focus sheen rather than a hard shimmer. A little goes a long way — start with less than you think you need.",
+      "shades": [
+        {
+          "name": "Platinum",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1137",
+      "needsReview": true
+    },
+    {
+      "name": "Tint Lock Tattoo Peel Off Brow Gel",
+      "slug": "tint-lock-tattoo-peel-off-brow-gel",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 1790,
+      "oldPrice": 2190,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A groomed brow that stays put. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Taupe",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1138",
+      "needsReview": true
+    },
+    {
+      "name": "Deep Feelings Palette",
+      "slug": "deep-feelings-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 2990,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Blendable colour that layers without going muddy. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1139",
+      "needsReview": true
+    },
+    {
+      "name": "Flutter Wink Volumizing Mascara",
+      "slug": "flutter-wink-volumizing-mascara",
+      "category": "eyes",
+      "sub": "Mascara",
+      "price": 1990,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "8ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A brush shaped to separate rather than clump. Blend while it is still moving; it sets quickly once placed.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1140",
+      "needsReview": true
+    },
+    {
+      "name": "Berry Besties Color Trio",
+      "slug": "berry-besties-color-trio",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3990,
+      "oldPrice": 4990,
+      "finish": "Natural",
+      "size": "1.4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "Raspberry Tart",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1141",
+      "needsReview": true
+    },
+    {
+      "name": "Stay Wild Jelly Glitter",
+      "slug": "stay-wild-jelly-glitter",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 1790,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Peacock",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1142",
+      "needsReview": true
+    },
+    {
+      "name": "On-Line Creamy Eyeliner",
+      "slug": "on-line-creamy-eyeliner",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 1790,
+      "oldPrice": 2190,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Longwear colour that survives a full day. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Black",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1143",
+      "needsReview": true
+    },
+    {
+      "name": "Airglow Eye Tint",
+      "slug": "airglow-eye-tint",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Pigment that shows up true on the first sweep. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Cloud Nine",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1144",
+      "needsReview": true
+    },
+    {
+      "name": "Lip Dazzler Glitter Kit",
+      "slug": "lip-dazzler-glitter-kit",
+      "category": "lips",
+      "sub": "Lip Gloss",
+      "price": 2590,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Shine without the sticky finish. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Center Stage",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1145",
+      "needsReview": true
+    },
+    {
+      "name": "Dark Romantasy Lip & Cheek Tint",
+      "slug": "dark-romantasy-lip-cheek-tint",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2090,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Colour that reads like a natural flush. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "Rich Crimson",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1146",
+      "needsReview": true
+    },
+    {
+      "name": "Bubble Buff Lip Scrub",
+      "slug": "bubble-buff-lip-scrub",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Comfort and softness for dry lips. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1147",
+      "needsReview": true
+    },
+    {
+      "name": "Dark Romantasy Transfer-Proof Lip Mousse",
+      "slug": "dark-romantasy-transfer-proof-lip-mousse",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Rich colour in a single pass. Patch test before first use if your skin is sensitive.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1148",
+      "needsReview": true
+    },
+    {
+      "name": "Fall In Line Peel Off Lip Liner Stain-Bare Blush",
+      "slug": "fall-in-line-peel-off-lip-liner-stain-bare-blush",
+      "category": "face",
+      "sub": "Blush",
+      "price": 1790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A pigmented flush that blends into the skin, not onto it. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1149",
+      "needsReview": true
+    },
+    {
+      "name": "So Lippy Lip Liner Set",
+      "slug": "so-lippy-lip-liner-set",
+      "category": "lips",
+      "sub": "Lip Liner",
+      "price": 2290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "2.5ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A precise line that defines and holds colour in. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Au Naturel",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1150",
+      "needsReview": true
+    },
+    {
+      "name": "Berry Jam Lip Mask Pot",
+      "slug": "berry-jam-lip-mask-pot",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A nourishing balm that treats while it shines. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1151",
+      "needsReview": true
+    },
+    {
+      "name": "Pout PHresh Color Changing Lipstick",
+      "slug": "pout-phresh-color-changing-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1790,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Rich colour in a single pass. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "Watermelon",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1152",
+      "needsReview": true
+    },
+    {
+      "name": "Dark Romantasy Lip Liner + Lip Gloss Kit",
+      "slug": "dark-romantasy-lip-liner-lip-gloss-kit",
+      "category": "lips",
+      "sub": "Lip Liner",
+      "price": 2590,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "2.5ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Definition that stops lipstick travelling. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Plum Noir",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1153",
+      "needsReview": true
+    },
+    {
+      "name": "Stardust Swipe Glitter Liquid Lipstick",
+      "slug": "stardust-swipe-glitter-liquid-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1790,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Full-coverage colour that wears comfortably. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Cosmic Pink",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1154",
+      "needsReview": true
+    },
+    {
+      "name": "Crystal Glaze Moisturizing Lip Care Set",
+      "slug": "crystal-glaze-moisturizing-lip-care-set",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 2990,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A nourishing balm that treats while it shines. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1155",
+      "needsReview": true
+    },
+    {
+      "name": "Pillow Lips Lip Care Cream",
+      "slug": "pillow-lips-lip-care-cream",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Comfort and softness for dry lips. Works on its own or layered under the rest of your base.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1156",
+      "needsReview": true
+    },
+    {
+      "name": "Nourishing Lip Balm",
+      "slug": "nourishing-lip-balm",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A nourishing balm that treats while it shines. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "White",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1157",
+      "needsReview": true
+    },
+    {
+      "name": "Love Stained Lip Tint Marker",
+      "slug": "love-stained-lip-tint-marker",
+      "category": "lips",
+      "sub": "Lip Tint",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A tint that survives a cup of chai. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Bright Side",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1158",
+      "needsReview": true
+    },
+    {
+      "name": "Life Is Delicious Pocket Lip Jam",
+      "slug": "life-is-delicious-pocket-lip-jam",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1690,
+      "oldPrice": 2090,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Hydration you can wear on its own or under colour. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Ambrosia",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1159",
+      "needsReview": true
+    },
+    {
+      "name": "Cocoa Yum Lip Balm",
+      "slug": "cocoa-yum-lip-balm",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A nourishing balm that treats while it shines. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1160",
+      "needsReview": true
+    },
+    {
+      "name": "Onyx Kaleidoscope Lipstick",
+      "slug": "onyx-kaleidoscope-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Rich colour in a single pass. Patch test before first use if your skin is sensitive.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1161",
+      "needsReview": true
+    },
+    {
+      "name": "Creme Allure Lipstick",
+      "slug": "creme-allure-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 2190,
+      "oldPrice": 2690,
+      "finish": "Natural",
+      "size": "3.5g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Pigment that stays true for hours. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Nude",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1162",
+      "needsReview": true
+    },
+    {
+      "name": "Line To Shine Peel-Off Lip Stain & Gloss Duo-013 Peach Mousse",
+      "slug": "line-to-shine-peel-off-lip-stain-gloss-duo-013-peach-mousse",
+      "category": "lips",
+      "sub": "Lip Gloss",
+      "price": 3390,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "High shine that feels weightless. Pairs well with the rest of the range without pilling.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1163",
+      "needsReview": true
+    },
+    {
+      "name": "For The Flush Lip & Cheek Tint",
+      "slug": "for-the-flush-lip-cheek-tint",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2290,
+      "oldPrice": 2890,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A blendable blush that builds from a hint to a statement. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "Fruit Punch",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1164",
+      "needsReview": true
+    },
+    {
+      "name": "Lip Link Mini Gloss Bracelet Palette",
+      "slug": "lip-link-mini-gloss-bracelet-palette",
+      "category": "eyes",
+      "sub": "Eyeshadow",
+      "price": 3790,
+      "oldPrice": 4690,
+      "finish": "Dewy",
+      "size": "1.4g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Buildable colour for an everyday or a full look. Patch test before first use if your skin is sensitive.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1165",
+      "needsReview": true
+    },
+    {
+      "name": "Glam 101 Sheer Tinted Lipstick & Liner Duo-Blueberry Jam",
+      "slug": "glam-101-sheer-tinted-lipstick-liner-duo-blueberry-jam",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 2490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A precise line that stays where you put it. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1166",
+      "needsReview": true
+    },
+    {
+      "name": "Bold Booster Lip Plumper-Blush Drizzle",
+      "slug": "bold-booster-lip-plumper-blush-drizzle",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2190,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A blendable blush that builds from a hint to a statement. Pairs well with the rest of the range without pilling.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1167",
+      "needsReview": true
+    },
+    {
+      "name": "Mirror Kiss High-Shine Lipstick",
+      "slug": "mirror-kiss-high-shine-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1990,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Full-coverage colour that wears comfortably. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "Rule Breaker",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1168",
+      "needsReview": true
+    },
+    {
+      "name": "Peel Talk Lip Tint",
+      "slug": "peel-talk-lip-tint",
+      "category": "lips",
+      "sub": "Lip Tint",
+      "price": 1390,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Colour that stains and stays. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "Celeb Crush",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1169",
+      "needsReview": true
+    },
+    {
+      "name": "Pout Pillow Cushion Matte Liquid Lipstick",
+      "slug": "pout-pillow-cushion-matte-liquid-lipstick",
+      "category": "face",
+      "sub": "Foundation",
+      "price": 4490,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "30ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A buildable base with real staying power. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Catching Z's",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1170",
+      "needsReview": true
+    },
+    {
+      "name": "Matte Allure Lipstick",
+      "slug": "matte-allure-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Rich colour in a single pass. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Chic",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1171",
+      "needsReview": true
+    },
+    {
+      "name": "So Lippy Lip Liner",
+      "slug": "so-lippy-lip-liner",
+      "category": "lips",
+      "sub": "Lip Liner",
+      "price": 1290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "2.5ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A precise line that defines and holds colour in. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "True Faith",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1172",
+      "needsReview": true
+    },
+    {
+      "name": "Booster Shine Plumping Lip Gloss",
+      "slug": "booster-shine-plumping-lip-gloss",
+      "category": "lips",
+      "sub": "Lip Gloss",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A glassy gloss that layers over anything. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Own Your Shine",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1173",
+      "needsReview": true
+    },
+    {
+      "name": "Starlight Velvet Lipstick-Magical D",
+      "slug": "starlight-velvet-lipstick-magical-d",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1590,
+      "oldPrice": null,
+      "finish": "Satin",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Rich colour in a single pass. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Light",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1174",
+      "needsReview": true
+    },
+    {
+      "name": "Pout-Perfect Shimmer Lip Plumper",
+      "slug": "pout-perfect-shimmer-lip-plumper",
+      "category": "lips",
+      "sub": "Lip Tint",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Shimmer",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A tint that survives a cup of chai. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "Sugar Crystal",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1175",
+      "needsReview": true
+    },
+    {
+      "name": "Take A Hint Lip Tint",
+      "slug": "take-a-hint-lip-tint",
+      "category": "lips",
+      "sub": "Lip Tint",
+      "price": 1990,
+      "oldPrice": 2490,
+      "finish": "Natural",
+      "size": "3ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Long-wear colour without the dryness. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Memories",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1176",
+      "needsReview": true
+    },
+    {
+      "name": "Dynamatte Boom Long-Lasting Matte Lipstick",
+      "slug": "dynamatte-boom-long-lasting-matte-lipstick",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1890,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Full-coverage colour that wears comfortably. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1177",
+      "needsReview": true
+    },
+    {
+      "name": "Cloudline Blur Lip Liner",
+      "slug": "cloudline-blur-lip-liner",
+      "category": "lips",
+      "sub": "Lip Liner",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "2.5ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Definition that stops lipstick travelling. Patch test before first use if your skin is sensitive.",
+      "shades": [
+        {
+          "name": "Morning Mist",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1178",
+      "needsReview": true
+    },
+    {
+      "name": "Mega Lip Stacks-Brownie Stack",
+      "slug": "mega-lip-stacks-brownie-stack",
+      "category": "eyes",
+      "sub": "Brows",
+      "price": 3590,
+      "oldPrice": 4490,
+      "finish": "Natural",
+      "size": "4g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A groomed brow that stays put. Blend while it is still moving; it sets quickly once placed.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1179",
+      "needsReview": true
+    },
+    {
+      "name": "Lip Facts Lip Liner",
+      "slug": "lip-facts-lip-liner",
+      "category": "lips",
+      "sub": "Lip Liner",
+      "price": 1590,
+      "oldPrice": 1990,
+      "finish": "Natural",
+      "size": "2.5ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Definition that stops lipstick travelling. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "True Faith",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1180",
+      "needsReview": true
+    },
+    {
+      "name": "Silk Slip Lip Oil Balm",
+      "slug": "silk-slip-lip-oil-balm",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2190,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "6ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A blendable blush that builds from a hint to a statement. Works on its own or layered under the rest of your base.",
+      "shades": [
+        {
+          "name": "Barely Blushed",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1181",
+      "needsReview": true
+    },
+    {
+      "name": "Matte Allure Mini Liquid Lipstick Set",
+      "slug": "matte-allure-mini-liquid-lipstick-set",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 2990,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "Rich colour in a single pass. Patch test before first use if your skin is sensitive.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1182",
+      "needsReview": true
+    },
+    {
+      "name": "Just Kissed Lipstick Crayon",
+      "slug": "just-kissed-lipstick-crayon",
+      "category": "lips",
+      "sub": "Lipstick",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Satin",
+      "size": "3.5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Rich colour in a single pass. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": [
+        {
+          "name": "Red Velvet",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1183",
+      "needsReview": true
+    },
+    {
+      "name": "Hot Goss Plumping Lip Gloss-That's Juicy!",
+      "slug": "hot-goss-plumping-lip-gloss-that-s-juicy",
+      "category": "lips",
+      "sub": "Lip Gloss",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A glassy gloss that layers over anything. Pairs well with the rest of the range without pilling.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1184",
+      "needsReview": true
+    },
+    {
+      "name": "Pout-Perfect Shine Lip Plumper-Makin' Me Blush",
+      "slug": "pout-perfect-shine-lip-plumper-makin-me-blush",
+      "category": "face",
+      "sub": "Blush",
+      "price": 2290,
+      "oldPrice": 2890,
+      "finish": "Dewy",
+      "size": "6ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "A blendable blush that builds from a hint to a statement. Best applied in thin layers and built up rather than laid on heavily.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1185",
+      "needsReview": true
+    },
+    {
+      "name": "Glow Addict Lip Balm",
+      "slug": "glow-addict-lip-balm",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A nourishing balm that treats while it shines. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "Rocky Road",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1186",
+      "needsReview": true
+    },
+    {
+      "name": "Mood Switch Matte & Gloss Lip Duo",
+      "slug": "mood-switch-matte-gloss-lip-duo",
+      "category": "lips",
+      "sub": "Lip Gloss",
+      "price": 3190,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "High shine that feels weightless. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Pink Flamingo",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1187",
+      "needsReview": true
+    },
+    {
+      "name": "Lip Rules Liner & Gloss Pen",
+      "slug": "lip-rules-liner-gloss-pen",
+      "category": "lips",
+      "sub": "Lip Gloss",
+      "price": 1690,
+      "oldPrice": null,
+      "finish": "Dewy",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "High shine that feels weightless. Suits everyday wear as easily as a full evening look.",
+      "shades": [
+        {
+          "name": "By The Book",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1188",
+      "needsReview": true
+    },
+    {
+      "name": "Bubble Kiss Lip Balm",
+      "slug": "bubble-kiss-lip-balm",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1690,
+      "oldPrice": 2090,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Hydration you can wear on its own or under colour. Comfortable enough for all-day wear in Pakistani heat.",
+      "shades": [
+        {
+          "name": "Bubble Tea",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1189",
+      "needsReview": true
+    },
+    {
+      "name": "Soft Haze Lip Blur",
+      "slug": "soft-haze-lip-blur",
+      "category": "lips",
+      "sub": "Lip Liner",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Matte",
+      "size": "2.5ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Definition that stops lipstick travelling. Blend while it is still moving; it sets quickly once placed.",
+      "shades": [
+        {
+          "name": "Play Date",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1190",
+      "needsReview": true
+    },
+    {
+      "name": "Mello Jello Nourishing Lip Balm",
+      "slug": "mello-jello-nourishing-lip-balm",
+      "category": "lips",
+      "sub": "Lip Balm",
+      "price": 1490,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "5g",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "A nourishing balm that treats while it shines. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Garnet",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1191",
+      "needsReview": true
+    },
+    {
+      "name": "Glam 101 Lipstick & Liner Duo",
+      "slug": "glam-101-lipstick-liner-duo",
+      "category": "eyes",
+      "sub": "Eyeliner",
+      "price": 2290,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "1ml",
+      "isNew": false,
+      "isBestSeller": true,
+      "desc": "A precise line that stays where you put it. Pairs well with the rest of the range without pilling.",
+      "shades": [
+        {
+          "name": "Praline Pie",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1192",
+      "needsReview": true
+    },
+    {
+      "name": "Cocoa Kiss Lip Duo",
+      "slug": "cocoa-kiss-lip-duo",
+      "category": "lips",
+      "sub": "Lip Tint",
+      "price": 2990,
+      "oldPrice": null,
+      "finish": "Natural",
+      "size": "3ml",
+      "isNew": false,
+      "isBestSeller": false,
+      "desc": "Colour that stains and stays. A little goes a long way — start with less than you think you need.",
+      "shades": [
+        {
+          "name": "Cookies N' Milk",
+          "hex": "#d8b79a",
+          "stock": 12
+        }
+      ],
+      "sku": "SGPK-1193",
+      "needsReview": true
+    },
+    {
+      "name": "Silky Glow Lip & Eye Pen",
+      "slug": "silky-glow-lip-eye-pen",
+      "category": "lips",
+      "sub": "Lip Tint",
+      "price": 1990,
+      "oldPrice": 2490,
+      "finish": "Dewy",
+      "size": "3ml",
+      "isNew": true,
+      "isBestSeller": false,
+      "desc": "Long-wear colour without the dryness. Suits everyday wear as easily as a full evening look.",
+      "shades": null,
+      "stock": 20,
+      "sku": "SGPK-1194",
+      "needsReview": true
     }
-  ]
+  ],
+  "updated": "2026-09-08T18:08:36.402Z"
 }
