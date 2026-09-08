@@ -390,19 +390,15 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Shipping" }])}
   <h2>Tracking</h2>
   <p>As soon as your parcel is booked with the courier we send the tracking number to your WhatsApp number. You can also look up your order any time on the <a href="track-order.html">Track Order</a> page using the reference from your confirmation.</p>
 
-  <h2>Payment methods</h2>
-  <ul>
-    <li><strong>Cash on delivery</strong> — pay the courier when the parcel arrives. Available nationwide, no extra fee.</li>
-    <li><strong>Easypaisa / JazzCash</strong> — we send account details on WhatsApp once you place the order.</li>
-    <li><strong>Bank transfer</strong> — same, details shared on confirmation.</li>
-  </ul>
+  <h2>Payment method</h2>
+  <p><strong>Cash on delivery</strong> is the only payment method we accept. You pay the courier when the parcel arrives — there is no advance payment and no extra fee. This applies to every order, everywhere in Pakistan.</p>
 
   <h2>If something goes wrong</h2>
   <ul>
     <li><strong>Parcel not arrived in the estimated window?</strong> Message us with your reference and we will chase the courier the same day.</li>
     <li><strong>Damaged in transit?</strong> Send photos within 48 hours of delivery and we will replace it free, including delivery charges.</li>
     <li><strong>Wrong item received?</strong> Same — photos within 48 hours and we make it right at our cost.</li>
-    <li><strong>Refused or undelivered COD orders</strong> may mean we ask for advance payment on future orders. We are a small business and courier return charges are real.</li>
+    <li><strong>Refused or undelivered orders</strong> may mean we decline future orders from the same number or address. We are a small business and courier return charges are real.</li>
   </ul>
 
   <h2>Questions</h2>
@@ -640,7 +636,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Terms" }])}
   <p>All prices are in Pakistani Rupees and include applicable taxes. Delivery charges are shown at checkout before you confirm. We may change prices at any time, but never after your order is confirmed.</p>
 
   <h2>4. Payment</h2>
-  <p>We accept cash on delivery, Easypaisa, JazzCash and bank transfer. For prepayment methods we share account details after you place the order; your order is dispatched once payment clears.</p>
+  <p>We accept cash on delivery only. You pay the courier in full when the parcel is handed to you; we never ask for payment in advance. If anyone contacts you claiming to be us and asks you to transfer money before delivery, it is not us — please report it.</p>
 
   <h2>5. Delivery</h2>
   <p>Delivery timelines on the <a href="shipping.html">shipping page</a> are estimates, not guarantees. Courier delays, weather and public holidays can affect them. Risk in the goods passes to you on delivery.</p>

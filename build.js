@@ -188,7 +188,7 @@ function buildFooter(base) {
         <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener" aria-label="WhatsApp">${brandIcon("whatsapp")}</a>
       </div>
       <div class="footer__pay">
-        <span>Cash on Delivery</span><span>Easypaisa</span><span>JazzCash</span><span>Bank Transfer</span>
+        <span>Cash on Delivery</span>
       </div>
     </div>
     ${col("Shop", [
@@ -298,19 +298,13 @@ function buildOverlays(base) {
               </div>
 
               <h3 style="margin:22px 0 12px;font-size:15px">Payment method</h3>
+              <!-- Cash on delivery is the only method accepted, so this states
+                   it rather than offering a choice of one. api/orders.js
+                   enforces the same thing server-side. -->
               <div class="radios">
-                <label class="radio is-on">
-                  <input type="radio" name="pay" value="Cash on Delivery" checked>
-                  <span><strong>Cash on Delivery</strong><span>Pay the courier when your parcel arrives.</span></span>
-                </label>
-                <label class="radio">
-                  <input type="radio" name="pay" value="Easypaisa / JazzCash">
-                  <span><strong>Easypaisa / JazzCash</strong><span>We'll send account details on WhatsApp to confirm.</span></span>
-                </label>
-                <label class="radio">
-                  <input type="radio" name="pay" value="Bank Transfer">
-                  <span><strong>Bank Transfer</strong><span>We'll send account details on WhatsApp to confirm.</span></span>
-                </label>
+                <div class="radio is-on is-fixed">
+                  <span><strong>Cash on Delivery</strong><span>Pay the courier when your parcel arrives. No advance payment, no extra fee.</span></span>
+                </div>
               </div>
 
               <button class="btn btn--primary btn--block btn--lg" type="submit" id="coSubmit">Place order</button>
@@ -563,7 +557,7 @@ written.push(
         telephone: SITE.phoneTel,
         address: { "@type": "PostalAddress", addressLocality: "Lahore", addressCountry: "PK" },
         currenciesAccepted: "PKR",
-        paymentAccepted: "Cash on Delivery, Easypaisa, JazzCash, Bank Transfer",
+        paymentAccepted: "Cash on Delivery",
         areaServed: "PK",
         sameAs: [SITE.instagram, SITE.facebook, SITE.tiktok],
       },

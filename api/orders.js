@@ -27,7 +27,11 @@ async function tooManyRecent(phone, ip) {
   return false;
 }
 
-const PAYMENT_METHODS = ["Cash on Delivery", "Easypaisa / JazzCash", "Bank Transfer"];
+/* Cash on delivery is the only method the store accepts. Anything else a
+   client sends is replaced with this, so an edited request cannot record
+   an order as prepaid. Add a method here and to the checkout markup in
+   build.js together — this list is what the server actually honours. */
+const PAYMENT_METHODS = ["Cash on Delivery"];
 
 module.exports = handler(async (req, res) =>
   methods(req, res, {

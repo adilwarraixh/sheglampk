@@ -234,7 +234,7 @@
       group: "Orders & Delivery",
       items: [
         { q: "How long does delivery take?", a: "Orders are dispatched within 1–2 working days. Delivery takes 2–3 days in Lahore, Karachi and Islamabad, and 3–5 days for other cities. You will get a tracking number by WhatsApp as soon as your parcel is booked." },
-        { q: "Do you offer cash on delivery?", a: "Yes. Cash on delivery is available across Pakistan at no extra charge. You pay the courier when the parcel arrives." },
+        { q: "Do you offer cash on delivery?", a: "Yes — and it is the only payment method we accept. Cash on delivery is available across Pakistan at no extra charge. You pay the courier when the parcel arrives, never in advance." },
         { q: "What does delivery cost?", a: "Flat Rs. 250 nationwide, and free on every order over Rs. 3,500." },
         { q: "Can I change or cancel my order?", a: "Yes, as long as it has not been dispatched. Message us on WhatsApp with your order reference and we will sort it out." },
         { q: "How do I track my order?", a: "Use the Track Order page with the reference number from your confirmation, or send the reference to us on WhatsApp." },

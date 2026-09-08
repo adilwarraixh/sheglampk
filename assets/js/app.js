@@ -1083,7 +1083,7 @@
         city: $("#coCity").value.trim(),
         address: $("#coAddress").value.trim(),
         notes: $("#coNotes").value.trim(),
-        payment: ($('input[name="pay"]:checked') || {}).value || "Cash on Delivery",
+        payment: "Cash on Delivery",   // the only method accepted; enforced in api/orders.js
         items: cart.map((l) => {
           const p = byId(l.id);
           return { sku: p.sku, name: p.name, shade: l.shade, qty: l.qty, price: p.price };
