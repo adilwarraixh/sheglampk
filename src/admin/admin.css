@@ -259,3 +259,14 @@ dl.meta dd{word-break:break-word;}
 /* inventory stock setter */
 .stockset{display:flex;gap:7px;align-items:center;}
 .stockset input{width:90px;}
+
+/* ---------- admin accounts ---------- */
+.usergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start;}
+.usercard.is-off{opacity:.72;}
+.useractions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.onetime{display:inline-block;background:#fff;border:1px solid var(--line-strong);border-radius:6px;
+  padding:5px 10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px;letter-spacing:.5px;
+  user-select:all;}
+
+.slidecard.is-off{opacity:.7;}
+.slidecard + .slidecard{margin-top:16px;}

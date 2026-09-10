@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Settings — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Settings</h1>
+      <button class="btn btn--primary btn--sm" id="save">Save changes</button>
+    </header>
+
+    <div class="content">
+      <div class="msg msg--err" id="err" hidden></div>
+      <div class="msg msg--ok" id="ok" hidden></div>
+
+      <section class="card">
+        <div class="card__head"><h2>Store settings</h2></div>
+        <div class="card__body"><div id="fields"></div></div>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <div class="card__head"><h2>Things that are not editable here</h2></div>
+        <div class="card__body">
+          <p class="sub">Deliberately kept out of the portal, because a wrong value would take the shop
+            down and there is no undo from a web form:</p>
+          <ul class="rules" style="margin-top:10px">
+            <li>Database connection — set as an environment variable on the host.</li>
+            <li>Payment method — the shop is cash on delivery only, enforced server-side.</li>
+            <li>Admin roles and permissions — see Admin Account.</li>
+            <li>Domain and hosting — managed at your DNS and hosting provider.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, when } = A;
+  let defs = [];
+
+  A.boot("/admin/settings").then(load).catch(() => {});
+  const showErr = (m) => { const e = $("#err"); e.textContent = m || ""; e.hidden = !m; };
+  const showOk  = (m) => { const e = $("#ok");  e.textContent = m || ""; e.hidden = !m; };
+
+  async function load() {
+    const d = await A.api("/api/admin/settings");
+    defs = d.settings;
+    $("#fields").innerHTML = defs.map(field).join("");
+  }
+
+  function field(s) {
+    const meta = s.updatedAt
+      ? `<span class="sub">last changed ${esc(when(s.updatedAt))}${s.updatedBy ? " by " + esc(s.updatedBy) : ""}</span>`
+      : `<span class="sub">not set — the site default applies</span>`;
+
+    if (s.type === "boolean") {
+      return `<div class="field">
+        <label class="check"><input type="checkbox" data-key="${esc(s.key)}"${s.value ? " checked" : ""}>
+          ${esc(s.label)}</label>${meta}</div>`;
+    }
+    const val = s.value === null || s.value === undefined ? "" : s.value;
+    return `<div class="field">
+      <label for="s-${esc(s.key)}">${esc(s.label)}</label>
+      <input id="s-${esc(s.key)}" data-key="${esc(s.key)}"
+             type="${s.type === "number" ? "number" : "text"}"
+             ${s.type === "number" ? `min="${s.min}" max="${s.max}" step="1"` : ""}
+             value="${esc(String(val))}">
+      ${meta}</div>`;
+  }
+
+  $("#save").addEventListener("click", async () => {
+    showErr(""); showOk("");
+    const settings = {};
+    $$("[data-key]").forEach((el) => {
+      settings[el.dataset.key] = el.type === "checkbox" ? el.checked : el.value;
+    });
+
+    const btn = $("#save");
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      await A.api("/api/admin/settings", { method: "PATCH", body: { settings } });
+      A.toast("Settings saved");
+      showOk("Saved. Values that affect the storefront apply on the next deploy.");
+      load();
+    } catch (e) { showErr(e.message); A.toast(e.message, true); }
+    finally { btn.disabled = false; btn.textContent = "Save changes"; }
+  });
+})();
+</script>
+</body>
+</html>

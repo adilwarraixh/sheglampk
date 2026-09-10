@@ -46,6 +46,18 @@
     {
       "source": "/admin/audit",
       "destination": "/admin/audit.html"
+    },
+    {
+      "source": "/admin/users",
+      "destination": "/admin/users.html"
+    },
+    {
+      "source": "/admin/homepage",
+      "destination": "/admin/homepage.html"
+    },
+    {
+      "source": "/admin/settings",
+      "destination": "/admin/settings.html"
     }
   ],
   "headers": [

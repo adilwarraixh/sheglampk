@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Homepage — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Homepage</h1>
+      <button class="btn btn--primary btn--sm" id="addSlide">+ Add slide</button>
+    </header>
+
+    <div class="content">
+      <div class="msg msg--err" id="err" hidden></div>
+      <div class="msg" id="note">
+        Hero slides play on the homepage in this order. Changes save to the database immediately;
+        the homepage picks them up on the next deploy.
+      </div>
+
+      <div id="slides"></div>
+
+      <section class="card" style="margin-top:16px">
+        <div class="card__head"><h2>Featured, bestsellers and new arrivals</h2></div>
+        <div class="card__body">
+          <p class="sub">These sections are driven by flags on each product, not by a list kept here —
+            so a product can never appear in a homepage section after it has been unpublished.
+            Set them on the product itself.</p>
+          <p style="margin-top:12px"><a class="btn btn--outline btn--sm" href="/admin/products">Open products →</a></p>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, when } = A;
+
+  A.boot("/admin/homepage").then(load).catch(() => {});
+  const showErr = (m) => { const e = $("#err"); e.textContent = m || ""; e.hidden = !m; };
+
+  async function load() {
+    showErr("");
+    const d = await A.api("/api/admin/homepage");
+    $("#slides").innerHTML = d.slides.map(slideCard).join("")
+      || `<div class="empty">No hero slides yet. Add one to fill the homepage.</div>`;
+    bind();
+  }
+
+  function slideCard(s, i) {
+    return `<section class="card slidecard${s.is_enabled ? "" : " is-off"}" data-id="${s.id}">
+      <div class="card__head">
+        <h2>Slide ${i + 1}${s.is_enabled ? "" : ' <span class="pill p-UNPUBLISHED">disabled</span>'}</h2>
+        <span class="sub">updated ${esc(when(s.updated_at))}</span>
+      </div>
+      <div class="card__body">
+        <div class="grid2">
+          <div class="field"><label>Eyebrow <span class="sub">(small line above)</span></label>
+            <input class="f-eyebrow" value="${esc(s.eyebrow || "")}" maxlength="80"></div>
+          <div class="field"><label>Position</label>
+            <input class="f-position" type="number" min="0" max="99" value="${s.position}"></div>
+        </div>
+        <div class="field"><label>Headline <span class="req">*</span>
+            <span class="sub">(a line break here becomes a line break on the homepage)</span></label>
+          <textarea class="f-headline" rows="2" maxlength="200" required>${esc(s.headline || "")}</textarea></div>
+        <div class="field"><label>Subtext</label>
+          <textarea class="f-subtext" rows="2" maxlength="400">${esc(s.subtext || "")}</textarea></div>
+        <div class="grid2">
+          <div class="field"><label>Button text</label>
+            <input class="f-ctaLabel" value="${esc(s.cta_label || "")}" maxlength="60"></div>
+          <div class="field"><label>Button link</label>
+            <input class="f-ctaHref" value="${esc(s.cta_href || "")}" maxlength="300"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Second button text</label>
+            <input class="f-cta2Label" value="${esc(s.cta2_label || "")}" maxlength="60"></div>
+          <div class="field"><label>Second button link</label>
+            <input class="f-cta2Href" value="${esc(s.cta2_href || "")}" maxlength="300"></div>
+        </div>
+        <div class="field"><label>Video <span class="sub">(path on this site, e.g. assets/video/hero-1.mp4)</span></label>
+          <input class="f-videoUrl" value="${esc(s.video_url || "")}" maxlength="400"></div>
+        <div class="grid2">
+          <div class="field"><label>Mobile video <span class="sub">(optional)</span></label>
+            <input class="f-videoMobileUrl" value="${esc(s.video_mobile_url || "")}" maxlength="400"></div>
+          <div class="field"><label>Poster image <span class="sub">(shown before play)</span></label>
+            <input class="f-posterUrl" value="${esc(s.poster_url || "")}" maxlength="400"></div>
+        </div>
+        <label class="check"><input type="checkbox" class="f-enabled"${s.is_enabled ? " checked" : ""}> Enabled</label>
+        <div class="useractions">
+          <button class="btn btn--primary btn--sm js-save" data-id="${s.id}">Save slide</button>
+          <button class="btn btn--danger btn--sm js-del" data-id="${s.id}" data-h="${esc(s.headline || "")}">Remove</button>
+        </div>
+      </div>
+    </section>`;
+  }
+
+  function readCard(card) {
+    const g = (c) => (card.querySelector("." + c) || {}).value;
+    return {
+      id: Number(card.dataset.id) || undefined,
+      position: Number(g("f-position") || 0),
+      isEnabled: card.querySelector(".f-enabled").checked,
+      eyebrow: g("f-eyebrow"), headline: g("f-headline"), subtext: g("f-subtext"),
+      ctaLabel: g("f-ctaLabel"), ctaHref: g("f-ctaHref"),
+      cta2Label: g("f-cta2Label"), cta2Href: g("f-cta2Href"),
+      videoUrl: g("f-videoUrl"), videoMobileUrl: g("f-videoMobileUrl"), posterUrl: g("f-posterUrl"),
+    };
+  }
+
+  function bind() {
+    $$(".js-save").forEach((b) => b.addEventListener("click", async () => {
+      showErr("");
+      const card = b.closest(".slidecard");
+      b.disabled = true; b.textContent = "Saving…";
+      try {
+        await A.api("/api/admin/homepage", { method: "PUT", body: readCard(card) });
+        A.toast("Slide saved");
+        load();
+      } catch (e) { showErr(e.message); b.disabled = false; b.textContent = "Save slide"; }
+    }));
+
+    $$(".js-del").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm(`Remove the slide “${b.dataset.h}”?`)) return;
+      showErr("");
+      try {
+        await A.api("/api/admin/homepage?id=" + b.dataset.id, { method: "DELETE" });
+        A.toast("Slide removed");
+        load();
+      } catch (e) { showErr(e.message); }
+    }));
+  }
+
+  $("#addSlide").addEventListener("click", async () => {
+    showErr("");
+    try {
+      await A.api("/api/admin/homepage", {
+        method: "PUT",
+        body: { headline: "New slide", isEnabled: false, position: 99 },
+      });
+      A.toast("Slide added — fill it in and save");
+      load();
+    } catch (e) { showErr(e.message); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin Account — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Admin Account</h1>
+      <a class="btn btn--outline btn--sm" href="/admin/password">Change my password</a>
+    </header>
+
+    <div class="content">
+      <div class="msg msg--err" id="err" hidden></div>
+      <div class="msg msg--ok" id="ok" hidden></div>
+
+      <div id="cards" class="usergrid"></div>
+
+      <section class="card" style="margin-top:16px">
+        <div class="card__head"><h2>How access works here</h2></div>
+        <div class="card__body">
+          <p class="sub">There are exactly two accounts and they cannot be created or deleted from this screen —
+            that is deliberate, so the portal can never end up with nobody able to manage it.</p>
+          <ul class="rules" style="margin-top:10px">
+            <li class="ok">The Super Admin manages the Admin account: rename, disable, reset password, sign out devices.</li>
+            <li class="ok">Nobody can change their own role or status here, including the Super Admin.</li>
+            <li class="ok">The last active Super Admin cannot be demoted or disabled.</li>
+            <li class="ok">Disabling an account ends its live sessions immediately.</li>
+            <li class="ok">Everyone changes their own password on the Change my password page.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, when } = A;
+  let me = null;
+
+  A.boot("/admin/users").then(load).catch(() => {});
+
+  const showErr = (m) => { const e = $("#err"); e.textContent = m || ""; e.hidden = !m; };
+  const showOk  = (m) => { const e = $("#ok");  e.innerHTML = m || "";   e.hidden = !m; };
+
+  async function load() {
+    showErr("");
+    const d = await A.api("/api/admin/users");
+    me = d.me;
+    $("#cards").innerHTML = d.users.map(cardFor).join("");
+    bind();
+  }
+
+  function cardFor(u) {
+    const isMe = String(u.id) === String(me);
+    const roleLabel = u.role === "SUPER_ADMIN" ? "Super Admin" : "Admin";
+    const disabled = u.status !== "ACTIVE";
+
+    return `<section class="card usercard${disabled ? " is-off" : ""}">
+      <div class="card__head">
+        <h2>${esc(u.display_name)} ${isMe ? '<span class="pill">you</span>' : ""}</h2>
+        <span class="pill ${u.role === "SUPER_ADMIN" ? "p-PUBLISHED" : "p-UNPUBLISHED"}">${esc(roleLabel)}</span>
+      </div>
+      <div class="card__body">
+        <dl class="meta">
+          <dt>Username</dt><dd><code>${esc(u.username)}</code></dd>
+          <dt>Status</dt><dd><span class="pill ${disabled ? "p-OUT_OF_STOCK" : "p-IN_STOCK"}">${esc(u.status)}</span></dd>
+          <dt>Last signed in</dt><dd>${u.last_login_at ? esc(when(u.last_login_at, true)) : '<span class="sub">never</span>'}</dd>
+          <dt>Password set</dt><dd>${u.password_changed_at ? esc(when(u.password_changed_at)) : '<span class="sub">—</span>'}
+            ${u.must_change_password ? ' <span class="pill p-DRAFT">must change</span>' : ""}</dd>
+          <dt>Signed in on</dt><dd>${u.active_sessions} device${u.active_sessions === 1 ? "" : "s"}</dd>
+        </dl>
+
+        ${isMe
+          ? `<p class="sub">You cannot change your own role or status here. That is what stops an account
+               quietly promoting itself, and it applies to the Super Admin too.</p>`
+          : `<div class="useractions">
+               <button class="btn btn--outline btn--sm js-rename" data-id="${u.id}" data-name="${esc(u.display_name)}">Rename</button>
+               <button class="btn btn--outline btn--sm js-reset" data-id="${u.id}" data-user="${esc(u.username)}">Reset password</button>
+               <button class="btn btn--outline btn--sm js-revoke" data-id="${u.id}" data-user="${esc(u.username)}">Sign out all devices</button>
+               ${disabled
+                 ? `<button class="btn btn--primary btn--sm js-status" data-id="${u.id}" data-status="ACTIVE" data-user="${esc(u.username)}">Enable</button>`
+                 : `<button class="btn btn--danger btn--sm js-status" data-id="${u.id}" data-status="DISABLED" data-user="${esc(u.username)}">Disable</button>`}
+             </div>`}
+      </div>
+    </section>`;
+  }
+
+  function bind() {
+    $$(".js-rename").forEach((b) => b.addEventListener("click", async () => {
+      const name = prompt("Display name for this account:", b.dataset.name);
+      if (name === null) return;
+      await send({ id: +b.dataset.id, displayName: name }, "Name updated");
+    }));
+
+    $$(".js-status").forEach((b) => b.addEventListener("click", async () => {
+      const to = b.dataset.status;
+      const msg = to === "DISABLED"
+        ? `Disable ${b.dataset.user}?\n\nThey are signed out immediately and cannot sign in again until you enable the account.`
+        : `Enable ${b.dataset.user}?`;
+      if (!confirm(msg)) return;
+      await send({ id: +b.dataset.id, status: to }, to === "DISABLED" ? "Account disabled" : "Account enabled");
+    }));
+
+    $$(".js-revoke").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm(`Sign ${b.dataset.user} out of every device?\n\nThey can sign back in with their password.`)) return;
+      await send({ id: +b.dataset.id, action: "revoke-sessions" }, "Signed out everywhere");
+    }));
+
+    $$(".js-reset").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm(`Reset the password for ${b.dataset.user}?\n\nTheir current password stops working straight away and they are signed out. You will get a one-time password to give them.`)) return;
+      showErr(""); showOk("");
+      try {
+        const r = await A.api("/api/admin/users", {
+          method: "PATCH", body: { id: +b.dataset.id, action: "reset-password" },
+        });
+        /* Shown once, here, and nowhere else — it is not stored readable
+           and not written into the audit trail. */
+        showOk(`<b>One-time password for ${esc(r.username)}:</b> <code class="onetime">${esc(r.password)}</code>` +
+               `<br><span class="sub">Give this to them directly, not over email or WhatsApp. ` +
+               `They must set their own password the first time they sign in. It will not be shown again.</span>`);
+        load();
+      } catch (e) { showErr(e.message); }
+    }));
+  }
+
+  async function send(body, okMsg) {
+    showErr(""); showOk("");
+    try {
+      await A.api("/api/admin/users", { method: "PATCH", body });
+      A.toast(okMsg);
+      load();
+    } catch (e) { showErr(e.message); A.toast(e.message, true); }
+  }
+})();
+</script>
+</body>
+</html>

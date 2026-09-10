@@ -13,7 +13,9 @@
     "db:import-pdf": "node db/import-pdf-catalogue.js",
     "db:export": "node db/export-catalogue.js",
     "db:passwords": "node db/issue-temp-passwords.js",
-    "test": "node test-auth.js && node test-api.js"
+    "test": "node test-auth.js && node test-api.js",
+    "db:seed-hero": "node db/seed-hero.js",
+    "db:seed-settings": "node db/seed-settings.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"
