@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Product — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1 id="heading">Product</h1>
+      <a class="btn btn--outline btn--sm" href="/admin/products">← All products</a>
+    </header>
+
+    <div class="content">
+      <div class="msg msg--err" id="err" hidden></div>
+      <div class="msg" id="note" hidden></div>
+
+      <form id="form" class="prodform">
+        <div class="prodform__main">
+
+          <section class="card">
+            <div class="card__head"><h2>Product information</h2></div>
+            <div class="card__body">
+              <div class="field"><label for="name">Product name <span class="req">*</span></label>
+                <input id="name" required maxlength="200"></div>
+              <div class="field"><label for="shortDescription">Short description
+                <span class="sub">(used on cards and in search results)</span></label>
+                <textarea id="shortDescription" rows="2" maxlength="400"></textarea></div>
+              <div class="field"><label for="description">Full description</label>
+                <textarea id="description" rows="8" maxlength="20000"></textarea></div>
+              <div class="grid2">
+                <div class="field"><label for="brand">Brand</label><input id="brand" value="SHEGLAM" maxlength="80"></div>
+                <div class="field"><label for="categoryId">Category</label><select id="categoryId"></select></div>
+              </div>
+              <div class="grid2">
+                <div class="field"><label for="subcategory">Subcategory</label>
+                  <input id="subcategory" list="subs" maxlength="80"><datalist id="subs"></datalist></div>
+                <div class="field"><label for="finish">Finish</label><input id="finish" maxlength="80"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head"><h2>Pricing</h2></div>
+            <div class="card__body">
+              <div class="grid3">
+                <div class="field"><label for="price">Regular price</label>
+                  <input id="price" type="number" min="0" step="1" inputmode="numeric"></div>
+                <div class="field"><label for="salePrice">Sale price <span class="sub">(optional)</span></label>
+                  <input id="salePrice" type="number" min="0" step="1" inputmode="numeric"></div>
+                <div class="field"><label for="currency">Currency</label>
+                  <input id="currency" value="PKR" maxlength="8"></div>
+              </div>
+              <p class="sub" id="priceHint">A product cannot be published without a regular price.</p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head"><h2>Inventory</h2></div>
+            <div class="card__body">
+              <div class="grid3">
+                <div class="field"><label for="sku">SKU</label><input id="sku" maxlength="60"></div>
+                <div class="field"><label for="stockQuantity">Stock quantity</label>
+                  <input id="stockQuantity" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+                <div class="field"><label for="lowStockThreshold">Low stock at</label>
+                  <input id="lowStockThreshold" type="number" min="0" step="1" value="5" inputmode="numeric"></div>
+              </div>
+              <div class="field"><label for="size">Size / net content</label><input id="size" maxlength="60"></div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head"><h2>Shades &amp; variants</h2>
+              <button type="button" class="btn btn--outline btn--sm" id="addVariant">+ Add shade</button></div>
+            <div class="card__body">
+              <div id="variants"></div>
+              <p class="sub">Leave empty for products sold in a single option. Stock here is per shade.</p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head"><h2>Images</h2>
+              <button type="button" class="btn btn--outline btn--sm" id="addImage">+ Add image</button></div>
+            <div class="card__body">
+              <div id="images"></div>
+              <p class="sub">The first image is the main one. Paths are relative to the site,
+                e.g. <code>/assets/img/products/your-file.png</code>. Upload is not wired up yet —
+                add the file to that folder and reference it here.</p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head"><h2>SEO</h2></div>
+            <div class="card__body">
+              <div class="field"><label for="slug">URL slug</label><input id="slug" maxlength="100">
+                <p class="sub" id="slugHint"></p></div>
+              <div class="field"><label for="seoTitle">SEO title</label><input id="seoTitle" maxlength="200"></div>
+              <div class="field"><label for="seoDescription">SEO description</label>
+                <textarea id="seoDescription" rows="2" maxlength="400"></textarea></div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="prodform__side">
+          <section class="card">
+            <div class="card__head"><h2>Status</h2></div>
+            <div class="card__body">
+              <div class="field"><select id="status"></select></div>
+              <p class="sub" id="statusHint"></p>
+              <label class="check"><input type="checkbox" id="isFeatured"> Featured</label>
+              <label class="check"><input type="checkbox" id="isBestseller"> Bestseller</label>
+              <label class="check"><input type="checkbox" id="isNewArrival"> New arrival</label>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head"><h2>Preview</h2></div>
+            <div class="card__body"><div id="preview" class="pvcard"></div></div>
+          </section>
+
+          <div class="stickysave">
+            <button class="btn btn--primary btn--block" type="submit" id="save">Save product</button>
+            <a class="btn btn--outline btn--block" href="/admin/products" style="margin-top:8px">Cancel</a>
+            <p class="sub" id="viewLive" hidden style="margin-top:10px;text-align:center"></p>
+          </div>
+        </aside>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, money } = A;
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const isNew = !id;
+  let meta = { statuses: [], categories: [], subcategories: [] };
+  let readOnly = false;
+
+  const F = (k) => $("#" + k);
+  const val = (k) => F(k).value.trim();
+
+  A.boot("/admin/products").then(async () => {
+    readOnly = !A.can("products:update");
+    $("#heading").textContent = isNew ? "Add new product" : "Edit product";
+
+    if (isNew) {
+      const m = await A.api("/api/admin/products?limit=1");
+      meta = { statuses: m.statuses, categories: m.categories, subcategories: m.subcategories };
+      fillMeta();
+      renderVariants([]); renderImages([]);
+      F("status").value = "DRAFT";
+      onChange();
+    } else {
+      const r = await A.api("/api/admin/products/" + encodeURIComponent(id));
+      meta = { statuses: r.statuses, categories: r.categories, subcategories: r.subcategories };
+      fillMeta();
+      fill(r.product);
+    }
+
+    if (readOnly) {
+      // Ashba can read a product but not save it. The API refuses too.
+      $$("#form input, #form select, #form textarea").forEach((el) => (el.disabled = true));
+      $("#save").remove();
+      $("#addVariant").remove(); $("#addImage").remove();
+      note("You have view-only access to the catalogue.");
+    }
+  }).catch(() => {});
+
+  function fillMeta() {
+    F("status").innerHTML = meta.statuses.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+    F("categoryId").innerHTML = `<option value="">— none —</option>` +
+      meta.categories.filter((c) => !c.parent_id)
+        .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+    $("#subs").innerHTML = meta.subcategories.map((s) => `<option value="${esc(s)}">`).join("");
+  }
+
+  function fill(p) {
+    F("name").value = p.name || "";
+    F("shortDescription").value = p.short_description || "";
+    F("description").value = p.description || "";
+    F("brand").value = p.brand || "SHEGLAM";
+    F("categoryId").value = p.category_id || "";
+    F("subcategory").value = p.subcategory || "";
+    F("finish").value = p.finish || "";
+    F("price").value = p.price === null ? "" : Number(p.price);
+    F("salePrice").value = p.sale_price === null ? "" : Number(p.sale_price);
+    F("currency").value = p.currency || "PKR";
+    F("sku").value = p.sku || "";
+    F("stockQuantity").value = p.stock_quantity;
+    F("lowStockThreshold").value = p.low_stock_threshold;
+    F("size").value = p.size || "";
+    F("slug").value = p.slug || "";
+    F("seoTitle").value = p.seo_title || "";
+    F("seoDescription").value = p.seo_description || "";
+    F("status").value = p.status;
+    F("isFeatured").checked = p.is_featured;
+    F("isBestseller").checked = p.is_bestseller;
+    F("isNewArrival").checked = p.is_new_arrival;
+    renderVariants(p.variants || []);
+    renderImages(p.images || []);
+    if (p.import_notes) note("Flagged during import: " + p.import_notes);
+    const live = $("#viewLive");
+    if (p.status === "PUBLISHED") {
+      live.innerHTML = `<a href="/product/${esc(p.slug)}.html" target="_blank" rel="noopener">View on the shop ↗</a>`;
+      live.hidden = false;
+    }
+    onChange();
+  }
+
+  /* ---------- variants ---------- */
+  function variantRow(v = {}) {
+    return `<div class="vrow" data-id="${v.id || ""}">
+      <input class="v-name"  placeholder="Shade name" value="${esc(v.variant_name || v.name || "")}" maxlength="120">
+      <input class="v-hex"   type="color" value="${esc(v.hex || "#e9e9ec")}" title="Swatch colour">
+      <input class="v-sku"   placeholder="SKU" value="${esc(v.sku || "")}" maxlength="60">
+      <input class="v-stock" type="number" min="0" step="1" placeholder="Stock" value="${v.stock_quantity != null ? v.stock_quantity : (v.stock != null ? v.stock : 0)}">
+      <button type="button" class="btn btn--outline btn--sm v-del" aria-label="Remove shade">✕</button>
+    </div>`;
+  }
+  function renderVariants(list) {
+    $("#variants").innerHTML = list.map(variantRow).join("");
+    bindRemovers("#variants", ".v-del");
+  }
+  function readVariants() {
+    return $$("#variants .vrow").map((r) => ({
+      id: r.dataset.id || null,
+      name: r.querySelector(".v-name").value.trim(),
+      hex: r.querySelector(".v-hex").value,
+      sku: r.querySelector(".v-sku").value.trim() || null,
+      stock: Number(r.querySelector(".v-stock").value || 0),
+    })).filter((v) => v.name);
+  }
+
+  /* ---------- images ---------- */
+  function imageRow(im = {}) {
+    const url = typeof im === "string" ? im : (im.url || "");
+    return `<div class="irow">
+      <input class="i-url" placeholder="/assets/img/products/file.png" value="${esc(url)}" maxlength="500">
+      <input class="i-alt" placeholder="Alt text" value="${esc(im.alt || "")}" maxlength="200">
+      <img class="i-thumb" src="${esc(url)}" alt="" onerror="this.style.visibility='hidden'">
+      <button type="button" class="btn btn--outline btn--sm i-del" aria-label="Remove image">✕</button>
+    </div>`;
+  }
+  function renderImages(list) {
+    $("#images").innerHTML = list.map(imageRow).join("");
+    bindRemovers("#images", ".i-del");
+    $$("#images .i-url").forEach((el) => el.addEventListener("input", () => {
+      const t = el.parentElement.querySelector(".i-thumb");
+      t.src = el.value; t.style.visibility = "visible";
+      onChange();
+    }));
+  }
+  function readImages() {
+    return $$("#images .irow").map((r) => ({
+      url: r.querySelector(".i-url").value.trim(),
+      alt: r.querySelector(".i-alt").value.trim() || null,
+    })).filter((i) => i.url);
+  }
+
+  function bindRemovers(scope, sel) {
+    $$(scope + " " + sel).forEach((b) => b.addEventListener("click", () => {
+      b.parentElement.remove(); onChange();
+    }));
+  }
+
+  const addV = $("#addVariant"); if (addV) addV.addEventListener("click", () => {
+    $("#variants").insertAdjacentHTML("beforeend", variantRow());
+    bindRemovers("#variants", ".v-del"); onChange();
+  });
+  const addI = $("#addImage"); if (addI) addI.addEventListener("click", () => {
+    $("#images").insertAdjacentHTML("beforeend", imageRow());
+    renderImagesRebind();
+  });
+  function renderImagesRebind() {
+    bindRemovers("#images", ".i-del");
+    $$("#images .i-url").forEach((el) => {
+      el.oninput = () => {
+        const t = el.parentElement.querySelector(".i-thumb");
+        t.src = el.value; t.style.visibility = "visible"; onChange();
+      };
+    });
+  }
+
+  /* ---------- live preview + hints ---------- */
+  function onChange() {
+    const price = val("price") === "" ? null : Number(val("price"));
+    const sale = val("salePrice") === "" ? null : Number(val("salePrice"));
+    const status = F("status").value;
+    const img = ($$("#images .i-url")[0] || {}).value || "";
+
+    $("#preview").innerHTML = `
+      <div class="pvcard__img">${img
+        ? `<img src="${esc(img)}" alt="" onerror="this.replaceWith(document.createTextNode('image not found'))">`
+        : `<span class="sub">no image</span>`}</div>
+      <b>${esc(val("name") || "Untitled product")}</b>
+      <div class="sub">${esc(val("subcategory") || "")}</div>
+      <div class="pvcard__price">${price === null ? `<span class="sub">no price</span>`
+        : (sale ? `${money(sale)} <s class="sub">${money(price)}</s>` : money(price))}</div>
+      <button class="btn btn--primary btn--sm btn--block" type="button" disabled>Add to Cart</button>`;
+
+    const hint = {
+      DRAFT: "Not visible to customers. Use this while you are still writing the listing.",
+      PUBLISHED: "Live on the shop and purchasable.",
+      UNPUBLISHED: "Hidden from the shop. Nothing is lost — you can publish it again.",
+      ARCHIVED: "Retired. Hidden from the shop and from search, but kept so past orders still work.",
+    }[status] || "";
+    $("#statusHint").textContent = hint;
+
+    $("#priceHint").textContent = (status === "PUBLISHED" && price === null)
+      ? "This product has no price, so it cannot be published yet."
+      : "A product cannot be published without a regular price.";
+    $("#priceHint").style.color = (status === "PUBLISHED" && price === null) ? "var(--err)" : "";
+
+    const s = val("slug") || slugify(val("name"));
+    $("#slugHint").textContent = s ? `Customers will see /product/${s}.html` : "";
+  }
+  const slugify = (s) => String(s).toLowerCase().replace(/['’]/g, "").replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  $("#form").addEventListener("input", onChange);
+  $("#form").addEventListener("change", onChange);
+
+  const showErr = (m) => { const e = $("#err"); e.textContent = m || ""; e.hidden = !m; };
+  const note = (m) => { const e = $("#note"); e.textContent = m || ""; e.hidden = !m; };
+
+  /* ---------- save ---------- */
+  $("#form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (readOnly) return;
+    showErr("");
+
+    const body = {
+      name: val("name"),
+      shortDescription: val("shortDescription"),
+      description: val("description"),
+      brand: val("brand"),
+      categoryId: F("categoryId").value || null,
+      subcategory: val("subcategory"),
+      finish: val("finish"),
+      size: val("size"),
+      price: val("price") === "" ? null : Number(val("price")),
+      salePrice: val("salePrice") === "" ? null : Number(val("salePrice")),
+      currency: val("currency"),
+      sku: val("sku"),
+      stockQuantity: Number(val("stockQuantity") || 0),
+      lowStockThreshold: Number(val("lowStockThreshold") || 0),
+      status: F("status").value,
+      isFeatured: F("isFeatured").checked,
+      isBestseller: F("isBestseller").checked,
+      isNewArrival: F("isNewArrival").checked,
+      slug: val("slug"),
+      seoTitle: val("seoTitle"),
+      seoDescription: val("seoDescription"),
+      variants: readVariants(),
+      images: readImages(),
+    };
+
+    if (!body.name) { showErr("A product name is required."); F("name").focus(); return; }
+
+    const btn = $("#save");
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      const r = isNew
+        ? await A.api("/api/admin/products", { method: "POST", body })
+        : await A.api("/api/admin/products/" + encodeURIComponent(id), { method: "PATCH", body });
+      A.toast("Saved");
+      location.href = "/admin/products?saved=" + encodeURIComponent(r.product.name);
+    } catch (err) {
+      showErr(err.message);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      btn.disabled = false; btn.textContent = "Save product";
+    }
+  });
+})();
+</script>
+</body>
+</html>

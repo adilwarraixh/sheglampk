@@ -10,7 +10,9 @@
     { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/admin/login", "destination": "/admin/login.html" },
     { "source": "/admin/orders", "destination": "/admin/orders.html" },
-    { "source": "/admin/password", "destination": "/admin/password.html" }
+    { "source": "/admin/password", "destination": "/admin/password.html" },
+    { "source": "/admin/products", "destination": "/admin/products.html" },
+    { "source": "/admin/product", "destination": "/admin/product.html" }
   ],
   "headers": [
     {

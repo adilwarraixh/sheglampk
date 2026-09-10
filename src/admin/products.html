@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Products — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Products</h1>
+      <a class="btn btn--primary btn--sm" href="/admin/product?new=1" id="addBtn">+ Add New Product</a>
+    </header>
+
+    <div class="content">
+      <div class="bar">
+        <input type="search" id="q" placeholder="Search name, SKU, brand, category or tag…">
+        <select id="status"><option value="">All statuses</option></select>
+        <select id="category"><option value="">All categories</option></select>
+        <select id="stock">
+          <option value="">Any stock</option>
+          <option value="in">In stock</option>
+          <option value="low">Low stock</option>
+          <option value="out">Out of stock</option>
+        </select>
+        <select id="flag">
+          <option value="">All products</option>
+          <option value="featured">Featured</option>
+          <option value="bestseller">Bestseller</option>
+          <option value="new">New arrival</option>
+          <option value="sale">On sale</option>
+        </select>
+        <select id="sort">
+          <option value="updated">Recently updated</option>
+          <option value="newest">Newest first</option>
+          <option value="name">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="price">Price low–high</option>
+          <option value="price-desc">Price high–low</option>
+          <option value="stock">Stock low–high</option>
+        </select>
+        <span class="spacer"></span>
+        <span class="sub" id="count"></span>
+      </div>
+
+      <div class="msg" id="notice" hidden></div>
+
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr>
+              <th style="width:64px">Image</th><th>Product</th><th>Category</th>
+              <th class="num">Price</th><th class="num">Stock</th><th>Status</th>
+              <th>Flags</th><th>Updated</th><th style="width:150px">Actions</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div style="display:flex;justify-content:center;gap:10px;padding:18px 0">
+        <button class="btn btn--outline btn--sm" id="prev">← Previous</button>
+        <button class="btn btn--outline btn--sm" id="next">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, money, when } = A;
+  let offset = 0; const LIMIT = 25;
+  let loaded = false;
+
+  A.boot("/admin/products").then(async () => {
+    if (!A.can("products:create")) {
+      // Ashba may read the catalogue but not change it; hiding the button
+      // matches what the API will actually allow.
+      const b = $("#addBtn"); if (b) b.remove();
+    }
+    await load();
+  }).catch(() => {});
+
+  async function load() {
+    const p = new URLSearchParams();
+    if ($("#q").value.trim()) p.set("q", $("#q").value.trim());
+    ["status", "category", "stock", "flag", "sort"].forEach((k) => {
+      if ($("#" + k).value) p.set(k, $("#" + k).value);
+    });
+    p.set("limit", LIMIT); p.set("offset", offset);
+
+    const data = await A.api("/api/admin/products?" + p.toString());
+
+    if (!loaded) {
+      $("#status").innerHTML = '<option value="">All statuses</option>' +
+        data.statuses.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+      $("#category").innerHTML = '<option value="">All categories</option>' +
+        data.categories.map((c) => `<option value="${esc(c.slug)}">${esc(c.name)} (${c.product_count})</option>`).join("");
+      loaded = true;
+    }
+
+    const from = data.total ? offset + 1 : 0;
+    const to = Math.min(offset + data.products.length, data.total);
+    $("#count").textContent = data.total ? `${from}–${to} of ${data.total}` : "No products";
+
+    $("#rows").innerHTML = data.products.length
+      ? data.products.map(rowFor).join("")
+      : `<tr><td colspan="9"><div class="empty">No products match those filters.</div></td></tr>`;
+
+    bindRowActions();
+    $("#prev").disabled = offset === 0;
+    $("#next").disabled = offset + LIMIT >= data.total;
+  }
+
+  function rowFor(p) {
+    const price = p.price === null
+      ? `<span class="pill p-DRAFT">no price</span>`
+      : (p.sale_price
+          ? `${money(p.sale_price)} <span class="sub" style="text-decoration:line-through">${money(p.price)}</span>`
+          : money(p.price));
+
+    const low = p.stock_quantity === 0 ? "p-OUT_OF_STOCK"
+      : (p.stock_quantity <= p.low_stock_threshold ? "p-LOW_STOCK" : "p-IN_STOCK");
+
+    const flags = [
+      p.is_featured ? "Featured" : null,
+      p.is_bestseller ? "Bestseller" : null,
+      p.is_new_arrival ? "New" : null,
+    ].filter(Boolean).map((f) => `<span class="pill">${f}</span>`).join(" ") || `<span class="sub">—</span>`;
+
+    const canEdit = A.can("products:update");
+    const actions = canEdit
+      ? `<a class="btn btn--outline btn--sm" href="/admin/product?id=${p.id}">Edit</a>
+         <button class="btn btn--outline btn--sm js-menu" data-id="${p.id}" data-status="${esc(p.status)}"
+                 data-name="${esc(p.name)}" aria-label="More actions">⋯</button>`
+      : `<a class="btn btn--outline btn--sm" href="/admin/product?id=${p.id}">View</a>`;
+
+    return `<tr data-id="${p.id}">
+      <td data-label="Image">${p.image
+        ? `<img src="${esc(p.image)}" alt="" style="width:46px;height:46px;object-fit:cover;border-radius:6px;background:#f2f2f4">`
+        : `<div style="width:46px;height:46px;border-radius:6px;background:#f2f2f4"></div>`}</td>
+      <td data-label="Product"><b>${esc(p.name)}</b>
+        <div class="sub">${esc(p.sku || "no SKU")}${p.variant_count ? ` · ${p.variant_count} shades` : ""}</div>
+        ${p.import_notes ? `<div class="sub" style="color:var(--warn)">⚠ ${esc(p.import_notes)}</div>` : ""}</td>
+      <td data-label="Category">${esc(p.category_name || "—")}<div class="sub">${esc(p.subcategory || "")}</div></td>
+      <td data-label="Price" class="num">${price}</td>
+      <td data-label="Stock" class="num"><span class="pill ${low}">${p.stock_quantity}</span></td>
+      <td data-label="Status"><span class="pill p-${esc(p.status)}">${esc(p.status)}</span></td>
+      <td data-label="Flags">${flags}</td>
+      <td data-label="Updated"><span class="sub">${esc(when(p.updated_at))}</span></td>
+      <td data-label="Actions" style="white-space:nowrap">${actions}</td>
+    </tr>`;
+  }
+
+  function bindRowActions() {
+    $$(".js-menu").forEach((btn) => btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openMenu(btn);
+    }));
+  }
+
+  /* A tiny action menu rather than five buttons per row, which does not
+     fit on a phone. */
+  function openMenu(btn) {
+    document.querySelectorAll(".rowmenu").forEach((m) => m.remove());
+    const id = btn.dataset.id, status = btn.dataset.status, name = btn.dataset.name;
+    const items = [];
+    if (status !== "PUBLISHED") items.push(["Publish", () => setStatus(id, "PUBLISHED", name)]);
+    if (status === "PUBLISHED") items.push(["Unpublish", () => setStatus(id, "UNPUBLISHED", name)]);
+    if (A.can("products:create")) items.push(["Duplicate", () => duplicate(id, name)]);
+    if (status !== "ARCHIVED" && A.can("products:delete")) items.push(["Archive", () => archive(id, name)]);
+    if (status === "ARCHIVED") items.push(["Restore as draft", () => setStatus(id, "DRAFT", name)]);
+
+    const menu = document.createElement("div");
+    menu.className = "rowmenu";
+    menu.innerHTML = items.map((it, i) => `<button data-i="${i}">${esc(it[0])}</button>`).join("");
+    document.body.appendChild(menu);
+    const r = btn.getBoundingClientRect();
+    menu.style.top = (window.scrollY + r.bottom + 6) + "px";
+    menu.style.left = Math.max(8, window.scrollX + r.right - menu.offsetWidth) + "px";
+    menu.querySelectorAll("button").forEach((b) =>
+      b.addEventListener("click", () => { menu.remove(); items[+b.dataset.i][1](); }));
+    setTimeout(() => document.addEventListener("click", function once() {
+      menu.remove(); document.removeEventListener("click", once);
+    }), 0);
+  }
+
+  const notice = (m, bad) => {
+    const el = $("#notice");
+    el.textContent = m; el.hidden = !m;
+    el.className = "msg" + (bad ? " msg--err" : " msg--ok");
+  };
+
+  async function setStatus(id, status, name) {
+    try {
+      await A.api("/api/admin/products/" + id, { method: "PATCH", body: { status } });
+      A.toast(`${name} is now ${status.toLowerCase()}`);
+      notice(status === "PUBLISHED"
+        ? `“${name}” is live on the shop now.`
+        : `“${name}” has been removed from the shop.`, false);
+      load();
+    } catch (e) { A.toast(e.message, true); notice(e.message, true); }
+  }
+
+  async function duplicate(id, name) {
+    try {
+      const r = await A.api("/api/admin/products/" + id, { method: "POST", body: { action: "duplicate" } });
+      A.toast("Duplicated");
+      location.href = "/admin/product?id=" + r.product.id;
+    } catch (e) { A.toast(e.message, true); }
+  }
+
+  async function archive(id, name) {
+    if (!confirm(`Archive “${name}”?\n\nIt disappears from the shop but is not deleted — past orders keep working. You can restore it later.`)) return;
+    try {
+      await A.api("/api/admin/products/" + id, { method: "DELETE" });
+      A.toast("Archived");
+      notice(`“${name}” archived. Past orders that include it are unaffected.`, false);
+      load();
+    } catch (e) { A.toast(e.message, true); notice(e.message, true); }
+  }
+
+  let debounce;
+  $("#q").addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => { offset = 0; load(); }, 250);
+  });
+  ["status", "category", "stock", "flag", "sort"].forEach((k) =>
+    $("#" + k).addEventListener("change", () => { offset = 0; load(); }));
+  $("#prev").addEventListener("click", () => { offset = Math.max(0, offset - LIMIT); load(); });
+  $("#next").addEventListener("click", () => { offset += LIMIT; load(); });
+})();
+</script>
+</body>
+</html>
