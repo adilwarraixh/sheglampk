@@ -6,6 +6,16 @@
    ========================================================= */
 const P = __dirname.split(String.fromCharCode(92)).join("/");
 const { sql } = require(P + "/db/client");
+
+/* Force the mail provider off BEFORE anything reads the config. Once a
+   real provider is configured, this suite would otherwise send live email
+   to the shop's inbox on every run — dozens of messages about orders that
+   do not exist. The failure path is exercised deliberately further down
+   with a deliberately bad key. */
+process.env.MAIL_PROVIDER = "none";
+delete process.env.RESEND_API_KEY;
+delete process.env.BREVO_API_KEY;
+
 const auth = require(P + "/lib/auth");
 const notify = require(P + "/lib/order-emails");
 
@@ -117,6 +127,28 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
   t("order survives an unsent notification",
     !!order && notifs.every((n) => n.status !== "SENT"), "no provider configured → recorded, order intact");
   t("customer still got a success response", r1.body.reference === ref && !r1.body.error);
+
+  /* A provider that is configured but broken: the send must fail, the
+     failure must be recorded with a retry scheduled, and the order must be
+     completely unaffected. */
+  process.env.MAIL_PROVIDER = "resend";
+  process.env.RESEND_API_KEY = "re_deliberately_invalid_key_for_test";
+  const failing = notifs.find((n) => n.type === "admin_new_order");
+  await sql`UPDATE email_notifications SET status='PENDING', attempt_count=0 WHERE id=${failing.id}`;
+  const attempt = await notify.attempt(failing.id);
+  const [afterFail] = await sql`
+    SELECT status, attempt_count, error_message, next_attempt_at > now() AS backed_off
+      FROM email_notifications WHERE id = ${failing.id}`;
+  t("a broken provider fails rather than throwing", attempt.ok === false, attempt.error);
+  t("failure recorded on the notification", afterFail.status === "PENDING" && afterFail.attempt_count === 1,
+    `${afterFail.status}, attempt ${afterFail.attempt_count}`);
+  t("retry scheduled with backoff", afterFail.backed_off === true);
+  t("error stored is safe to show", !!afterFail.error_message && !/re_deliberately/.test(afterFail.error_message),
+    afterFail.error_message);
+  const [orderStillThere] = await sql`SELECT status FROM orders WHERE id = ${order.id}`;
+  t("the order is untouched by the mail failure", orderStillThere.status === "PENDING");
+  process.env.MAIL_PROVIDER = "none";
+  delete process.env.RESEND_API_KEY;
 
   /* ---------- Test 3: duplicate checkout ---------- */
   const key = "idem-" + Date.now();
