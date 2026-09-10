@@ -25,3 +25,6 @@ HANDOVER.txt
 
 # Dependencies — restored by `npm install` (Vercel runs it at build time)
 node_modules/
+
+# Generated deployment secrets — never commit
+DEPLOY-ENV.txt
