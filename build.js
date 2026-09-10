@@ -501,7 +501,16 @@ ${crumbHTML(crumbs)}
       ${sortControls()}
       <div class="chips" id="chips"></div>
       <div class="grid" id="grid">
-        ${items.map((p) => card(p, "")).join("\n")}
+        ${items.length
+          ? items.map((p) => card(p, "")).join("\n")
+          : /* A feed can legitimately be empty — a new shop has no
+               bestsellers and nothing reduced yet. Say so and offer a way
+               onward, rather than leaving filters above a blank page. */
+            `<div class="emptyfeed">
+               <p>Nothing here just yet.</p>
+               <p class="sub">${esc(opts.emptyNote || "Check back soon — this section fills up as the shop grows.")}</p>
+               <a class="btn btn--primary" href="index.html">Browse all products</a>
+             </div>`}
       </div>
       <div class="loadmore" id="loadMore" style="display:none">
         <button class="btn btn--outline" id="loadMoreBtn">View more</button>
@@ -601,8 +610,10 @@ CATEGORIES.forEach((c) => {
 /* ---- Feed pages ---- */
 [
   { file: "new-in.html", page: "new", feed: "new", title: "New In", blurb: "The latest arrivals, added to the shelf this season." },
-  { file: "best-sellers.html", page: "best", feed: "best", title: "Bestsellers", blurb: "The products our customers reorder the most." },
-  { file: "sale.html", page: "sale", feed: "sale", title: "Sale", blurb: "Reduced while stocks last — no code needed." },
+  { file: "best-sellers.html", page: "best", feed: "best", title: "Bestsellers", blurb: "The products our customers reorder the most.",
+    emptyNote: "We mark bestsellers once real orders start coming in, so this stays honest." },
+  { file: "sale.html", page: "sale", feed: "sale", title: "Sale", blurb: "Reduced while stocks last — no code needed.",
+    emptyNote: "There are no reductions running at the moment." },
 ].forEach((f) => {
   const items = FEEDS[f.feed]();
   const crumbs = [{ label: "Home", href: "index.html" }, { label: f.title }];
@@ -612,7 +623,7 @@ CATEGORIES.forEach((c) => {
       page: f.page,
       title: `${f.title} | ${SITE.name}`,
       description: `${f.blurb} Genuine SHEGLAM products in Pakistan with cash on delivery.`,
-      body: listingBody({ title: f.title, blurb: f.blurb, crumbs, feed: f.feed, items }),
+      body: listingBody({ title: f.title, blurb: f.blurb, crumbs, feed: f.feed, items, emptyNote: f.emptyNote }),
       jsonLd: [breadcrumbLd(crumbs.map((x, i) => ({ ...x, href: i ? f.file : "" }))), itemListLd(items, f.title)],
     })
   );
@@ -638,7 +649,7 @@ ${crumbHTML([{ label: "Home", href: "index.html" }, { label: "Collections" }])}
         <span>${esc(c.sub)}</span>
         <h3>${esc(c.title)}</h3>
         <p>${esc(c.blurb)}</p>
-        <em>Shop ${c.ids.length} products</em>
+        <em>Shop ${c.ids.length} product${c.ids.length === 1 ? "" : "s"}</em>
       </a>`).join("")}
   </div>
 </div>`,

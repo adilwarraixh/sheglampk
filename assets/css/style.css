@@ -744,3 +744,8 @@ h1,h2,h3,h4,h5{font-weight:600;line-height:1.2;}
 @media print{
   .header,.footer,.wafloat,.backtop,.drawer,.modal,.overlay{display:none!important;}
 }
+
+/* Empty product feed (no bestsellers yet, nothing on sale, etc.) */
+.emptyfeed{grid-column:1/-1;text-align:center;padding:56px 20px;display:grid;gap:10px;justify-items:center;}
+.emptyfeed p{font-size:17px;font-weight:500;}
+.emptyfeed .sub{font-size:14px;color:var(--muted);max-width:420px;font-weight:400;}

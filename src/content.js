@@ -50,7 +50,17 @@ const accordion = (items) => `
    HOME
    ========================================================= */
 function home() {
-  const best = FEEDS.best().slice(0, 10);
+  /* The main grid must never render empty. Merchandising flags come from
+     the admin, and a new shop has no bestsellers yet — the homepage was
+     shipping with no products in its HTML at all, visible only to
+     JavaScript-enabled visitors once the catalogue synced. Falling back to
+     the catalogue keeps the page honest for crawlers and JS-off readers. */
+  const flaggedBest = FEEDS.best();
+  const best = (flaggedBest.length ? flaggedBest : FEEDS.all()).slice(0, 10);
+  const bestHead = flaggedBest.length
+    ? ["Worth the hype", "Bestsellers", ["View all", "best-sellers.html"]]
+    : ["Shop the range", "Our products", null];
+
   const fresh = FEEDS.new().slice(0, 5);
   const onSale = FEEDS.sale().slice(0, 5);
 
@@ -136,7 +146,7 @@ function home() {
 
 <section class="section section--alt">
   <div class="container">
-    ${sechead("Worth the hype", "Bestsellers", ["View all", "best-sellers.html"])}
+    ${sechead(bestHead[0], bestHead[1], bestHead[2])}
     <div class="grid">${best.map((p) => card(p, "")).join("")}</div>
   </div>
 </section>
@@ -150,7 +160,7 @@ function home() {
           (c) => `
       <a class="colcard" href="${c.page}" style="background:linear-gradient(140deg,${c.tint},${c.tint}cc)">
         <span>${esc(c.sub)}</span><h3>${esc(c.title)}</h3><p>${esc(c.blurb)}</p>
-        <em>Shop ${c.ids.length} products</em>
+        <em>Shop ${c.ids.length} product${c.ids.length === 1 ? "" : "s"}</em>
       </a>`
         )
         .join("")}
