@@ -11,6 +11,7 @@
 const crypto = require("crypto");
 const { sql } = require("./db/client.js");
 const auth = require("./lib/auth.js");
+const { snapshotCredentials, restoreCredentials } = require("./test-helpers.js");
 const rbac = require("./lib/rbac.js");
 
 let pass = 0, fail = 0;
@@ -28,6 +29,10 @@ const rnd = () => "Tst" + crypto.randomBytes(9).toString("hex") + "9";
   const PW_ASHBA = rnd();
 
   /* ---------- fixtures ---------- */
+  /* Taken before anything is written; put back by the cleanup, so a run
+     never changes the password somebody actually signs in with. */
+  const savedCredentials = await snapshotCredentials();
+
   await sql`DELETE FROM login_attempts WHERE username IN ('umama','ashba','ghost')`;
 
   for (const [username, display, role, pw] of [
@@ -161,7 +166,7 @@ const rnd = () => "Tst" + crypto.randomBytes(9).toString("hex") + "9";
   check("logout cookie expires immediately", /Max-Age=0/.test(auth.clearCookie()));
 
   /* ---------- leave the accounts locked ---------- */
-  await sql`UPDATE users SET must_change_password = true`;
+  await restoreCredentials(savedCredentials);
   await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL`;
 
   console.log("\n" + results.join("\n"));

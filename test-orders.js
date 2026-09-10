@@ -18,6 +18,7 @@ delete process.env.BREVO_API_KEY;
 
 const auth = require(P + "/lib/auth");
 const notify = require(P + "/lib/order-emails");
+const { snapshotCredentials, restoreCredentials } = require("./test-helpers.js");
 
 function mockRes() {
   return {
@@ -49,6 +50,7 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
     const s = await auth.createSession(r.id, { ip: "127.0.0.1", userAgent: "otest" });
     return { id: r.id, cookie: `sgpk_session=${s.token}`, csrf: s.csrf, token: s.token };
   };
+  const savedCredentials = await snapshotCredentials();
   const U = await mk("umama"), A = await mk("ashba");
   const R = {
     checkout: "/api/orders.js",
@@ -262,7 +264,7 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
                p.stock_quantity)`;
   await auth.revokeSession(U.token);
   await auth.revokeSession(A.token);
-  await sql`UPDATE users SET must_change_password = true`;
+  await restoreCredentials(savedCredentials);
 
   console.log(out.join("\n"));
   const failed = out.filter((l) => l.startsWith("✗")).length;

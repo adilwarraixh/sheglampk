@@ -68,6 +68,14 @@ const cookieFrom = (res) => String(res.getHeader("set-cookie") || "").split(";")
   const NEW_A = "Nw" + crypto.randomBytes(8).toString("hex") + "3";
 
   /* ---------- fixtures ---------- */
+  /* Snapshot the real credentials first. The suite has to set known
+     passwords to exercise login, but these are live accounts somebody
+     signs into — the cleanup puts these rows back exactly as found, so a
+     test run neither leaves a usable credential behind nor changes the
+     password the owner chose. */
+  const savedCredentials = await sql`
+    SELECT id, password_hash, password_salt, must_change_password FROM users`;
+
   await sql`DELETE FROM login_attempts`;
   for (const [u, d, r, pw] of [["umama","Umama","SUPER_ADMIN",PW_U], ["ashba","Ashba","ADMIN",PW_A]]) {
     const { salt, hash } = auth.hashPassword(pw);
@@ -321,14 +329,25 @@ const cookieFrom = (res) => String(res.getHeader("set-cookie") || "").split(";")
   await sql`DELETE FROM customers WHERE phone IN ('03220305000','03005550000')`;
   await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL`;
 
-  /* The suite has just set known passwords on real accounts. Overwrite each
-     with an unrecoverable random value and force a change, so a test run
-     against production never leaves a usable credential behind.
-     Re-issue proper ones with: node db/issue-temp-passwords.js */
+  /* Put the credentials back exactly as they were found. The passwords the
+     suite set are discarded with the rows they were written to, so nothing
+     usable is left behind — and the owner's own password still works when
+     they next sign in. An account created during the run has no snapshot,
+     so it gets an unrecoverable value instead. */
+  const savedById = new Map(savedCredentials.map((u) => [String(u.id), u]));
   for (const u of await sql`SELECT id FROM users`) {
-    const { salt, hash } = auth.hashPassword(crypto.randomBytes(32).toString("hex"));
-    await sql`UPDATE users SET password_hash = ${hash}, password_salt = ${salt},
-                               must_change_password = true WHERE id = ${u.id}`;
+    const prior = savedById.get(String(u.id));
+    if (prior) {
+      await sql`
+        UPDATE users SET password_hash = ${prior.password_hash},
+                         password_salt = ${prior.password_salt},
+                         must_change_password = ${prior.must_change_password}
+         WHERE id = ${u.id}`;
+    } else {
+      const { salt, hash } = auth.hashPassword(crypto.randomBytes(32).toString("hex"));
+      await sql`UPDATE users SET password_hash = ${hash}, password_salt = ${salt},
+                                 must_change_password = true WHERE id = ${u.id}`;
+    }
   }
 
   console.log("\n" + lines.join("\n"));

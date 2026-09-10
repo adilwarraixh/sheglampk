@@ -3,6 +3,7 @@
 const P = __dirname.split(String.fromCharCode(92)).join("/");
 const fs=require("fs"), zlib=require("zlib");
 const { sql } = require(P+"/db/client"); const auth = require(P+"/lib/auth");
+const { snapshotCredentials, restoreCredentials } = require("./test-helpers.js");
 function mockRes(){return{statusCode:200,headers:{},body:null,chunks:[],
   setHeader(k,v){this.headers[k.toLowerCase()]=v;},getHeader(k){return this.headers[k.toLowerCase()];},
   end(p){if(Buffer.isBuffer(p)){this.raw=p;}else{try{this.body=JSON.parse(p);}catch{this.body=p;}}}};}
@@ -16,6 +17,7 @@ const b64=b=>b.toString("base64");
     await sql`UPDATE users SET must_change_password=false WHERE id=${r.id}`;
     const s=await auth.createSession(r.id,{ip:"127.0.0.1",userAgent:"mtest"});
     return {cookie:`sgpk_session=${s.token}`,csrf:s.csrf,token:s.token};};
+  const savedCredentials = await snapshotCredentials();
   const U=await mk("umama"), A=await mk("ashba");
   const R={up:"/api/admin/upload.js", get:"/api/media/[id].js"};
   const out=[]; const t=(l,c,x="")=>out.push(`${c?"✓":"✗"} ${l}${x?"  → "+x:""}`);
@@ -94,7 +96,7 @@ const b64=b=>b.toString("base64");
 
   await sql`DELETE FROM media WHERE id=${travId}`;
   await auth.revokeSession(U.token); await auth.revokeSession(A.token);
-  await sql`UPDATE users SET must_change_password=true`;
+  await restoreCredentials(savedCredentials);
   console.log(out.join("\n"));
   const f=out.filter(l=>l.startsWith("✗")).length;
   console.log(`\n${out.length-f} passed, ${f} failed`);
