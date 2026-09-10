@@ -97,12 +97,21 @@
 
           <section class="card">
             <div class="card__head"><h2>Images</h2>
-              <button type="button" class="btn btn--outline btn--sm" id="addImage">+ Add image</button></div>
+              <div style="display:flex;gap:8px">
+                <button type="button" class="btn btn--primary btn--sm" id="uploadBtn">Upload image</button>
+                <button type="button" class="btn btn--outline btn--sm" id="addImage">Add by path</button>
+              </div></div>
             <div class="card__body">
+              <input type="file" id="filePicker" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+              <div class="dropzone" id="dropzone">
+                <p><b>Drop images here</b> or use Upload image</p>
+                <p class="sub">JPEG, PNG, WebP or GIF, up to 3MB each. SVG is not accepted.</p>
+              </div>
+              <div id="uploadMsg" class="msg" hidden></div>
               <div id="images"></div>
-              <p class="sub">The first image is the main one. Paths are relative to the site,
-                e.g. <code>/assets/img/products/your-file.png</code>. Upload is not wired up yet —
-                add the file to that folder and reference it here.</p>
+              <p class="sub">The first image is the main one. Uploaded files are stored in the
+                database and served from <code>/api/media/…</code>; you can also point at a file
+                already in <code>/assets/img/products/</code>.</p>
             </div>
           </section>
 
@@ -293,6 +302,80 @@
     $("#images").insertAdjacentHTML("beforeend", imageRow());
     renderImagesRebind();
   });
+
+  /* ---------- upload ---------- */
+  const uploadMsg = (m, bad) => {
+    const el = $("#uploadMsg");
+    if (!el) return;
+    el.innerHTML = m || ""; el.hidden = !m;
+    el.className = "msg" + (bad ? " msg--err" : "");
+  };
+
+  /* The server re-checks everything below from the actual bytes. These
+     checks only save the user a round trip on an obvious mistake. */
+  const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const MAX_BYTES = 3 * 1024 * 1024;
+
+  async function uploadFiles(fileList) {
+    const files = Array.prototype.slice.call(fileList || []);
+    if (!files.length) return;
+    uploadMsg("");
+
+    let done = 0;
+    const problems = [];
+    for (const file of files) {
+      if (!ACCEPTED.includes(file.type)) {
+        problems.push(`${file.name}: ${file.type || "unknown type"} is not accepted`);
+        continue;
+      }
+      if (file.size > MAX_BYTES) {
+        problems.push(`${file.name}: ${(file.size / 1048576).toFixed(1)}MB is over the 3MB limit`);
+        continue;
+      }
+      uploadMsg(`Uploading ${esc(file.name)}…`);
+      try {
+        const data = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = () => reject(new Error("Could not read that file"));
+          r.readAsDataURL(file);
+        });
+        const res = await A.api("/api/admin/upload", {
+          method: "POST", body: { data, filename: file.name },
+        });
+        // Land it as a new image row, ready to save with the product.
+        $("#images").insertAdjacentHTML("beforeend",
+          imageRow({ url: res.media.url, alt: val("name") || file.name.replace(/\.[^.]+$/, "") }));
+        renderImagesRebind();
+        onChange();
+        done++;
+        if (res.media.deduped) problems.push(`${file.name}: already uploaded, reused the existing copy`);
+      } catch (e) {
+        problems.push(`${file.name}: ${e.message}`);
+      }
+    }
+
+    const parts = [];
+    if (done) parts.push(`<b>${done} image${done === 1 ? "" : "s"} added.</b> Save the product to keep them.`);
+    if (problems.length) parts.push(problems.map(esc).join("<br>"));
+    uploadMsg(parts.join("<br>"), problems.length && !done);
+  }
+
+  const picker = $("#filePicker"), upBtn = $("#uploadBtn"), zone = $("#dropzone");
+  if (upBtn && picker) {
+    upBtn.addEventListener("click", () => picker.click());
+    picker.addEventListener("change", () => { uploadFiles(picker.files); picker.value = ""; });
+  }
+  if (zone) {
+    ["dragenter", "dragover"].forEach((ev) => zone.addEventListener(ev, (e) => {
+      e.preventDefault(); zone.classList.add("is-over");
+    }));
+    ["dragleave", "drop"].forEach((ev) => zone.addEventListener(ev, (e) => {
+      e.preventDefault(); zone.classList.remove("is-over");
+    }));
+    zone.addEventListener("drop", (e) => uploadFiles(e.dataTransfer && e.dataTransfer.files));
+    zone.addEventListener("click", () => picker && picker.click());
+  }
   function renderImagesRebind() {
     bindRemovers("#images", ".i-del");
     $$("#images .i-url").forEach((el) => {

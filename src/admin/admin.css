@@ -270,3 +270,10 @@ dl.meta dd{word-break:break-word;}
 
 .slidecard.is-off{opacity:.7;}
 .slidecard + .slidecard{margin-top:16px;}
+
+/* ---------- image upload ---------- */
+.dropzone{border:2px dashed var(--line-strong);border-radius:var(--r);padding:22px;text-align:center;
+  cursor:pointer;transition:.18s;margin-bottom:12px;background:var(--bg);}
+.dropzone:hover,.dropzone.is-over{border-color:var(--pink);background:var(--pink-soft);}
+.dropzone p{margin:0;font-size:14px;}
+.dropzone .sub{margin-top:4px;}
