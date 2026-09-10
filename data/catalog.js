@@ -37,9 +37,9 @@
 
     address: "Lahore, Pakistan",
     email: "hello@sheglampk.online",
-    phoneShow: "+92 322 0305000",
-    phoneTel: "+923220305000",
-    whatsapp: "923220305000",
+    phoneShow: "+44 7862 614763",
+    phoneTel: "+447862614763",
+    whatsapp: "447862614763",
     instagram: "https://www.instagram.com/sheglampk",
     facebook: "https://www.facebook.com/sheglampk",
     tiktok: "https://www.tiktok.com/@sheglampk",

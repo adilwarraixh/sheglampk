@@ -571,7 +571,9 @@ written.push(
         url: SITE.domain,
         description: SITE.tagline,
         email: SITE.email,
-        telephone: SITE.phoneTel,
+        /* No telephone in the structured data. The number is a WhatsApp
+           line, and publishing it as `telephone` invites Google to offer a
+           call action that nobody answers. Contact is WhatsApp or email. */
         address: { "@type": "PostalAddress", addressLocality: "Lahore", addressCountry: "PK" },
         currenciesAccepted: "PKR",
         paymentAccepted: "Cash on Delivery",

@@ -1,421 +1,443 @@
 # SHEGLAM PK
 
-A static storefront for retailing genuine SHEGLAM cosmetics in Pakistan. Built as plain
-HTML/CSS/JS with a small Node build step — no framework, no hosting runtime, no monthly bill.
+An independent online shop selling genuine SHEGLAM cosmetics in Pakistan, with a
+built-in admin portal. Cash on delivery only.
+
+- **Shop:** https://www.sheglampk.online
+- **Admin:** https://www.sheglampk.online/admin/login
+- **Contact:** WhatsApp +44 7862 614763 · hello@sheglampk.online
+
+Two people run it: `umama` (Super Admin) and `ashba` (Admin). Both work from any
+device against the same live database.
 
 ---
 
-## Run it
+## Contents
 
-```bash
-node build.js
-```
-
-```bash
-node server.js
-```
-
-Then open <http://localhost:5599>.
-
-`build.js` regenerates every page from the catalog. **Run it after any content change** or the
-site will still show the old data.
-
----
-
-## Admin portal
-
-```bash
-node admin-server.js
-```
-
-Then open <http://localhost:5600>.
-
-**First run** shows a "Create your admin login" screen — pick a username and password and you
-are in. After that it asks you to sign in.
-
-### The login
-
-- The password is stored as a **salted scrypt hash** in `data/admin-auth.json`. The password
-  itself is never written anywhere. scrypt is deliberately slow (~40ms per guess here), so
-  offline cracking is expensive even if that file leaked.
-- Minimum 10 characters, with a letter and a number; obvious passwords are rejected.
-- Sessions are random 256-bit tokens in an **HttpOnly, SameSite=Strict** cookie, so no other
-  site in your browser can drive the API. They expire after 8 hours idle, and restarting the
-  server signs you out.
-- **Five wrong attempts locks sign-in for 15 minutes**, correct password included. The error
-  never says whether it was the username or the password that was wrong.
-- Every `/api/*` route except the auth endpoints returns 401 without a session, and any page
-  load redirects to the login.
-
-Forgotten the password? There is no recovery by design — reset it:
-
-```bash
-node set-admin-password.js
-```
-
-`data/admin-auth.json` is in `.gitignore`. Never commit or deploy it.
-
-> ⚠ The login is defence in depth, not a licence to expose this. `admin-server.js` still binds
-> to `127.0.0.1` only. Do not deploy it or forward port 5600.
-
-- **Dashboard** — product and order counts, order value, and what needs attention:
-  sold-out shades, low stock, missing photos. Shade-level stock is tracked separately, because
-  a sold-out shade never shows up in a product's total.
-- **Products** — add, edit and delete products, with shades, hex swatches, per-shade stock,
-  prices, sale prices and badges. Search and filter by category, stock or status.
-- **Orders** — list, search and filter orders; open one to see the full address and line items,
-  change its status (Received → Confirmed → Packed → Shipped → Delivered), add a tracking
-  number and an internal note, or message the customer on WhatsApp in one click.
-
-### The admin portal is not part of your website
-
-It runs on your computer, at `localhost:5600`. It is deliberately excluded from the deployed
-site (`deploy-prepare.js` copies from an allow-list and fails the build if anything from
-`admin/` slips in), and there is no URL on your live domain that reaches it. That is on purpose:
-a static host cannot run it anyway — it needs to write files, and Vercel's filesystem is
-read-only — and if it *were* published, anyone could find the login page.
-
-To use it, start it on your machine. To manage products from another device, that needs a
-hosted backend and a database, which is a different build (see *What still needs a backend*).
-
-### Three buttons, three different things
-
-| Button | What it does |
-|--------|--------------|
-| **Save** | Writes `data/products.json`. Nothing else changes. |
-| **Build preview** | Saves, then rebuilds the site on this computer. Check it at `localhost:5599`. |
-| **Publish live** | Saves, rebuilds, then **commits and pushes** — your host redeploys and customers see the change in a minute or two. |
-
-Every save takes a timestamped backup into `data/backups/` (20 kept), and invalid data is
-rejected before anything is written.
-
-A save that would empty the catalogue, or delete more than half of it at once, is refused —
-that is almost always a bug or a truncated payload rather than something you meant.
-
-### Homepage hero videos
-
-Three video slides, configured in `data/hero.json` and edited in **Admin → Homepage**.
-
-The supplied clips are **576×1024 (9:16 portrait)**. Stretching those across a 16:9 desktop
-hero would crop away roughly 90% of each frame, so:
-
-- **Desktop** — the video keeps its own portrait frame beside the copy. Nothing is cropped.
-- **Mobile** — the video goes full-bleed behind the copy, which is where 9:16 belongs.
-
-Behaviour: muted, looping, `playsinline`, autoplay best-effort. Only the active slide ever
-plays; leaving a slide pauses and rewinds it. Slide 2 preloads while slide 1 plays and slide 3
-is not fetched until needed, so a page load costs ~2.4MB of video rather than 8.2MB. Playback
-stops when the hero scrolls away or the tab is hidden, and `prefers-reduced-motion` disables
-autoplay and auto-advance entirely.
-
-To replace a video: **Admin → Homepage → Replace** (MP4/WebM, 40MB limit; the upload validates
-the file's actual bytes, not just its extension). Or drop a file into `assets/video/` and point
-the slide at it.
-
-For a real poster frame, add `"poster": "assets/img/hero/slide-1.jpg"` to a slide. Without one
-a lightweight brand gradient is used, so nothing flashes while the video loads.
-
-### Making orders show up here
-
-Email tells you an order happened; it cannot be listed, filtered or marked "Shipped". For that,
-orders also post to a Google Apps Script that appends them to a spreadsheet you own — free, no
-server, and you keep the data.
-
-Setup is in **`tools/orders-apps-script.gs`** — about five minutes. Then set `ordersApi` and
-`ordersApiKey` in `data/catalog.js`, rebuild, and press **Sync from site** in the Orders tab.
-
-Until that is set up the portal still works — use **Import** to paste an order in by hand.
+- [How it fits together](#how-it-fits-together)
+- [Running it locally](#running-it-locally)
+- [Environment variables](#environment-variables)
+- [Database setup](#database-setup)
+- [Deploying](#deploying)
+- [The admin portal](#the-admin-portal)
+- [Day-to-day tasks](#day-to-day-tasks)
+- [Order and email flow](#order-and-email-flow)
+- [Tests](#tests)
+- [Troubleshooting](#troubleshooting)
+- [Security notes](#security-notes)
+- [What is not built yet](#what-is-not-built-yet)
 
 ---
 
 ## How it fits together
 
 ```
-data/products.json   ← PRODUCTS: edited by the admin portal (or by hand)
-data/products.js     ← GENERATED from the JSON for the browser — do not edit
-data/catalog.js      ← config, taxonomy, reviews, collections, FAQ
-data/templates.js    ← shared markup builders (used by BOTH Node and the browser)
-src/content.js       ← the written pages: home, about, FAQ, shipping, returns, terms…
-build.js             ← generates all 84 pages + sitemap.xml + robots.txt
-check-images.js      ← product photography checklist
-test-endpoint.js     ← verifies order delivery actually works
-admin-server.js      ← LOCAL ONLY: admin API + auth. never deploy
-admin-auth.js        ← scrypt password hashing / session helpers
-set-admin-password.js ← set or reset the admin login
-admin/index.html     ← the admin portal UI
-admin/login.html     ← sign-in / first-run setup
-data/admin-auth.json ← salted password hash. NEVER commit or deploy
-data/orders.json     ← local order store, written by the admin server
-tools/photo-import.html   ← drag-and-drop photo cropper / renamer
-tools/orders-apps-script.gs ← paste into Google Apps Script for order sync
-assets/css/style.css ← all styling
-assets/js/app.js     ← cart, filters, checkout, reviews, search
-server.js            ← local preview only (not needed in production)
+  Admin portal  ──writes──▶  Neon Postgres  ◀──reads──  /api/*  ──▶  Storefront
+                                   │
+                                   └── build time ──▶ data/products.json ──▶ static pages
 ```
 
-**Do not deploy:** `admin-server.js`, `admin-auth.js`, `set-admin-password.js`, `admin/`,
-`data/admin-auth.json`, `data/orders.json`, `data/backups/`, `server.js`.
-The public site is the built HTML plus `assets/`, `data/catalog.js`, `data/products.js` and
-`product/`.
+**The database is the source of truth.** Nothing about the catalogue is hard-coded.
 
-Everything else in the root — `index.html`, `face.html`, `product/*.html` — is **generated
-output**. Do not edit those by hand; your changes will be wiped on the next build.
+The storefront is pre-rendered static HTML, so it is fast and works with JavaScript
+disabled. `db/export-catalogue.js` writes the catalogue into `data/products.json` at
+build time, and `build.js` bakes that into the pages.
 
-### Why there is a build step
+After the page loads, `assets/js/catalogue-sync.js` refetches `/api/products` and
+swaps the grid if it differs. That is why **publishing a product does not need a
+deploy** — it appears on the next page load. The baked HTML is the floor, not the
+ceiling: if the API is unreachable the page keeps what the build gave it.
 
-Product grids, the header and the footer are baked into the HTML rather than injected by
-JavaScript. Google indexes real content, and the shop still works if a script fails to load.
-`data/templates.js` is shared by the build and the browser, so a product card is defined once.
+| Layer | Where |
+|---|---|
+| Storefront pages | generated at the repo root by `build.js` |
+| Page content | `src/content.js`, `src/pages/` |
+| Site config | `data/catalog.js` (name, contact, delivery thresholds) |
+| Admin portal | `src/admin/*.html` → served at `/admin/*` |
+| API | `api/**` (Vercel serverless functions) |
+| Business logic | `lib/**` |
+| Database | `db/**`, migrations in `db/migrations/` |
+| Deployed output | `dist/` (built by `deploy-prepare.js`, never committed) |
+
+`deploy-prepare.js` copies to an **allow-list**, so a new tooling or credential file
+is excluded by default and the build hard-fails if anything sensitive reaches `dist/`.
 
 ---
 
-## Brand
+## Running it locally
 
-### Colours
-
-Set once at the top of `assets/css/style.css`:
-
-| Role | Colour | Hex |
-|------|--------|-----|
-| Background | White | `#FFFFFF` |
-| Text | Deep Black | `#171717` |
-| Solid button background | Bold Beauty Pink | `#E83E70` |
-| Solid button label | White | `#FFFFFF` |
-| Outline button | Deep Black | `#171717` |
-| Shadow | Soft Black 10% | `#0000001A` |
-
-Pink is reserved for actions — buttons, prices on offer, active nav, badges. The announcement
-bar and newsletter band are Deep Black so the pink keeps its impact. Change `--pink` in
-`:root` and it updates everywhere.
-
-### Logo
-
-The wordmark renders as live text (`SHEGLAM.PK`, with the sparkle over the G), so it stays
-sharp at any size and costs no extra request.
-
-To use your original artwork instead, save it as **`assets/img/logo.png`** and rebuild —
-`build.js` detects the file and swaps it in across the header and footer automatically.
-Export at roughly 360×80px with a transparent background.
-
----
-
-## ⚠ Before you go live
-
-### 1. Make orders actually reach you
-
-Until this is done, an order reaches you **only** if the customer taps "Confirm on WhatsApp".
-The checkout tells them that, but it is a leak — do this first.
-
-**Setup (about a minute):**
-
-1. Open <https://web3forms.com> and enter the email address you want orders sent to.
-   No password, no account to manage — they email you an access key.
-2. Paste both values into `data/catalog.js`:
-   ```js
-   orderEndpoint:  "https://api.web3forms.com/submit",
-   orderAccessKey: "the-key-they-emailed-you",
-   ```
-3. Verify it before trusting it with a real order:
-   ```bash
-   node test-endpoint.js
-   ```
-   It sends one clearly-marked `[TEST]` submission and reports whether it was accepted, with
-   the likely cause if not. Check your inbox — then rebuild:
-   ```bash
-   node build.js
-   ```
-
-**Formspree** works too: set `orderEndpoint` to your form URL (`https://formspree.io/f/xxxxxxx`)
-and leave `orderAccessKey` empty. The site detects the provider from the URL and uses the right
-field names for each.
-
-**Is the access key a secret?** No. It ships in the page source either way and can only submit
-to your own inbox — Web3Forms designed it to be public. It is not a password.
-
-**What you receive.** Orders arrive as a readable summary — reference, customer, phone, full
-address, payment method, itemised list with shades, and the total. If the customer gave an
-email, replies go straight to them.
-
-**If sending fails.** A failed submission (customer offline, flaky mobile data, endpoint down)
-is queued in the browser and retried automatically on the next page load and whenever the
-connection returns. The customer is told their order is saved and still nudged toward WhatsApp.
-Nothing is silently dropped.
-
-### 2. Add your product photos
-
-Products with no photo show a generated **studio tile** — a clean, on-brand graphic in the
-product's own shade colour, marked "photo coming soon". Nothing is broken and no other brand's
-product is ever shown, but tiles do not sell as well as real photographs.
-
-**Use the import tool.** Start the server and open:
-
-```
-http://localhost:5599/tools/photo-import.html
-```
-
-Drag in photos straight off your phone or camera. For each one it:
-
-- matches the file to a product (fuzzy — `IMG_2026 Lashlighter Up Out Mascara.jpg` lands on
-  `lashlighter-up-out-mascara`), with a dropdown to correct anything it gets wrong
-- centre-crops to portrait and resizes to exactly 1000×1200
-- compresses to JPEG and renames to the exact filename the site expects
-
-Then "Download all renamed", move the files into `assets/img/products/`, and:
+Requires Node 18+ and a Neon Postgres database.
 
 ```bash
-node check-images.js   # confirms they are all seen, flags any too small or wrong shape
-node build.js
+npm install
+cp .env.example .env.local     # then fill it in — see below
+npm run db:migrate             # create the tables
+npm run db:passwords           # issue admin passwords -> HANDOVER.txt
+npm run build                  # export catalogue, generate pages, assemble dist/
+npm run dev                    # http://localhost:5601
 ```
 
-**Shooting tip:** a phone on a plain white surface next to a window beats a light box. Shoot
-portrait, fill about two-thirds of the frame, and keep the same background across every shot so
-the grid looks consistent.
+- Shop: http://localhost:5601
+- Admin: http://localhost:5601/admin/login
 
-`.jpg`, `.png`, `.webp` and `.avif` all work — the build uses whichever extension it finds.
+`npm run dev` serves `dist/` and dispatches `/api/*` to the same handler modules
+Vercel runs, so the portal can be exercised end to end before deploying.
 
-Prefer to do it by hand? `node check-images.js` prints every missing filename grouped by
-category, so you can shoot a whole set in one sitting.
-
-### 3. Fill in your real details
-
-In `data/catalog.js` → `SITE`: `domain`, `email`, `phoneShow`, `phoneTel`, `whatsapp`,
-`instagram`, `facebook`, `tiktok`. The WhatsApp number drives every order button, so get it
-right.
-
-### 4. Add analytics
-
-Set `ga4` and `metaPixel` in `data/catalog.js`. Both stay completely inert until you add an ID.
-Add-to-cart, checkout and purchase events are already wired up.
+**Rebuild after changing** `data/catalog.js`, `src/content.js`, `build.js`, or anything
+in `assets/`. Product and hero changes made in the admin portal need `npm run build`
+only to update the *static* copy — they are live on the site immediately.
 
 ---
 
-## Getting real reviews
+## Environment variables
 
-The `REVIEWS` object in `data/catalog.js` is empty, and product pages show an honest
-"Be the first to review" state. That is the correct starting point for a new shop.
+Local values go in `.env.local` (gitignored). Production values go in the **Vercel
+dashboard**, never in a file. `.env.example` documents every one.
 
-**Do not write reviews yourself.** Inventing customer feedback — or marking `v: 1` (verified)
-on a review you have not matched to a real order — is illegal advertising under Pakistan's
-Consumer Protection Acts, and it is grounds for removal from Meta, Google and TikTok commerce.
-It is also the single most common reason small beauty pages get reported.
+| Variable | Required | What it does |
+|---|---|---|
+| `DATABASE_URL` | **yes** | Neon connection string. Everything fails without it. |
+| `MAIL_PROVIDER` | for email | `resend`, `brevo`, `smtp`, or `none` |
+| `RESEND_API_KEY` | if resend | From resend.com. ~36 chars, starts `re_` |
+| `SMTP_FROM` | for email | Must be on a domain verified with the provider |
+| `ORDER_NOTIFICATION_EMAIL` | for email | Where new-order alerts go |
+| `SITE_BASE_URL` | for email | Used for the customer's tracking link |
+| `ADMIN_BASE_URL` | for email | Used for the "View order" link in the alert |
+| `CRON_SECRET` | production | Authenticates the notification retry sweep |
 
-Genuine reviews are not hard to collect:
+`MAIL_PROVIDER` defaults to `none`, which is deliberate: **an unconfigured shop still
+takes orders.** Notifications are recorded and can be sent later from the portal.
 
-1. **Ask on delivery day.** Send one WhatsApp message 3–4 days after delivery: *"Hi [name],
-   your order arrived on [date] — how are you finding the [product]? If you have 30 seconds,
-   a line or two really helps other customers."* Expect roughly a 20–30% reply rate.
-2. **Offer something small.** Rs. 200 off the next order for a review with a photo. Legal, as
-   long as the review itself is honest and you never make the discount conditional on it being
-   positive.
-3. **Reuse what you already have.** Existing praise in your Instagram DMs or WhatsApp is real
-   feedback. Ask the customer's permission, then add it with their name as they gave it.
-4. **The on-site form works.** "Write a review" on any product page emails the review to you
-   (once `orderEndpoint` is set).
+Check the mail setup any time:
 
-When a genuine one arrives, add it to `REVIEWS` keyed by product slug and rebuild:
-
-```js
-const REVIEWS = {
-  "color-bloom-liquid-blush": [
-    { a: "Ayesha K.", r: 5, s: "Pink Slip",
-      t: "So pigmented — one drop does both cheeks.",
-      d: "2026-09-14", v: 1 },
-  ],
-};
+```bash
+npm run mail:test                    # sends to ORDER_NOTIFICATION_EMAIL
+npm run mail:test you@example.com    # or somewhere else
 ```
 
-`a` name · `r` rating 1–5 · `s` shade bought (drives the shade filter) · `t` their words ·
-`d` date · `v` 1 only if you have confirmed a matching order.
-
-Ratings, the star breakdown, filters and pagination all appear automatically once a product
-has reviews.
+It reports what is configured and sends a real email. It never prints a key — only
+whether one is present and how long it is.
 
 ---
 
-## Editing the catalog
+## Database setup
 
-Everything lives in the `RAW` array in `data/catalog.js`:
-
-```js
-{ n: "Product Name", c: "face", s: "Blush", p: 1990, o: 2490, f: "Matte", z: "6ml",
-  best: 1, isNew: 1,
-  sh: [S("Pink Slip", "#e88fa0"), S("On Call", "#d9607a", 3)],
-  d: "Two honest sentences about what it does and who it suits." },
+```bash
+npm run db:migrate          # apply migrations (transactional, checksummed)
+npm run db:seed             # create the two admin accounts
+npm run db:passwords        # issue one-time passwords -> HANDOVER.txt
+npm run db:seed-settings    # store settings from data/catalog.js
+npm run db:seed-hero        # move hero slides from data/hero.json into the database
+npm run db:import-pdf       # load the initial catalogue (dry run)
+npm run db:import-pdf -- --confirm
+npm run db:export           # database -> data/products.json + data/hero.json
 ```
 
-| Key | Meaning |
-|-----|---------|
-| `n` | Product name |
-| `c` | Category: `face`, `eyes`, `lips`, `tools` |
-| `s` | Subcategory — must match one in `CATEGORIES` |
-| `p` | Price in PKR |
-| `o` | Original price (optional — creates the sale badge) |
-| `f` | Finish: Matte, Natural, Dewy, Radiant, Shimmer, Satin |
-| `z` | Size shown on the page |
-| `sh` | Shades: `S(name, hex, stock)` — stock defaults to 12 |
-| `d` | Description — **write a unique one per product** |
+Migrations run in a transaction each and record a checksum, so an edited migration is
+caught rather than silently skipped. Adding a schema change means **a new file** in
+`db/migrations/`, never editing an applied one.
 
-Slug, SKU, discount %, images and rating are derived automatically. Adding a product and
-rebuilding puts it into its category page, search, the sitemap and any matching collection
-with no other edits.
-
-Write real descriptions. Sixty products sharing one template sentence is duplicate content,
-and Google will treat most of those pages as worthless.
-
----
-
-## What is built
-
-- 60 products across Face, Eyes, Lips and Tools, with shade variants and per-shade stock
-- Faceted filtering (category, finish, price, availability) with URL sync and chips
-- Six sort orders, 20-per-page with "View more"
-- Product pages: gallery, shade picker, quantity, accordions, related items, recently viewed
-- Reviews: rating breakdown, filter by rating/shade, sort, pagination, submission form
-- Cart drawer with variants, free-delivery progress, wishlist
-- Two-step checkout: validation, COD/Easypaisa/JazzCash/bank, order reference, WhatsApp handoff
-- Order tracking by reference
-- Search with a live dropdown and a full results page
-- Real policy pages: FAQ, shipping (cost and timeline tables), returns, shade guide, privacy,
-  terms
-- Curated collection landing pages
-- Product/ItemList/FAQ/Breadcrumb/OnlineStore structured data, sitemap, robots.txt, 404 page
-
-## What still needs a backend
-
-Honest limits of a static site — these cannot be fixed with more front-end code:
-
-- **Customer accounts.** Cart and wishlist live in the browser, so they do not follow a
-  customer from phone to laptop. The account icon says "coming soon".
-- **Live inventory.** Stock counts are baked in at build time. If you sell out, edit the
-  catalog and rebuild.
-- **Order tracking across devices.** Lookup reads local storage, so it only works on the
-  device that placed the order. The page says so and points to WhatsApp.
-- **Card payments.** COD and manual transfer only. A card gateway needs a server.
-
-When you outgrow these, Shopify or a Next.js app with a database is the next step. The catalog
-in `data/catalog.js` will port straight across.
-
----
-
-## Branding note
-
-This site is built as an **independent stockist**, not as SHEGLAM itself. The footer carries a
-disclaimer stating there is no affiliation — `SITE.disclaimer` in `data/catalog.js`.
-
-Keep it. Selling genuine imported stock as a reseller is normal retail; presenting yourself as
-the brand's official operation is a trademark problem.
-
-The stock photography used for the homepage hero and category tiles is licence-free and was
-filtered to exclude images showing other brands' packaging — putting a competitor's product on
-your page misleads customers and uses their trade dress. If you add more editorial imagery to
-`EDITORIAL_POOL`, apply the same rule.
+`db/clear-demo-data.js` removes seeded demo records. It previews by default, backs up
+to `data/backups/` first, and only writes with `--confirm`.
 
 ---
 
 ## Deploying
 
-Any static host works — upload the whole folder (minus `server.js`). Netlify, Cloudflare Pages,
-Vercel and GitHub Pages are all free at this scale.
+Hosted on Vercel, deployed from GitHub `main`. **Every push to `main` deploys.**
 
-Set `404.html` as the not-found page in your host's settings, and point your domain at it.
-Update `SITE.domain` and rebuild so canonical URLs and the sitemap are correct.
+### First-time setup
+
+1. **Import the repo** at vercel.com/new. Vercel reads `vercel.json` — do not override
+   the build command or output directory.
+
+2. **Add the environment variables** (Settings → Environment Variables, Production
+   scope). All eight from the table above.
+
+3. **Turn off Deployment Protection** (Settings → Deployment Protection → Vercel
+   Authentication → Disabled). Pro accounts enable it by default, and it makes the
+   whole shop ask visitors to log into Vercel.
+
+4. **Add the domain** (Settings → Domains): `sheglampk.online` and `www`. Use the DNS
+   records Vercel shows you.
+
+5. **Redeploy.** Environment variables are snapshotted at build time — adding them does
+   not affect a deployment that already exists.
+
+### Deploying afterwards
+
+```bash
+git push origin main          # that is the whole deploy
+```
+
+Or from the CLI:
+
+```bash
+vercel redeploy <deployment-url> --scope <your-scope>
+```
+
+### Verifying a deploy
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://www.sheglampk.online/api/products
+```
+
+`200` means the database is connected. `500` almost always means `DATABASE_URL` is
+missing or wrong — see [Troubleshooting](#troubleshooting).
+
+A scheduled job (`vercel.json` → `crons`) hits `/api/notifications/retry` every 15
+minutes to resend notifications that failed while a provider was down.
+
+---
+
+## The admin portal
+
+`/admin/login`. Both accounts are forced to change their password on first sign-in —
+nothing else in the portal works until they do.
+
+| Section | `umama` (Super Admin) | `ashba` (Admin) |
+|---|---|---|
+| Dashboard | ✓ | ✓ |
+| Orders — view, update status, notes, tracking | ✓ | ✓ |
+| Orders — delete | ✓ | — |
+| Products — view | ✓ | ✓ |
+| Products — create, edit, archive, import | ✓ | — |
+| Inventory — view / edit stock | ✓ / ✓ | ✓ / — |
+| Customers, Analytics | ✓ | ✓ |
+| Homepage, Admin Account, Audit Log, Settings | ✓ | — |
+
+**Permissions are enforced on the server, in every request.** The role is read from the
+database each time, never from the browser. Hiding a button in the UI is presentation;
+the API refuses regardless.
+
+---
+
+## Day-to-day tasks
+
+### Add a product
+
+`/admin/products` → **+ Add New Product**. Fill in name, price, stock, category, add
+images, set status to **PUBLISHED**, save. It is on the shop immediately — no deploy.
+
+A product **cannot be published without a price**. The API and a database constraint
+both refuse it.
+
+### Edit or retire a product
+
+Edit from the list. To retire one, use **Archive** rather than deleting: order lines
+reference products, and archiving keeps past orders reading correctly. Archived
+products vanish from the shop but stay in the database.
+
+### Upload images
+
+On the product form, drag files onto the drop zone or use **Upload image**. JPEG, PNG,
+WebP or GIF, up to 3MB. SVG is refused — it can carry scripts.
+
+Images are stored in Postgres and served from `/api/media/:id` with a one-year cache.
+An image cannot be deleted while a product still uses it.
+
+### Import products from a spreadsheet
+
+`/admin/import` → **Download template** (contains your current catalogue) → edit in
+Excel → upload → check the preview → **Import**.
+
+Rows match an existing product on SKU, then slug, then name. Anything unmatched is new.
+**Only columns present in the file are changed** — a price-only sheet will not blank
+everything else.
+
+The preview shows every row as create / update / error with the reason, and writes
+nothing until you confirm.
+
+### Manage stock
+
+`/admin/inventory`. One row per sellable unit — a shaded product is counted per shade,
+because that is what actually runs out. Stock is set to an absolute figure, not adjusted
+by a delta, so two people counting the same shelf cannot both add their count.
+
+### Change the homepage hero
+
+`/admin/homepage`. Three video slides with headline, subtext and buttons. Videos are
+referenced by path — put the file in `assets/video/` and reference it. Changes show on
+the next deploy.
+
+### Manage the other admin account
+
+`/admin/users` (Super Admin only). Rename, enable/disable, reset password, sign out all
+devices. Nobody can change their own role or status, and the last active Super Admin
+cannot be demoted or disabled.
+
+A password reset shows its one-time password **once**. It is not stored readably and is
+deliberately kept out of the audit log.
+
+---
+
+## Order and email flow
+
+```
+Customer places order
+   ↓
+POST /api/orders          products, prices, stock all re-read from the database;
+   ↓                      anything the browser said about money is ignored
+Order + items + customer + status history written, stock decremented
+   ↓
+Notification rows created, send attempted
+   ↓                          ↓
+Shop alert              Customer confirmation
+sheglamofficialpk@...   their own address
+```
+
+**A mail failure never fails an order.** The order is committed first; the notification
+records its own outcome and is retried by the cron sweep. The confirmation page only
+tells a customer an email was sent if one actually was.
+
+Order references look like `SG-2609-BEAEQ`.
+
+Duplicate protection: the checkout sends an idempotency key, held across a retry. A
+double-click, refresh or network retry returns the original order — no second row, no
+second email. A unique index on `(order_id, type)` does the same for notifications.
+
+Each order's drawer in `/admin/orders` shows the state of both emails, with **Resend**.
+
+---
+
+## Tests
+
+```bash
+npm test
+```
+
+Runs five suites against the real database and the real route modules, so the guard,
+CSRF and RBAC rules are exercised as deployed:
+
+| Suite | Covers |
+|---|---|
+| `test-auth.js` | hashing, sessions, CSRF, throttling, cookies |
+| `test-api.js` | login, permissions, orders, forced password change |
+| `test-media.js` | upload validation and serving |
+| `test-import.js` | CSV parsing, analysis, apply |
+| `test-orders.js` | the full order and notification workflow |
+
+The suites use the live database. They set real passwords on the real accounts and
+**scramble them on cleanup**, so a run never leaves a usable credential behind —
+re-issue with `npm run db:passwords` afterwards.
+
+`test-orders.js` forces `MAIL_PROVIDER=none`, so running tests never sends live email.
+
+---
+
+## Troubleshooting
+
+### `FUNCTION_INVOCATION_FAILED` on any `/api/*` route
+
+`DATABASE_URL` is missing or wrong. `db/client.js` throws while the module loads, before
+any error handler exists, so Vercel cannot return JSON.
+
+```bash
+vercel logs <deployment-url> | grep -oE "Error: [^\\\\]{0,120}"
+```
+
+Vercel marks variables **Sensitive**, so `vercel env pull` returns `[SENSITIVE]` rather
+than the value — you cannot read one back to check it. If it looks set but does not
+work, replace it:
+
+```bash
+vercel env rm DATABASE_URL production --yes
+vercel env add DATABASE_URL production < a-file-containing-the-value
+vercel redeploy <deployment-url>
+```
+
+**Check the hostname carefully.** A single stray character (`ap-southeast-C1` instead of
+`ap-southeast-1`) breaks it, and the symptom is the same unhelpful error.
+
+### Variables are set but the site behaves as if they are not
+
+Environment variables are snapshotted at **build time**. Adding one does not affect a
+deployment that already exists. Redeploy.
+
+### The whole site asks visitors to log into Vercel
+
+Deployment Protection. Settings → Deployment Protection → Vercel Authentication →
+Disabled.
+
+### Email is not arriving
+
+```bash
+npm run mail:test
+```
+
+Most common causes: the sending domain is not verified with the provider; `SMTP_FROM` is
+an address the provider will not send from; the key was copied from the API-keys list
+(which shows a truncated preview) rather than the creation dialog.
+
+Failed notifications appear in the order drawer with the provider's reason and a
+**Resend** button.
+
+### The homepage shows no products
+
+Homepage sections draw on merchandising flags. If nothing is flagged Featured or
+Bestseller, the main section falls back to the catalogue. If the page is genuinely empty,
+check that products are **PUBLISHED** and have a price.
+
+### A product page 404s
+
+`build.js` empties `product/` on every build, so pages for unpublished or archived
+products are removed. If a published product has no page, run `npm run build`.
+
+---
+
+## Security notes
+
+- Passwords are hashed with scrypt. Plain text is never stored, logged, returned by an
+  API, or written into the audit trail.
+- Session tokens are random bytes; only a SHA-256 hash is stored, so a database leak
+  does not hand over live sessions.
+- Every state-changing admin request needs a CSRF token.
+- Login throttling: 5 failures per username, 20 per IP, 15-minute window.
+- The role is read from the database on every request. A request claiming
+  `role=SUPER_ADMIN` is ignored.
+- Uploads are type-checked from magic bytes, not the filename or declared type, and
+  served with `nosniff` and a sandbox CSP.
+- Cash on delivery is enforced server-side; a tampered request cannot record an order as
+  prepaid.
+- Card numbers are never stored — none are ever collected.
+- Every denied request is written to the audit log with the actor.
+
+**Never commit** `.env.local`, `HANDOVER.txt`, or `DEPLOY-ENV.txt`. All three are
+gitignored. Delete the last two once the credentials are in place.
+
+---
+
+## What is not built yet
+
+- **Video upload** through the portal. Hero videos go in `assets/video/` and are
+  referenced by path; Vercel caps a request body at 4.5MB, so video needs blob storage.
+- **Category management UI.** Categories are database-driven and drive the navigation,
+  but there is no screen to add or rename one.
+- **Real-time order arrival.** The orders page polls every 30 seconds rather than pushing.
+- **Customer accounts.** Checkout is guest-only by design.
+
+---
+
+## Legacy files, safe to delete
+
+These predate the database and the online portal. They still run, which is the problem —
+the old local tool edits a JSON file **the shop no longer reads**, so changes made there
+appear to work and have no effect.
+
+| File | Was |
+|---|---|
+| `admin-server.js`, `admin-auth.js`, `set-admin-password.js`, `admin/` | a local-only admin tool, replaced by `/admin` |
+| `npm run admin` | starts that tool — do not use it |
+| `tools/orders-apps-script.gs` | Google Sheets order capture, replaced by the database |
+| `SITE.orderEndpoint`, `SITE.ordersApi` in `data/catalog.js` | Web3Forms / Sheets order posting, replaced by `/api/orders` |
+
+None of it is deployed — `deploy-prepare.js` blocks all of it from `dist/`. Removing it
+is tidying, not a fix.
+
+---
+
+## Branding
+
+SHEGLAM PK is an independent stockist. The footer disclaimer in `data/catalog.js` states
+that plainly and should not be removed without legal advice. Product names, shades and
+sizes are factual; descriptions and photography came from the supplied product list.

@@ -274,10 +274,6 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Contact" }])}
           <span><strong>WhatsApp</strong><a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.phoneShow)}</a></span>
         </li>
         <li>
-          <span class="contactlist__icon">${icon("chat", 18)}</span>
-          <span><strong>Call us</strong><a href="tel:${SITE.phoneTel}">${esc(SITE.phoneShow)}</a></span>
-        </li>
-        <li>
           <span class="contactlist__icon">${icon("box", 18)}</span>
           <span><strong>Email</strong><a href="mailto:${SITE.email}">${esc(SITE.email)}</a></span>
         </li>
