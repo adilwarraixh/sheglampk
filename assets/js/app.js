@@ -22,6 +22,11 @@
   const PAGE = document.body.dataset.page || "";
   const on = (el, ev, fn, opt) => el && el.addEventListener(ev, fn, opt);
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+  /* Server messages and customer input both reach innerHTML below. */
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
 
   const store = {
     get(k, fb) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch { return fb; } },
@@ -548,7 +553,13 @@
       if (!box) return;
       const countBy = (key) => {
         const m = {};
-        source.forEach((p) => { m[p[key]] = (m[p[key]] || 0) + 1; });
+        source.forEach((p) => {
+          // A product with no subcategory or finish must not become a
+          // filter option literally labelled "null".
+          const v = p[key];
+          if (v === null || v === undefined || v === "") return;
+          m[v] = (m[v] || 0) + 1;
+        });
         return m;
       };
       const subs = countBy("sub"), fins = countBy("finish");
@@ -1065,13 +1076,24 @@
       })
     );
 
+    /* One key per filled-in checkout, kept until the order succeeds. A
+       double-click, a refresh mid-request or a retry on a flaky connection
+       all send the same key, and the server returns the original order
+       instead of creating a second one. */
+    let checkoutKey = null;
+    const newCheckoutKey = () =>
+      "co-" + Date.now().toString(36) + "-" +
+      (crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10));
+
     on($("#coForm"), "submit", async (e) => {
       e.preventDefault();
       if (!validateCheckout()) return;
 
       const btn = $("#coSubmit");
+      if (btn.disabled) return;                 // already in flight
       btn.disabled = true;
       btn.textContent = "Placing order…";
+      if (!checkoutKey) checkoutKey = newCheckoutKey();
 
       const sub = cartSubtotal(), ship = shippingFor(sub);
       const order = {
@@ -1095,6 +1117,67 @@
       const itemLines = order.items
         .map((i) => `  • ${i.name}${i.shade ? " — " + i.shade : ""}  x${i.qty}  ${money(i.price * i.qty)}`)
         .join("\n");
+
+      /* ---- the real order ----
+         POST to our own API first. This is what creates the database
+         order, decrements stock and triggers the shop's notification
+         email. Everything after it (Web3Forms, the spreadsheet) is a
+         legacy fallback and must not decide whether the order exists. */
+      let apiOrder = null, apiError = null;
+      try {
+        const res = await fetch(BASE + "api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerName: order.name,
+            customerPhone: order.phone,
+            customerEmail: order.email || null,
+            shippingCity: order.city,
+            shippingAddress: order.address,
+            customerNote: order.notes || null,
+            paymentMethod: order.payment,
+            idempotencyKey: checkoutKey,
+            // Server prices these from the database; we only say what and how many.
+            items: cart.map((l) => {
+              const p = byId(l.id);
+              const shade = p && p.shades ? p.shades.find((s) => s.name === l.shade) : null;
+              return shade && shade.id
+                ? { variantId: shade.id, quantity: l.qty }
+                : { productId: p && p.dbId, quantity: l.qty };
+            }).filter((i) => i.variantId || i.productId),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          apiOrder = data;
+          // Use the server's reference, not the one generated in the browser.
+          order.ref = data.reference;
+          order.total = data.total;
+          order.subtotal = data.subtotal;
+          order.shipping = data.shippingFee;
+        } else {
+          apiError = data.error || "Your order could not be placed.";
+        }
+      } catch (err) {
+        apiError = "We could not reach the server. Please check your connection.";
+      }
+
+      if (!apiOrder) {
+        /* Nothing was saved, so do not tell the customer it was. The
+           WhatsApp route still works and is offered explicitly. */
+        btn.disabled = false;
+        btn.textContent = "Place order";
+        setErr("coName", "");
+        const box = $("#coError");
+        if (box) {
+          box.innerHTML = escHtml(apiError || "We couldn't place your order right now. Please try again.") +
+            ` <a href="${waOrderURL(order)}" target="_blank" rel="noopener">Send it on WhatsApp instead</a>`;
+          box.hidden = false;
+        } else {
+          toast(apiError || "We couldn't place your order right now. Please try again.", true);
+        }
+        return;
+      }
 
       const result = await submitOrQueue("order", {
         order_ref: order.ref,
@@ -1142,6 +1225,9 @@
         }).catch((err) => console.warn("[sgpk] orders API unreachable", err));
       }
 
+      /* This order is committed; the next one must not reuse its key. */
+      checkoutKey = null;   // a new order needs a new key
+
       orders = [order].concat(orders).slice(0, 30);
       store.set("sgpk_orders", orders);
 
@@ -1152,14 +1238,22 @@
 
       $("#coRef").textContent = order.ref;
       $("#coWa").href = waOrderURL(order);
+
+      /* The order is in the database and already visible to the shop, so
+         this no longer warns about anything — the WhatsApp button below is
+         a convenience, not a rescue. The old copy said "so we receive your
+         order", which would now be untrue. */
       const warn = $("#coWarn");
       if (warn) {
-        warn.style.display = sent ? "none" : "";
-        warn.innerHTML = sent
-          ? ""
-          : result.reason === "not-configured"
-            ? `<b>Please tap “Confirm on WhatsApp” below</b> so we receive your order.`
-            : `We could not reach our system just now. Your order is saved and will send automatically, but <b>please tap “Confirm on WhatsApp”</b> to be sure.`;
+        warn.style.display = "";
+        warn.innerHTML =
+          `<b>Your order is confirmed.</b> We have it, and we will confirm on WhatsApp shortly.` +
+          /* Only claim an email was sent if the server says one actually
+             went out — saying so when no provider is configured would be
+             a plain lie to the customer. */
+          (apiOrder.customerEmailSent
+            ? ` A copy has been emailed to ${escHtml(order.email)}.`
+            : ``);
       }
 
       cart = []; saveCart(); renderCart(); updateBadges();
@@ -1447,12 +1541,16 @@
       const rm = e.target.closest(".js-rm");
       const wrm = e.target.closest(".js-wish-rm");
 
-      if (add) { e.preventDefault(); addToCart(+add.dataset.id, "", 1); }
-      else if (wish) { e.preventDefault(); toggleWish(+wish.dataset.id); }
-      else if (quick) { e.preventDefault(); openQuickView(+quick.dataset.id); }
+      /* Not coerced with +. Cards baked by the build carry a numeric
+         catalogue index; cards re-rendered from the API after a catalogue
+         sync carry the slug, and +"some-slug" is NaN — which silently did
+         nothing when the button was clicked. byId() accepts either. */
+      if (add) { e.preventDefault(); addToCart(add.dataset.id, "", 1); }
+      else if (wish) { e.preventDefault(); toggleWish(wish.dataset.id); }
+      else if (quick) { e.preventDefault(); openQuickView(quick.dataset.id); }
       else if (qty) setQty(qty.dataset.key, +qty.dataset.d);
       else if (rm) removeLine(rm.dataset.key);
-      else if (wrm) toggleWish(+wrm.dataset.id);
+      else if (wrm) toggleWish(wrm.dataset.id);
     });
   }
 

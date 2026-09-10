@@ -56,6 +56,9 @@ async function main() {
     const regular = p.price === null ? null : Number(p.price);
 
     return {
+      /* The database id. The checkout sends this so the server can price
+         and reserve the exact row, rather than guessing from a name. */
+      dbId: Number(p.id),
       name: p.name,
       category: p.category_slug,
       sub: p.subcategory,
@@ -71,7 +74,7 @@ async function main() {
       desc: p.description,
       shortDesc: p.short_description,
       shades: vars.length
-        ? vars.map((v) => ({ name: v.variant_name, hex: v.hex, stock: v.stock_quantity, image: imageOf(v.id) }))
+        ? vars.map((v) => ({ id: Number(v.id), name: v.variant_name, hex: v.hex, stock: v.stock_quantity, image: imageOf(v.id) }))
         : null,
       slug: p.slug,
       sku: p.sku,

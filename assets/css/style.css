@@ -749,3 +749,8 @@ h1,h2,h3,h4,h5{font-weight:600;line-height:1.2;}
 .emptyfeed{grid-column:1/-1;text-align:center;padding:56px 20px;display:grid;gap:10px;justify-items:center;}
 .emptyfeed p{font-size:17px;font-weight:500;}
 .emptyfeed .sub{font-size:14px;color:var(--muted);max-width:420px;font-weight:400;}
+
+/* Checkout error, shown when the order could not be saved */
+.formerr{background:rgba(211,58,58,.08);color:#b32a2a;border-radius:var(--r-sm);
+  padding:11px 14px;font-size:13.5px;margin:14px 0;line-height:1.6;}
+.formerr a{color:#b32a2a;font-weight:600;text-decoration:underline;}

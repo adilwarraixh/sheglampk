@@ -6,6 +6,7 @@
    from the database, so a tampered request cannot buy at its own price.
    ========================================================= */
 const orders = require("../lib/orders.js");
+const notify = require("../lib/order-emails.js");
 const auth = require("../lib/auth.js");
 const { sql } = require("../db/client.js");
 const { ok, fail, readBody, methods, handler, clientIp } = require("../lib/http.js");
@@ -61,14 +62,19 @@ module.exports = handler(async (req, res) =>
         return fail(res, 429, "That is a lot of orders in a short time. Please contact us on WhatsApp.");
       }
 
+      let customerEmailSent = false;
       let order;
       try {
         order = await orders.createOrder({
           customerName: name, customerPhone: phone, customerEmail: email || null,
           shippingCity: city, shippingAddress: address,
+          shippingState: String(body.shippingState || "").trim() || null,
+          shippingPostalCode: String(body.shippingPostalCode || "").trim() || null,
+          shippingCountry: String(body.shippingCountry || "").trim() || "Pakistan",
           paymentMethod: method,
           customerNote: String(body.customerNote || "").slice(0, 1000) || null,
           items: body.items,
+          idempotencyKey: String(body.idempotencyKey || "").trim() || null,
         });
       } catch (e) {
         // Genuine input problems get a clear message; anything else is a 500
@@ -76,12 +82,30 @@ module.exports = handler(async (req, res) =>
         return fail(res, 400, e.message);
       }
 
-      await sql`INSERT INTO login_attempts (username, ip, success) VALUES ('__order__', ${ip}, true)`;
-      await auth.audit({
-        actorUsername: "customer", action: "ORDER_PLACED",
-        targetType: "order", targetId: order.id,
-        detail: { reference: order.reference, total: order.total, items: body.items.length }, ip,
-      });
+      /* A replayed request returns the original order and stops here: no
+         second audit entry, and no second notification. */
+      if (!order.duplicate) {
+        await sql`INSERT INTO login_attempts (username, ip, success) VALUES ('__order__', ${ip}, true)`;
+        await auth.audit({
+          actorUsername: "customer", action: "ORDER_PLACED",
+          targetType: "order", targetId: order.id,
+          detail: { reference: order.reference, total: order.total, items: body.items.length }, ip,
+        });
+
+        /* The order is committed. Notification is attempted now but its
+           outcome cannot change the answer the customer gets — a mail
+           outage must never look like a failed order. Failures are recorded
+           on the notification row and retried by /api/notifications/retry. */
+        try {
+          const sent = await notify.notifyNewOrder(order.id, email || null);
+          // Only true if the customer's copy actually went out. The
+          // confirmation page must not claim an email was sent when no
+          // provider is configured or the send failed.
+          customerEmailSent = sent.some((r) => r.type === "customer_confirmation" && r.ok);
+        } catch (e) {
+          console.error("[orders] notification failed for", order.reference, "-", e.message);
+        }
+      }
 
       // Only what the customer needs to see. No internal ids or costs.
       return ok(res, {
@@ -90,6 +114,10 @@ module.exports = handler(async (req, res) =>
         subtotal: order.subtotal,
         shippingFee: order.shippingFee,
         placedAt: order.placedAt,
+        duplicate: !!order.duplicate,
+        // Whether the customer's copy actually went out, so the
+        // confirmation page can say so truthfully or stay quiet.
+        customerEmailSent,
       });
     },
   })

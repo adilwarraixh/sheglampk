@@ -288,3 +288,8 @@ dl.meta dd{word-break:break-word;}
 .steps li.is-on::before{background:var(--pink);color:#fff;}
 .importbar{display:flex;align-items:center;gap:12px;padding:18px 0;flex-wrap:wrap;}
 .importbar .spacer{flex:1;}
+
+/* ---------- order notifications ---------- */
+.notif{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+.notif:last-child{border-bottom:0;}

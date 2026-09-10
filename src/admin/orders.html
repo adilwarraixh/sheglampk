@@ -190,6 +190,9 @@
         <textarea id="fNote" rows="3">${esc(o.internal_note || "")}</textarea>
       </div>
 
+      <h3 style="font-size:15px;margin:22px 0 8px">Email notifications</h3>
+      <div id="notifs"><span class="sub">Loading…</span></div>
+
       <h3 style="font-size:15px;margin:22px 0 8px">Timeline</h3>
       <div class="timeline">
         ${o.history.map((h) => `
@@ -199,6 +202,8 @@
             ${h.note ? `<span>${esc(h.note)}</span>` : ""}
           </div></div>`).join("")}
       </div>`;
+
+    loadNotifications(o.id);
 
     /* Delete is Super Admin only. Even so, the API re-checks — this just
        avoids showing Ashba a button that would fail. */
@@ -215,6 +220,73 @@
 
     $("#drawer").classList.add("is-on");
     $("#mask").classList.add("is-on");
+  }
+
+  /* ---------- notifications ---------- */
+  const NOTIF_LABEL = {
+    admin_new_order: "New order alert to the shop",
+    customer_confirmation: "Order confirmation to the customer",
+  };
+  const NOTIF_PILL = {
+    SENT: "p-IN_STOCK", PENDING: "p-LOW_STOCK", SENDING: "p-LOW_STOCK",
+    FAILED: "p-OUT_OF_STOCK", SKIPPED: "p-UNPUBLISHED",
+  };
+
+  async function loadNotifications(orderId) {
+    const box = $("#notifs");
+    if (!box) return;
+    try {
+      const d = await A.api("/api/admin/notifications?orderId=" + orderId);
+      box.innerHTML = renderNotifications(d, orderId);
+      $$(".js-resend").forEach((b) => b.addEventListener("click", () => resend(orderId, b.dataset.type, b)));
+    } catch (e) {
+      box.innerHTML = `<span class="sub">Could not load notification status.</span>`;
+    }
+  }
+
+  function renderNotifications(d, orderId) {
+    const mail = d.mail || {};
+    /* If no provider is configured, say so plainly rather than showing
+       rows that look like they were sent. */
+    const banner = mail.ready
+      ? ""
+      : `<div class="msg" style="margin-bottom:10px">
+           <b>No email provider configured</b> — notifications are recorded but not sent.
+           ${mail.missing && mail.missing.length
+             ? `Set ${mail.missing.map(esc).join(", ")} in the deployment settings.` : ""}
+         </div>`;
+
+    const rows = (d.notifications || []).map((n) => `
+      <div class="notif">
+        <div>
+          <b>${esc(NOTIF_LABEL[n.type] || n.type)}</b>
+          <div class="sub">${esc(n.recipient)}</div>
+          ${n.sent_at ? `<div class="sub">sent ${esc(when(n.sent_at, true))}${n.provider ? " via " + esc(n.provider) : ""}</div>` : ""}
+          ${n.error_message ? `<div class="sub" style="color:var(--err)">${esc(n.error_message)}</div>` : ""}
+          ${n.attempt_count > 1 ? `<div class="sub">${n.attempt_count} attempts</div>` : ""}
+        </div>
+        <div style="text-align:right;white-space:nowrap">
+          <span class="pill ${NOTIF_PILL[n.status] || ""}">${esc(n.status)}</span>
+          <button class="btn btn--outline btn--sm js-resend" data-type="${esc(n.type)}"
+                  style="margin-left:6px">${n.status === "SENT" ? "Resend" : "Send now"}</button>
+        </div>
+      </div>`).join("");
+
+    return banner + (rows || `<span class="sub">No notifications recorded for this order.</span>`);
+  }
+
+  async function resend(orderId, type, btn) {
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      const r = await A.api("/api/admin/notifications", { method: "POST", body: { orderId, type } });
+      const res = r.result || {};
+      A.toast(res.ok ? "Email sent" : (res.skipped ? "No mail provider configured" : "Could not send"), !res.ok);
+      $("#notifs").innerHTML = renderNotifications(r, orderId);
+      $$(".js-resend").forEach((b) => b.addEventListener("click", () => resend(orderId, b.dataset.type, b)));
+    } catch (e) {
+      A.toast(e.message, true);
+      btn.disabled = false; btn.textContent = "Send now";
+    }
   }
 
   async function saveOrder() {

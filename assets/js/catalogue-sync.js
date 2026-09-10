@@ -59,13 +59,14 @@
       '<img src="' + esc(src) + '" alt="' + esc(p.name) + '" loading="lazy" width="500" height="600" ' +
       'data-fallback="' + esc(p.name.charAt(0)) + '"></a>' +
       (flags ? '<div class="card__flags">' + flags + "</div>" : "") +
+      '<button class="card__wish js-wish" data-id="' + esc(p.slug) + '" aria-label="Save ' + esc(p.name) + ' to wishlist">♡</button>' +
       "</div>" +
       '<div class="card__body">' +
       '<h3 class="card__name"><a href="' + href + '">' + esc(p.name) + "</a></h3>" +
       swatches +
       '<div class="card__prices">' + priceHtml + "</div>" +
       (p.inStock
-        ? '<button class="card__cta js-add" data-slug="' + esc(p.slug) + '">Add to Cart</button>'
+        ? '<button class="card__cta js-add" data-id="' + esc(p.slug) + '" data-slug="' + esc(p.slug) + '">Add to Cart</button>'
         : '<button class="card__cta" disabled>Out of Stock</button>') +
       "</div></article>";
   }

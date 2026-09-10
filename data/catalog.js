@@ -479,6 +479,9 @@
       shortDesc: r.shortDesc || null,
       sku: r.sku || "SGPK-" + String(1000 + _id),
       /* Carried before imageFor() runs, because that is what it reads. */
+      /* Database id, carried so the checkout can tell the server exactly
+         which row to price and reserve. */
+      dbId: r.dbId != null ? r.dbId : null,
       images: r.images && r.images.length ? r.images : null,
       seoTitle: r.seoTitle || null,
       seoDescription: r.seoDescription || null,
@@ -499,7 +502,15 @@
     return p;
   });
 
-  const byId = (id) => PRODUCTS.find((p) => p.id === +id) || null;
+  /* Accepts a catalogue index, a slug, or a database id. Cards rendered
+     by the build carry the index; cards re-rendered from the API after a
+     catalogue sync carry the slug. Both end up in the cart, and a cart
+     line that cannot be resolved silently drops out of the order. */
+  const byId = (id) =>
+    PRODUCTS.find((p) => p.id === +id) ||
+    PRODUCTS.find((p) => p.slug === String(id)) ||
+    PRODUCTS.find((p) => p.dbId != null && String(p.dbId) === String(id)) ||
+    null;
   const bySlug = (s) => PRODUCTS.find((p) => p.slug === s) || null;
 
   /* Collection membership resolved once, so the browser never runs match() */

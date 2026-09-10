@@ -302,6 +302,8 @@ function buildOverlays(base) {
                 <textarea id="coNotes" rows="2" placeholder="Anything we should know?"></textarea>
               </div>
 
+              <div class="formerr" id="coError" role="alert" hidden></div>
+
               <h3 style="margin:22px 0 12px;font-size:15px">Payment method</h3>
               <!-- Cash on delivery is the only method accepted, so this states
                    it rather than offering a choice of one. api/orders.js
@@ -327,7 +329,7 @@ function buildOverlays(base) {
           <h3>Order received</h3>
           <p>Thank you! We'll confirm your order on WhatsApp shortly and share tracking once it ships.</p>
           <div class="confirm__ref"><span>Your order reference</span><b id="coRef">SG-0000</b></div>
-          <p class="formmsg" id="coWarn" style="display:none;color:var(--err);font-size:13.5px;max-width:420px;margin:0 auto 18px"></p>
+          <p class="formmsg" id="coWarn" style="display:none;font-size:13.5px;max-width:440px;margin:0 auto 18px;line-height:1.65"></p>
           <div class="confirm__actions">
             <a class="btn btn--wa" id="coWa" target="_blank" rel="noopener">${brandIcon("whatsapp", 18)} Confirm on WhatsApp</a>
             <button class="btn btn--outline" id="coContinue">Continue shopping</button>
@@ -705,11 +707,14 @@ ${crumbHTML([{ label: "Home", href: "index.html" }, { label: "Search" }])}
 
 /* ---- Product pages ---- */
 PRODUCTS.forEach((p) => {
-  const cat = CATEGORIES.find((c) => c.key === p.category);
+  /* A product whose category was cleared in the admin must not take the
+     whole build down — it just loses that breadcrumb. */
+  const cat = CATEGORIES.find((c) => c.key === p.category) || null;
+  if (!cat) console.warn(`  ! ${p.slug} has no category; its breadcrumb will skip one level.`);
   const related = PRODUCTS.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 5);
   const crumbs = [
     { label: "Home", href: "../index.html" },
-    { label: cat.label, href: "../" + cat.page },
+    ...(cat ? [{ label: cat.label, href: "../" + cat.page }] : []),
     { label: p.name },
   ];
 
@@ -737,7 +742,7 @@ ${crumbHTML(crumbs)}
     </div>
 
     <div class="pdp__info">
-      <span class="pdp__cat">${esc(cat.label)} &middot; ${esc(p.sub)}</span>
+      <span class="pdp__cat">${cat ? esc(cat.label) + " &middot; " : ""}${esc(p.sub)}</span>
       <h1 class="pdp__name">${esc(p.name)}</h1>
       <div class="pdp__ratingrow">
         ${p.reviewCount
@@ -804,7 +809,7 @@ ${crumbHTML(crumbs)}
           <button class="acc__btn" type="button">Details ${icon("plus", 16)}</button>
           <div class="acc__body">
             <dl>
-              <dt>Category</dt><dd>${esc(cat.label)} &middot; ${esc(p.sub)}</dd>
+              <dt>Category</dt><dd>${cat ? esc(cat.label) + " &middot; " : ""}${esc(p.sub)}</dd>
               <dt>Finish</dt><dd>${esc(p.finish)}</dd>
               <dt>Size</dt><dd>${esc(p.size)}</dd>
               ${p.shades ? `<dt>Shades</dt><dd>${p.shades.length} available</dd>` : ""}
@@ -880,9 +885,9 @@ ${crumbHTML(crumbs)}
 
 <section class="section section--alt">
   <div class="container">
-    <div class="sechead"><div><span class="sechead__tag">More from ${esc(cat.label)}</span>
+    <div class="sechead"><div><span class="sechead__tag">More from ${esc(cat ? cat.label : p.sub || "the shop")}</span>
       <h2 class="sechead__title">You may also like</h2></div>
-      <a class="viewall" href="../${cat.page}">View all ${icon("chevronR", 15)}</a></div>
+      <a class="viewall" href="../${cat ? cat.page : "index.html"}">View all ${icon("chevronR", 15)}</a></div>
     <div class="grid">${related.map((r) => card(r, "../")).join("")}</div>
   </div>
 </section>
