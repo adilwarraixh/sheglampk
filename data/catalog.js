@@ -44,45 +44,24 @@
     facebook: "https://www.facebook.com/sheglampk",
     tiktok: "https://www.tiktok.com/@sheglampk",
 
-    /* ---- Order capture -------------------------------------------------
-       Where orders, contact messages, newsletter signups and reviews are
-       sent. Until this is filled in, orders reach you ONLY if the customer
-       taps "Confirm on WhatsApp" — the checkout tells them so.
+    /* ---- Contact / newsletter form delivery ----------------------------
+       ORDERS DO NOT USE THIS. They go to /api/orders, which writes to the
+       database and emails the shop — see lib/order-emails.js. Leaving this
+       blank has no effect on ordering.
 
-       WEB3FORMS (recommended, free, no account password):
-         1. Go to https://web3forms.com
-         2. Enter the email address you want orders sent to
-         3. They email you an access key — paste it below
-            orderEndpoint:  "https://api.web3forms.com/submit"
-            orderAccessKey: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+       It is only used by the contact form, the newsletter signup and review
+       submissions, which have no database table of their own. Fill it in to
+       have those emailed to you:
 
-       FORMSPREE:
-            orderEndpoint:  "https://formspree.io/f/xxxxxxx"
-            orderAccessKey: ""      (not used)
+         Web3Forms:  orderEndpoint  "https://api.web3forms.com/submit"
+                     orderAccessKey "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+         Formspree:  orderEndpoint  "https://formspree.io/f/xxxxxxx"
 
        The access key is designed to be public — it ships in the page source
-       either way, and it can only submit to your own inbox. It is not a
-       password. Verify it with:  node test-endpoint.js
+       either way and can only submit to your own inbox. It is not a secret.
     -------------------------------------------------------------------- */
     orderEndpoint: "",
     orderAccessKey: "",
-
-    /* ---- Orders API (admin portal order tracking) ----------------------
-       Email tells you an order happened; it cannot be listed, filtered or
-       marked "Shipped". For that, orders also POST to a Google Apps Script
-       that appends them to a spreadsheet you own — free, no server.
-
-       Setup is in tools/orders-apps-script.gs (about 5 minutes).
-       Then paste the deployed Web App URL and your chosen key here:
-
-         ordersApi:    "https://script.google.com/macros/s/AKfy…/exec"
-         ordersApiKey: "a-long-random-string-you-invent"
-
-       Leave blank and everything still works — orders just arrive by email
-       and WhatsApp only, and the admin Orders tab stays manual.
-    -------------------------------------------------------------------- */
-    ordersApi: "",
-    ordersApiKey: "",
 
     /* ---- Analytics: paste IDs to switch on ---- */
     ga4: "",        // "G-XXXXXXXXXX"
@@ -497,8 +476,14 @@
     /* Rendered if the real photo is missing or fails to load, so the grid
        never shows a broken tile or somebody else's product. */
     p.tile = studioTile(p, 500, 0);
-    p.gallery = [0, 1, 2, 3].map((i) => imageFor(p, 900, i));
-    p.galleryTiles = [0, 1, 2, 3].map((i) => studioTile(p, 900, i));
+    /* As many views as the product genuinely has, not a fixed four.
+       imageFor() clamps past the end of the list, so asking for four
+       showed a one-photo product the same picture four times — which
+       reads as padding rather than a gallery. Capped at six so a
+       seven-shade product does not run a thumbnail strip off the page. */
+    const views = Math.min(Math.max(p.images ? p.images.length : 1, 1), 6);
+    p.gallery = Array.from({ length: views }, (_, i) => imageFor(p, 900, i));
+    p.galleryTiles = Array.from({ length: views }, (_, i) => studioTile(p, 900, i));
     return p;
   });
 

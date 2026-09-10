@@ -731,13 +731,15 @@ PRODUCTS.forEach((p) => {
 ${crumbHTML(crumbs)}
 <div class="container">
   <div class="pdp">
-    <div class="gallery">
+    <div class="gallery${galleryImgs.length < 2 ? " gallery--single" : ""}">
+      ${/* A strip holding one thumbnail is not a gallery, it is clutter. */ ""}
+      ${galleryImgs.length > 1 ? `
       <div class="gallery__thumbs">
         ${galleryImgs.map((src, i) => `
           <button class="gallery__thumb ${i === 0 ? "is-on" : ""}" data-full="${src}" aria-label="View image ${i + 1}">
             <img src="${src}" alt="${esc(p.name)} view ${i + 1}" loading="lazy" data-tile="${p.galleryTiles[i]}" data-fallback="${esc(p.name.charAt(0))}">
           </button>`).join("")}
-      </div>
+      </div>` : ""}
       <div class="gallery__main" id="galleryMainWrap">
         <img id="galleryMain" src="${T.imgSrc(p.imageLarge, "../")}" alt="${esc(p.name)}" width="900" height="1035" data-tile="${p.galleryTiles[0]}" data-fallback="${esc(p.name.charAt(0))}">
       </div>

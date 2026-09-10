@@ -348,6 +348,8 @@ h1,h2,h3,h4,h5{font-weight:600;line-height:1.2;}
    ========================================================= */
 .pdp{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:start;padding-bottom:56px;}
 .gallery{position:sticky;top:150px;display:grid;grid-template-columns:76px 1fr;gap:14px;}
+/* One image: no thumbnail column, so the photo uses the full width. */
+.gallery--single{grid-template-columns:1fr;}
 .gallery__thumbs{display:grid;gap:10px;align-content:start;}
 .gallery__thumb{aspect-ratio:1/1.15;border-radius:var(--r-sm);overflow:hidden;border:1.5px solid transparent;background:var(--bg-alt);}
 .gallery__thumb.is-on{border-color:var(--brand);}
@@ -685,9 +687,14 @@ h1,h2,h3,h4,h5{font-weight:600;line-height:1.2;}
     background:linear-gradient(to top,rgba(10,6,8,.82) 0%,rgba(10,6,8,.45) 38%,rgba(10,6,8,.12) 70%,rgba(10,6,8,.3) 100%);}
   .hero__copy{position:relative;z-index:2;min-height:min(86vh,640px);
     display:flex;flex-direction:column;justify-content:flex-end;padding:32px 0 76px;color:#fff;}
-  .hero__copy .hero__eyebrow{color:#ffc4d6;}
-  .hero__copy .hero__title{color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.35);}
-  .hero__copy .hero__sub{color:rgba(255,255,255,.9);}
+  .hero__copy .hero__eyebrow{color:#ffc4d6;font-size:11px;margin-bottom:10px;}
+  /* The desktop clamp bottoms out at 34px, which every phone hits — far too
+     heavy sitting over video above subtext and two buttons. Scale with the
+     viewport instead, so it shrinks on small screens rather than flooring. */
+  .hero__copy .hero__title{color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.35);
+    font-size:clamp(24px,6.4vw,34px);line-height:1.12;margin-bottom:12px;}
+  .hero__copy .hero__sub{color:rgba(255,255,255,.9);font-size:14.5px;
+    line-height:1.55;max-width:34ch;margin-bottom:20px;}
   .hero__copy .btn--outline{background:transparent;color:#fff;border-color:rgba(255,255,255,.75);}
   .hero__copy .btn--outline:hover{background:#fff;color:var(--ink);}
   .hero__dots{bottom:26px;}

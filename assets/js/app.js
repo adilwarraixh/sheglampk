@@ -1208,23 +1208,6 @@
       const sent = result.ok;
       order.delivered = sent;
 
-      /* Also append to the orders spreadsheet, if configured, so the admin
-         portal can list and track it. Fire-and-forget: email above is the
-         primary channel and the customer must not wait on this. */
-      if (SITE.ordersApi) {
-        fetch(SITE.ordersApi, {
-          method: "POST",
-          // Apps Script rejects a preflight, so keep this a simple request
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            ref: order.ref, placed: order.placed, name: order.name, phone: order.phone,
-            email: order.email, city: order.city, address: order.address,
-            payment: order.payment, notes: order.notes, items: order.items,
-            subtotal: order.subtotal, shipping: order.shipping, total: order.total,
-          }),
-        }).catch((err) => console.warn("[sgpk] orders API unreachable", err));
-      }
-
       /* This order is committed; the next one must not reuse its key. */
       checkoutKey = null;   // a new order needs a new key
 

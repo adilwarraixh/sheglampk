@@ -418,24 +418,6 @@ gitignored. Delete the last two once the credentials are in place.
 
 ---
 
-## Legacy files, safe to delete
-
-These predate the database and the online portal. They still run, which is the problem —
-the old local tool edits a JSON file **the shop no longer reads**, so changes made there
-appear to work and have no effect.
-
-| File | Was |
-|---|---|
-| `admin-server.js`, `admin-auth.js`, `set-admin-password.js`, `admin/` | a local-only admin tool, replaced by `/admin` |
-| `npm run admin` | starts that tool — do not use it |
-| `tools/orders-apps-script.gs` | Google Sheets order capture, replaced by the database |
-| `SITE.orderEndpoint`, `SITE.ordersApi` in `data/catalog.js` | Web3Forms / Sheets order posting, replaced by `/api/orders` |
-
-None of it is deployed — `deploy-prepare.js` blocks all of it from `dist/`. Removing it
-is tidying, not a fix.
-
----
-
 ## Branding
 
 SHEGLAM PK is an independent stockist. The footer disclaimer in `data/catalog.js` states

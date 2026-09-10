@@ -7,7 +7,6 @@
   "scripts": {
     "build": "node db/export-catalogue.js && node build.js && node deploy-prepare.js",
     "dev": "node dev-server.js",
-    "admin": "node admin-server.js",
     "db:migrate": "node db/migrate.js",
     "db:seed": "node db/seed.js",
     "db:import-pdf": "node db/import-pdf-catalogue.js",
