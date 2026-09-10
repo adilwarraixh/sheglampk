@@ -58,6 +58,10 @@
     {
       "source": "/admin/settings",
       "destination": "/admin/settings.html"
+    },
+    {
+      "source": "/admin/import",
+      "destination": "/admin/import.html"
     }
   ],
   "headers": [

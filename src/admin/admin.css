@@ -277,3 +277,14 @@ dl.meta dd{word-break:break-word;}
 .dropzone:hover,.dropzone.is-over{border-color:var(--pink);background:var(--pink-soft);}
 .dropzone p{margin:0;font-size:14px;}
 .dropzone .sub{margin-top:4px;}
+
+/* ---------- import wizard ---------- */
+.steps{list-style:none;display:flex;gap:8px;margin:0 0 16px;padding:0;flex-wrap:wrap;counter-reset:s;}
+.steps li{counter-increment:s;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+  background:var(--panel);border:1px solid var(--line);font-size:13.5px;color:var(--menu);}
+.steps li::before{content:counter(s);width:20px;height:20px;border-radius:50%;background:var(--line);
+  color:var(--menu);display:grid;place-items:center;font-size:11.5px;font-weight:600;}
+.steps li.is-on{color:var(--ink);border-color:var(--pink);}
+.steps li.is-on::before{background:var(--pink);color:#fff;}
+.importbar{display:flex;align-items:center;gap:12px;padding:18px 0;flex-wrap:wrap;}
+.importbar .spacer{flex:1;}

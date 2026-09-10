@@ -37,6 +37,7 @@ const REWRITES = {
   "/admin/audit": "/admin/audit.html",
   "/admin/users": "/admin/users.html",
   "/admin/settings": "/admin/settings.html",
+  "/admin/import": "/admin/import.html",
   "/admin/homepage": "/admin/homepage.html",
   "/admin/analytics": "/admin/analytics.html",
   "/admin/customers": "/admin/customers.html",

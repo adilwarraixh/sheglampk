@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Import Products — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Import products</h1>
+      <a class="btn btn--outline btn--sm" href="/admin/products">← All products</a>
+    </header>
+
+    <div class="content">
+      <div class="msg msg--err" id="err" hidden></div>
+      <div class="msg msg--ok" id="ok" hidden></div>
+
+      <ol class="steps" id="steps">
+        <li class="is-on" data-step="1">Choose a file</li>
+        <li data-step="2">Check what will happen</li>
+        <li data-step="3">Import</li>
+      </ol>
+
+      <!-- Step 1 -->
+      <section class="card" id="step1">
+        <div class="card__head"><h2>Choose a CSV file</h2>
+          <a class="btn btn--outline btn--sm" href="/api/admin/import" id="tplBtn">Download template</a></div>
+        <div class="card__body">
+          <input type="file" id="filePicker" accept=".csv,text/csv,text/plain" hidden>
+          <div class="dropzone" id="dropzone">
+            <p><b>Drop a CSV here</b> or click to choose one</p>
+            <p class="sub">Up to 2000 rows. Nothing is saved until you confirm on the next step.</p>
+          </div>
+          <p class="sub" style="margin-top:12px">
+            The template contains your current catalogue, so the simplest way to make bulk changes is to
+            download it, edit in Excel or Google Sheets, and upload it back — rows that match an existing
+            SKU or URL are updated, everything else is created.
+          </p>
+          <details style="margin-top:12px">
+            <summary class="sub" style="cursor:pointer">Which columns are understood?</summary>
+            <div class="sub" style="margin-top:8px;line-height:1.9" id="fieldHelp"></div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Step 2 -->
+      <section id="step2" hidden>
+        <div class="kpis" id="summary"></div>
+        <div class="msg" id="fileInfo" hidden></div>
+        <section class="card">
+          <div class="card__head"><h2>Row by row</h2>
+            <label class="check" style="margin:0"><input type="checkbox" id="onlyProblems"> Only rows with problems</label>
+          </div>
+          <div class="scroll">
+            <table class="tbl">
+              <thead><tr>
+                <th style="width:56px">Row</th><th>Product</th><th>SKU</th>
+                <th class="num">Price</th><th class="num">Stock</th><th>Status</th>
+                <th>What happens</th><th>Notes</th>
+              </tr></thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </section>
+        <div class="importbar">
+          <button class="btn btn--outline" id="back">← Choose another file</button>
+          <span class="spacer"></span>
+          <span class="sub" id="confirmNote"></span>
+          <button class="btn btn--primary" id="confirm">Import</button>
+        </div>
+      </section>
+
+      <!-- Step 3 -->
+      <section class="card" id="step3" hidden>
+        <div class="card__head"><h2>Import finished</h2></div>
+        <div class="card__body" id="result"></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+
+<script src="/admin/admin.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, money } = A;
+  let analysis = null, fileText = null, fileName = "";
+  let canImport = false;
+
+  A.boot("/admin/import").then(() => {
+    canImport = A.can("products:import");
+    if (!canImport) {
+      note("You can check a file here, but only the Super Admin can run the import.");
+    }
+    $("#fieldHelp").innerHTML = [
+      ["Name", "required — the product name"],
+      ["SKU", "used to match an existing product first"],
+      ["Slug", "the URL; generated from the name if blank"],
+      ["Price / Sale Price", "numbers; \"Rs. 1,990\" is fine"],
+      ["Stock", "whole number"],
+      ["Category / Subcategory", "category must already exist"],
+      ["Shades", "separated by | ; or ,"],
+      ["Status", "published, draft, unpublished or archived"],
+      ["Featured / Bestseller / New Arrival", "yes or no"],
+      ["Image", "a path or /api/media/… URL"],
+      ["Short Description / Description / Size / Finish / Brand / Tags / SEO Title / SEO Description", "optional"],
+    ].map(([a, b]) => `<b>${esc(a)}</b> — ${esc(b)}`).join("<br>");
+  }).catch(() => {});
+
+  const showErr = (m) => { const e = $("#err"); e.textContent = m || ""; e.hidden = !m; };
+  const showOk  = (m) => { const e = $("#ok"); e.innerHTML = m || ""; e.hidden = !m; };
+  const note    = (m) => { const e = $("#fileInfo"); e.textContent = m || ""; e.hidden = !m; };
+
+  function step(n) {
+    $$("#steps li").forEach((li) => li.classList.toggle("is-on", Number(li.dataset.step) <= n));
+    $("#step1").hidden = n !== 1;
+    $("#step2").hidden = n !== 2;
+    $("#step3").hidden = n !== 3;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* ---------- step 1 ---------- */
+  const picker = $("#filePicker"), zone = $("#dropzone");
+  zone.addEventListener("click", () => picker.click());
+  ["dragenter", "dragover"].forEach((ev) => zone.addEventListener(ev, (e) => {
+    e.preventDefault(); zone.classList.add("is-over");
+  }));
+  ["dragleave", "drop"].forEach((ev) => zone.addEventListener(ev, (e) => {
+    e.preventDefault(); zone.classList.remove("is-over");
+  }));
+  zone.addEventListener("drop", (e) => handle(e.dataTransfer && e.dataTransfer.files[0]));
+  picker.addEventListener("change", () => { handle(picker.files[0]); picker.value = ""; });
+
+  async function handle(file) {
+    if (!file) return;
+    showErr(""); showOk("");
+    if (file.size > 4 * 1024 * 1024) { showErr("That file is over 4MB. Import up to 2000 rows at a time."); return; }
+    fileName = file.name;
+
+    try {
+      fileText = await file.text();
+    } catch { showErr("That file could not be read."); return; }
+
+    zone.innerHTML = `<p><b>Reading ${esc(file.name)}…</b></p>`;
+    try {
+      analysis = await A.api("/api/admin/import", { method: "POST", body: { data: fileText } });
+      renderPreview();
+      step(2);
+    } catch (e) {
+      showErr(e.message);
+    } finally {
+      zone.innerHTML = `<p><b>Drop a CSV here</b> or click to choose one</p>
+        <p class="sub">Up to 2000 rows. Nothing is saved until you confirm on the next step.</p>`;
+    }
+  }
+
+  /* ---------- step 2 ---------- */
+  function renderPreview() {
+    const s = analysis.summary;
+    $("#summary").innerHTML = [
+      ["Rows in file", s.rows, ""],
+      ["Will be created", s.create, s.create ? "good" : ""],
+      ["Will be updated", s.update, ""],
+      ["Cannot import", s.errors, s.errors ? "alert" : ""],
+      ["With warnings", s.warnings, s.warnings ? "alert" : ""],
+    ].map(([l, v, c]) => `<div class="kpi ${c}"><b>${esc(String(v))}</b><span>${esc(l)}</span></div>`).join("");
+
+    const bits = [`<b>${esc(fileName)}</b> — ${esc(String(analysis.delimiter))}-separated.`];
+    if (analysis.unmappedHeaders && analysis.unmappedHeaders.length)
+      bits.push(`Ignored columns: ${analysis.unmappedHeaders.map(esc).join(", ")}.`);
+    note(bits.join(" "));
+    $("#fileInfo").hidden = false;
+
+    drawRows();
+
+    const importable = s.create + s.update;
+    $("#confirm").disabled = !importable || !canImport;
+    $("#confirmNote").textContent = !canImport
+      ? "Only the Super Admin can run an import."
+      : (importable
+          ? `${importable} row${importable === 1 ? "" : "s"} will be written` +
+            (s.errors ? `, ${s.errors} skipped` : "") + "."
+          : "Nothing here can be imported.");
+  }
+
+  function drawRows() {
+    const only = $("#onlyProblems").checked;
+    const rows = analysis.plan.filter((p) => !only || p.errors.length || p.warnings.length);
+    $("#rows").innerHTML = rows.length ? rows.map((p) => {
+      const badge = p.action === "create" ? `<span class="pill p-IN_STOCK">create</span>`
+        : p.action === "update" ? `<span class="pill p-UNPUBLISHED">update</span>`
+        : `<span class="pill p-OUT_OF_STOCK">skip</span>`;
+      const notes = [
+        ...p.errors.map((e) => `<span style="color:var(--err)">${esc(e)}</span>`),
+        ...p.warnings.map((w) => `<span style="color:var(--warn)">${esc(w)}</span>`),
+      ].join("<br>") || `<span class="sub">—</span>`;
+      return `<tr>
+        <td data-label="Row"><span class="sub">${p.row}</span></td>
+        <td data-label="Product"><b>${esc(p.name)}</b>${p.shades ? `<div class="sub">${p.shades} shades</div>` : ""}</td>
+        <td data-label="SKU"><span class="sub">${esc(p.sku || "—")}</span></td>
+        <td data-label="Price" class="num">${p.price === null ? `<span class="sub">—</span>` : money(p.price)}</td>
+        <td data-label="Stock" class="num">${p.stock}</td>
+        <td data-label="Status"><span class="pill p-${esc(p.status)}">${esc(p.status)}</span></td>
+        <td data-label="What happens">${badge}${p.matchedOn ? `<div class="sub">matched on ${esc(p.matchedOn)}</div>` : ""}</td>
+        <td data-label="Notes">${notes}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="8"><div class="empty">No rows with problems.</div></td></tr>`;
+  }
+
+  $("#onlyProblems").addEventListener("change", drawRows);
+  $("#back").addEventListener("click", () => { analysis = null; fileText = null; showErr(""); step(1); });
+
+  /* ---------- step 3 ---------- */
+  $("#confirm").addEventListener("click", async () => {
+    if (!fileText || !canImport) return;
+    showErr("");
+    const btn = $("#confirm");
+    btn.disabled = true; btn.textContent = "Importing…";
+    try {
+      const r = await A.api("/api/admin/import", { method: "PUT", body: { data: fileText, skipErrors: true } });
+      $("#result").innerHTML = `
+        <div class="kpis">
+          <div class="kpi good"><b>${r.created}</b><span>Created</span></div>
+          <div class="kpi"><b>${r.updated}</b><span>Updated</span></div>
+          <div class="kpi ${r.skipped ? "alert" : ""}"><b>${r.skipped}</b><span>Skipped</span></div>
+          <div class="kpi ${r.failed.length ? "alert" : ""}"><b>${r.failed.length}</b><span>Failed</span></div>
+        </div>
+        ${r.failed.length ? `<h3 style="font-size:15px;margin:18px 0 8px">Rows that failed</h3>` +
+          r.failed.map((f) => `<div class="line"><span>Row ${f.row} — ${esc(f.name)}</span>
+            <span style="color:var(--err)">${esc(f.error)}</span></div>`).join("") : ""}
+        <p style="margin-top:18px">
+          <a class="btn btn--primary" href="/admin/products">View products →</a>
+          <a class="btn btn--outline" href="/admin/import" style="margin-left:8px">Import another file</a>
+        </p>
+        <p class="sub" style="margin-top:12px">Published products are on the shop straight away.
+          Drafts stay hidden until you publish them.</p>`;
+      step(3);
+    } catch (e) {
+      showErr(e.message);
+      btn.disabled = false; btn.textContent = "Import";
+    }
+  });
+})();
+</script>
+</body>
+</html>
