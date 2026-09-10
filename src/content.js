@@ -129,20 +129,10 @@ function home() {
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-    ${sechead("Shop by category", "Find your thing")}
-    <div class="cattiles">
-      ${CATEGORIES.map(
-        (c, i) => `
-      <a class="cattile" href="${c.page}">
-        <img src="${photoFor(i * 4 + 2, 600)}" alt="${esc(c.label)}" loading="lazy" width="600" height="600" data-fallback="${esc(c.label.charAt(0))}">
-        <div class="cattile__body"><h3>${esc(c.label)}</h3><span>${FEEDS[c.key]().length} products</span></div>
-      </a>`
-      ).join("")}
-    </div>
-  </div>
-</section>
+${/* The "Shop by category" tiles are gone. They used stock photography
+      showing other brands' products — Bobbi Brown, tarte, NARS — which has
+      no place on a SHEGLAM stockist's homepage, and the counts exposed
+      empty categories. The header nav already covers category browsing. */ ""}
 
 <section class="section section--alt">
   <div class="container">
