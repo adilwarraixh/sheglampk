@@ -5,14 +5,20 @@
   "description": "SHEGLAM PK storefront and admin portal",
   "type": "commonjs",
   "scripts": {
-    "build": "node build.js && node deploy-prepare.js",
-    "dev": "node server.js",
+    "build": "node db/export-catalogue.js && node build.js && node deploy-prepare.js",
+    "dev": "node dev-server.js",
     "admin": "node admin-server.js",
     "db:migrate": "node db/migrate.js",
-    "db:seed": "node db/seed.js"
+    "db:seed": "node db/seed.js",
+    "db:import-pdf": "node db/import-pdf-catalogue.js",
+    "db:export": "node db/export-catalogue.js",
+    "db:passwords": "node db/issue-temp-passwords.js",
+    "test": "node test-auth.js && node test-api.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

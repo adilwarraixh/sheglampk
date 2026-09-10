@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node build.js && node deploy-prepare.js",
+  "buildCommand": "node db/export-catalogue.js && node build.js && node deploy-prepare.js",
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": null,
