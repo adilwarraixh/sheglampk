@@ -34,6 +34,10 @@ const REWRITES = {
   "/admin/password": "/admin/password.html",
   "/admin/products": "/admin/products.html",
   "/admin/product": "/admin/product.html",
+  "/admin/audit": "/admin/audit.html",
+  "/admin/analytics": "/admin/analytics.html",
+  "/admin/customers": "/admin/customers.html",
+  "/admin/inventory": "/admin/inventory.html",
 };
 
 /* Maps /api/admin/orders/42 to api/admin/orders/[id].js, exactly as

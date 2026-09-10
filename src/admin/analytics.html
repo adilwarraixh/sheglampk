@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Analytics — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Analytics</h1>
+      
+    </header>
+    <div class="content"><div class="bar">
+        <select id="days">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last 12 months</option>
+        </select>
+        <span class="spacer"></span>
+        <span class="sub" id="range"></span>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="split">
+        <section class="card">
+          <div class="card__head"><h2>Revenue</h2></div>
+          <div class="card__body" id="series"></div>
+        </section>
+        <div style="display:grid;gap:16px;align-content:start">
+          <section class="card">
+            <div class="card__head"><h2>Best sellers</h2></div>
+            <div class="card__body" id="best"></div>
+          </section>
+          <section class="card">
+            <div class="card__head"><h2>Order status</h2></div>
+            <div class="card__body" id="status"></div>
+          </section>
+        </div>
+      </div>
+      <div class="split" style="margin-top:16px">
+        <section class="card">
+          <div class="card__head"><h2>Top cities</h2></div>
+          <div class="card__body" id="cities"></div>
+        </section>
+        <section class="card">
+          <div class="card__head"><h2>Low stock</h2><a href="/admin/inventory">Manage</a></div>
+          <div class="card__body" id="low"></div>
+        </section>
+      </div>
+</div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+<script src="/admin/admin.js"></script>
+<script>(function () {
+  "use strict";
+  const A = window.Admin, { $, esc, money, when } = A;
+
+  A.boot("/admin/analytics").then(load).catch(() => {});
+  $("#days").addEventListener("change", load);
+
+  async function load() {
+    const d = await A.api("/api/admin/analytics?days=" + $("#days").value);
+    const t = d.totals;
+    $("#range").textContent = `${d.window} days to ${when(new Date().toISOString())}`;
+
+    $("#kpis").innerHTML = [
+      ["Revenue", money(t.revenue)],
+      ["Orders", t.orders],
+      ["Average order", money(t.average_order)],
+      ["Customers", t.customers],
+      ["Cancelled", t.cancelled],
+    ].map(([l, v]) => `<div class="kpi"><b>${esc(String(v))}</b><span>${esc(l)}</span></div>`).join("");
+
+    /* Every figure below comes from the orders table. An empty shop shows
+       zeroes rather than a demo curve — a made-up number in an analytics
+       screen is worse than no number. */
+    const max = Math.max(1, ...d.series.map((s) => Number(s.revenue)));
+    $("#series").innerHTML = max > 1
+      ? `<div style="display:flex;align-items:flex-end;gap:3px;height:150px">` +
+        d.series.map((s) => {
+          const h = Math.max(2, Math.round((Number(s.revenue) / max) * 100));
+          return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%"
+                       title="${esc(when(s.day))} — ${esc(money(s.revenue))} (${s.orders} orders)">
+                    <div style="height:${h}%;background:var(--pink);border-radius:3px 3px 0 0;min-height:2px"></div>
+                  </div>`;
+        }).join("") + `</div>
+        <div class="sub" style="display:flex;justify-content:space-between;margin-top:8px">
+          <span>${esc(when(d.series[0].day))}</span><span>${esc(when(d.series[d.series.length - 1].day))}</span>
+        </div>`
+      : `<div class="empty">No sales in this period yet.</div>`;
+
+    const maxUnits = Math.max(1, ...d.bestSellers.map((b) => b.units));
+    $("#best").innerHTML = d.bestSellers.length
+      ? `<div class="bars">` + d.bestSellers.map((b) => `
+          <div class="barrow">
+            <span style="flex:0 0 44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                  title="${esc(b.product_name)}">${esc(b.product_name)}</span>
+            <span class="track"><span class="fill" style="width:${Math.round((b.units / maxUnits) * 100)}%"></span></span>
+            <span style="flex:0 0 44px;text-align:right">${b.units}</span>
+          </div>`).join("") + `</div>`
+      : `<div class="empty">Nothing sold in this period.</div>`;
+
+    $("#status").innerHTML = d.byStatus.length
+      ? d.byStatus.map((s) => `<div class="line"><span><span class="pill p-${esc(s.status)}">${esc(s.status)}</span></span><span>${s.n}</span></div>`).join("")
+      : `<div class="empty">No orders in this period.</div>`;
+
+    $("#cities").innerHTML = d.byCity.length
+      ? d.byCity.map((c) => `<div class="line"><span>${esc(c.city)}</span><span>${c.orders} · ${money(c.revenue)}</span></div>`).join("")
+      : `<div class="empty">No orders in this period.</div>`;
+
+    $("#low").innerHTML = d.lowStock.length
+      ? d.lowStock.map((l) => `<div class="line"><span>${esc(l.name)}${l.variant_name !== "—" ? ` <span class="sub">${esc(l.variant_name)}</span>` : ""}</span>
+           <span class="pill ${l.stock === 0 ? "p-OUT_OF_STOCK" : "p-LOW_STOCK"}">${l.stock}</span></div>`).join("")
+      : `<div class="empty">Everything is above its low-stock threshold.</div>`;
+  }
+})();
+</script>
+</body>
+</html>

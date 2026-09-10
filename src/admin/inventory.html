@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Inventory — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Inventory</h1>
+      <a class="btn btn--outline btn--sm" href="/admin/products">Products →</a>
+    </header>
+    <div class="content"><div class="kpis" id="kpis"></div>
+      <div class="bar">
+        <input type="search" id="q" placeholder="Search product, shade or SKU…">
+        <select id="level">
+          <option value="">All stock levels</option>
+          <option value="out">Out of stock</option>
+          <option value="low">Low stock</option>
+          <option value="ok">Healthy</option>
+        </select>
+        <span class="spacer"></span>
+        <span class="sub" id="count"></span>
+      </div>
+      <div class="msg" id="notice" hidden></div>
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr>
+              <th style="width:56px"></th><th>Product</th><th>Shade</th><th>SKU</th>
+              <th>Category</th><th class="num">In stock</th><th style="width:190px">Set to</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <div style="display:flex;justify-content:center;gap:10px;padding:18px 0">
+        <button class="btn btn--outline btn--sm" id="prev">← Previous</button>
+        <button class="btn btn--outline btn--sm" id="next">Next →</button>
+      </div>
+</div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+<script src="/admin/admin.js"></script>
+<script>(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc } = A;
+  let offset = 0; const LIMIT = 50;
+  let canEdit = false;
+
+  A.boot("/admin/inventory").then(async () => {
+    canEdit = A.can("inventory:update");
+    await load();
+  }).catch(() => {});
+
+  async function load() {
+    const p = new URLSearchParams();
+    if ($("#q").value.trim()) p.set("q", $("#q").value.trim());
+    if ($("#level").value) p.set("level", $("#level").value);
+    p.set("limit", LIMIT); p.set("offset", offset);
+    const d = await A.api("/api/admin/inventory?" + p.toString());
+
+    $("#kpis").innerHTML = [
+      ["Sellable units", d.counts.units, ""],
+      ["Low stock", d.counts.low_stock, d.counts.low_stock > 0 ? "alert" : ""],
+      ["Out of stock", d.counts.out_of_stock, d.counts.out_of_stock > 0 ? "alert" : "good"],
+    ].map(([l, v, c]) => `<div class="kpi ${c}"><b>${esc(String(v))}</b><span>${esc(l)}</span></div>`).join("");
+
+    const from = d.total ? offset + 1 : 0, to = Math.min(offset + d.rows.length, d.total);
+    $("#count").textContent = d.total ? `${from}–${to} of ${d.total}` : "Nothing to show";
+
+    $("#rows").innerHTML = d.rows.length ? d.rows.map(row).join("")
+      : `<tr><td colspan="7"><div class="empty">No stock records match that.</div></td></tr>`;
+    if (canEdit) bindSave();
+
+    $("#prev").disabled = offset === 0;
+    $("#next").disabled = offset + LIMIT >= d.total;
+  }
+
+  function row(r) {
+    const cls = r.stock === 0 ? "p-OUT_OF_STOCK" : (r.stock <= r.threshold ? "p-LOW_STOCK" : "p-IN_STOCK");
+    const key = r.variant_id ? `v${r.variant_id}` : `p${r.product_id}`;
+    const setter = canEdit
+      ? `<div class="stockset">
+           <input type="number" min="0" step="1" value="${r.stock}" data-key="${key}" class="js-qty" aria-label="Stock for ${esc(r.name)}">
+           <button class="btn btn--outline btn--sm js-save" data-key="${key}"
+                   data-variant="${r.variant_id || ""}" data-product="${r.product_id}">Save</button>
+         </div>`
+      : `<span class="sub">view only</span>`;
+    return `<tr>
+      <td>${r.image ? `<img src="${esc(r.image)}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;background:#f2f2f4">` : ""}</td>
+      <td data-label="Product"><b>${esc(r.name)}</b>${r.status !== "PUBLISHED" ? ` <span class="pill p-${esc(r.status)}">${esc(r.status)}</span>` : ""}</td>
+      <td data-label="Shade">${esc(r.variant_name)}</td>
+      <td data-label="SKU"><span class="sub">${esc(r.sku || "—")}</span></td>
+      <td data-label="Category">${esc(r.category_name || "—")}</td>
+      <td data-label="In stock" class="num"><span class="pill ${cls}">${r.stock}</span></td>
+      <td data-label="Set to">${setter}</td>
+    </tr>`;
+  }
+
+  function bindSave() {
+    $$(".js-save").forEach((b) => b.addEventListener("click", async () => {
+      const input = document.querySelector(`.js-qty[data-key="${b.dataset.key}"]`);
+      const qty = Number(input.value);
+      if (!Number.isFinite(qty) || qty < 0) { A.toast("Enter a whole number, 0 or more", true); return; }
+      b.disabled = true; b.textContent = "…";
+      try {
+        /* An absolute figure, not a delta — two people counting the same
+           shelf must not both add their count. */
+        await A.api("/api/admin/inventory", {
+          method: "PATCH",
+          body: b.dataset.variant ? { variantId: Number(b.dataset.variant), quantity: qty }
+                                  : { productId: Number(b.dataset.product), quantity: qty },
+        });
+        A.toast("Stock updated");
+        load();
+      } catch (e) { A.toast(e.message, true); b.disabled = false; b.textContent = "Save"; }
+    }));
+  }
+
+  let t;
+  $("#q").addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { offset = 0; load(); }, 250); });
+  $("#level").addEventListener("change", () => { offset = 0; load(); });
+  $("#prev").addEventListener("click", () => { offset = Math.max(0, offset - LIMIT); load(); });
+  $("#next").addEventListener("click", () => { offset += LIMIT; load(); });
+})();
+</script>
+</body>
+</html>

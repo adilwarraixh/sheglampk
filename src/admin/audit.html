@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Audit Log — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Audit Log</h1>
+      
+    </header>
+    <div class="content"><div class="bar">
+        <input type="search" id="q" placeholder="Search action, user or target…">
+        <select id="action"><option value="">All actions</option></select>
+        <select id="actor"><option value="">All users</option></select>
+        <span class="spacer"></span>
+        <span class="sub" id="count"></span>
+      </div>
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr>
+              <th>When</th><th>Who</th><th>Action</th><th>Target</th><th>Result</th><th>Details</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <p class="sub" style="padding:14px 2px">The audit log is append-only. It records who did what, and every refused
+        attempt, so a permission problem can be traced rather than guessed at.</p>
+      <div style="display:flex;justify-content:center;gap:10px;padding:8px 0 18px">
+        <button class="btn btn--outline btn--sm" id="prev">← Newer</button>
+        <button class="btn btn--outline btn--sm" id="next">Older →</button>
+      </div>
+</div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+<script src="/admin/admin.js"></script>
+<script>(function () {
+  "use strict";
+  const A = window.Admin, { $, esc, when } = A;
+  let offset = 0; const LIMIT = 50; let filled = false;
+
+  A.boot("/admin/audit").then(load).catch(() => {});
+
+  async function load() {
+    const p = new URLSearchParams();
+    if ($("#q").value.trim()) p.set("q", $("#q").value.trim());
+    if ($("#action").value) p.set("action", $("#action").value);
+    if ($("#actor").value) p.set("actor", $("#actor").value);
+    p.set("limit", LIMIT); p.set("offset", offset);
+    const d = await A.api("/api/admin/audit?" + p.toString());
+
+    if (!filled) {
+      $("#action").innerHTML = '<option value="">All actions</option>' +
+        d.actions.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+      $("#actor").innerHTML = '<option value="">All users</option>' +
+        d.actors.map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+      filled = true;
+    }
+
+    const from = d.total ? offset + 1 : 0, to = Math.min(offset + d.entries.length, d.total);
+    $("#count").textContent = d.total ? `${from}–${to} of ${d.total}` : "Nothing logged yet";
+
+    $("#rows").innerHTML = d.entries.length ? d.entries.map((e) => {
+      let detail = "";
+      try {
+        const o = typeof e.detail === "string" ? JSON.parse(e.detail) : (e.detail || {});
+        detail = Object.keys(o).map((k) => `${k}: ${String(o[k])}`).join(", ");
+      } catch { detail = ""; }
+      return `<tr>
+        <td data-label="When"><span class="sub">${esc(when(e.created_at, true))}</span></td>
+        <td data-label="Who"><b>${esc(e.actor_username || "system")}</b></td>
+        <td data-label="Action">${esc(e.action)}</td>
+        <td data-label="Target">${e.target_type ? esc(e.target_type) + " " + esc(e.target_id || "") : `<span class="sub">—</span>`}</td>
+        <td data-label="Result"><span class="pill ${e.result === "DENIED" ? "p-OUT_OF_STOCK" : "p-IN_STOCK"}">${esc(e.result)}</span></td>
+        <td data-label="Details"><span class="sub">${esc(detail.slice(0, 120))}</span></td>
+      </tr>`;
+    }).join("")
+      : `<tr><td colspan="6"><div class="empty">Nothing matches those filters.</div></td></tr>`;
+
+    $("#prev").disabled = offset === 0;
+    $("#next").disabled = offset + LIMIT >= d.total;
+  }
+
+  let t;
+  $("#q").addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { offset = 0; load(); }, 250); });
+  ["action", "actor"].forEach((k) => $("#" + k).addEventListener("change", () => { offset = 0; load(); }));
+  $("#prev").addEventListener("click", () => { offset = Math.max(0, offset - LIMIT); load(); });
+  $("#next").addEventListener("click", () => { offset += LIMIT; load(); });
+})();
+</script>
+</body>
+</html>

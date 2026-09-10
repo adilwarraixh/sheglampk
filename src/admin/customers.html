@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Customers — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Customers</h1>
+      <a class="btn btn--outline btn--sm" href="/admin/orders">Orders →</a>
+    </header>
+    <div class="content"><div class="bar">
+        <input type="search" id="q" placeholder="Search name, phone, email or city…">
+        <span class="spacer"></span>
+        <span class="sub" id="count"></span>
+      </div>
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr>
+              <th>Customer</th><th>Contact</th><th>City</th>
+              <th class="num">Orders</th><th class="num">Lifetime value</th><th>Last order</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <p class="sub" style="padding:14px 2px">Customer details are shown so you can fulfil and follow up on orders.
+        Do not share them outside the business.</p>
+      <div style="display:flex;justify-content:center;gap:10px;padding:8px 0 18px">
+        <button class="btn btn--outline btn--sm" id="prev">← Previous</button>
+        <button class="btn btn--outline btn--sm" id="next">Next →</button>
+      </div>
+</div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+<script src="/admin/admin.js"></script>
+<script>(function () {
+  "use strict";
+  const A = window.Admin, { $, $$, esc, money, when } = A;
+  let offset = 0; const LIMIT = 25;
+
+  A.boot("/admin/customers").then(load).catch(() => {});
+
+  async function load() {
+    const p = new URLSearchParams();
+    if ($("#q").value.trim()) p.set("q", $("#q").value.trim());
+    p.set("limit", LIMIT); p.set("offset", offset);
+    const d = await A.api("/api/admin/customers?" + p.toString());
+
+    const from = d.total ? offset + 1 : 0, to = Math.min(offset + d.customers.length, d.total);
+    $("#count").textContent = d.total ? `${from}–${to} of ${d.total}` : "No customers yet";
+
+    $("#rows").innerHTML = d.customers.length ? d.customers.map((c) => {
+      const wa = c.phone ? "https://wa.me/" + String(c.phone).replace(/[^0-9]/g, "").replace(/^0/, "92") : null;
+      return `<tr>
+        <td data-label="Customer"><b>${esc(c.name)}</b><div class="sub">since ${esc(when(c.created_at))}</div></td>
+        <td data-label="Contact">${esc(c.phone || "—")}${wa ? ` · <a href="${wa}" target="_blank" rel="noopener">WhatsApp ↗</a>` : ""}
+          <div class="sub">${esc(c.email || "no email")}</div></td>
+        <td data-label="City">${esc(c.city || "—")}</td>
+        <td data-label="Orders" class="num">${c.order_count}</td>
+        <td data-label="Lifetime value" class="num">${money(c.lifetime_value)}</td>
+        <td data-label="Last order">${c.last_order_at ? esc(when(c.last_order_at)) : `<span class="sub">never</span>`}</td>
+      </tr>`;
+    }).join("")
+      : `<tr><td colspan="6"><div class="empty">No customers yet — they appear here the moment someone orders.</div></td></tr>`;
+
+    $("#prev").disabled = offset === 0;
+    $("#next").disabled = offset + LIMIT >= d.total;
+  }
+
+  let t;
+  $("#q").addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { offset = 0; load(); }, 250); });
+  $("#prev").addEventListener("click", () => { offset = Math.max(0, offset - LIMIT); load(); });
+  $("#next").addEventListener("click", () => { offset += LIMIT; load(); });
+})();
+</script>
+</body>
+</html>

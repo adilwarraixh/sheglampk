@@ -255,3 +255,7 @@ dl.meta dd{word-break:break-word;}
   .irow{grid-template-columns:1fr 44px 40px;}
   .irow .i-alt{grid-column:1/-1;}
 }
+
+/* inventory stock setter */
+.stockset{display:flex;gap:7px;align-items:center;}
+.stockset input{width:90px;}
