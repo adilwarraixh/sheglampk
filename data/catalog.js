@@ -19,7 +19,7 @@
   const SITE = {
     name: "SHEGLAM PK",
     legalName: "SHEGLAM PK",
-    domain: "https://sheglampk.com",
+    domain: "https://sheglampk.online",
     tagline: "Bold, affordable, high-quality beauty — delivered across Pakistan",
 
     // Shown in the footer. Keeps you clearly positioned as a reseller,
@@ -36,7 +36,7 @@
     returnDays: 7,
 
     address: "Lahore, Pakistan",
-    email: "hello@sheglampk.com",
+    email: "hello@sheglampk.online",
     phoneShow: "+92 322 0305000",
     phoneTel: "+923220305000",
     whatsapp: "923220305000",

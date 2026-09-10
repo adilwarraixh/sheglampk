@@ -8,7 +8,7 @@
    separate products instead of 194 with variants.
 
    Run:  node export-shopify.js
-         node export-shopify.js --url https://sheglampk.com
+         node export-shopify.js --url https://sheglampk.online
               (image base — Shopify DOWNLOADS images by URL, so they
                must be publicly reachable at import time)
    ========================================================= */

@@ -19,6 +19,9 @@ const path = require("path");
 const { sql, rawClient, describeTarget } = require("./client.js");
 
 const APPLY = process.argv.includes("--confirm");
+
+/* Starting stock per shade for newly imported products. */
+const PER_SHADE_STOCK = 20;
 const ROOT = path.join(__dirname, "..");
 const CATALOGUE = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "pdf-catalogue.json"), "utf8"));
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "pdf-image-manifest.json"), "utf8"));
@@ -135,7 +138,7 @@ function validate() {
            (slug, sku, name, brand, category_id, subcategory, short_description, description,
             size, price, currency, stock_quantity, low_stock_threshold, status, tags,
             seo_title, seo_description, source, import_notes)
-         VALUES ($1,$2,$3,'SHEGLAM',$4,$5,$6,$7,$8,$9,'PKR',0,5,$10::product_status,$11,$12,$13,'PRODUCT LIST.pdf',$14)
+         VALUES ($1,$2,$3,'SHEGLAM',$4,$5,$6,$7,$8,$9,'PKR',$15,5,$10::product_status,$11,$12,$13,'PRODUCT LIST.pdf',$14)
          ON CONFLICT (slug) DO UPDATE SET
             sku=EXCLUDED.sku, name=EXCLUDED.name, category_id=EXCLUDED.category_id,
             subcategory=EXCLUDED.subcategory, short_description=EXCLUDED.short_description,
@@ -146,7 +149,13 @@ function validate() {
          RETURNING id`,
         [slug, sku, p.name, catId[p.category], p.subcategory, short, p.description,
          p.size || null, p.price, status, [p.category, p.subcategory.toLowerCase()],
-         `${p.name} — SHEGLAM PK`, short, notes]);
+         `${p.name} — SHEGLAM PK`, short, notes,
+         /* Starting stock. The PDF carries no quantities, and importing at 0
+            put every product on the shop marked "Out of Stock" — worse than a
+            placeholder, because it hides the catalogue from customers. Set the
+            real figures in /admin/inventory. Existing stock is never
+            overwritten: stock_quantity is absent from the DO UPDATE above. */
+         PER_SHADE_STOCK * Math.max(p.shades.length, 1)]);
       const productId = r.rows[0].id;
       summary.imported++;
       status === "PUBLISHED" ? summary.published++ : summary.draft++;
@@ -161,8 +170,8 @@ function validate() {
         const shade = p.shades[i];
         const v = await c.query(
           `INSERT INTO product_variants (product_id, sku, variant_name, option_name, stock_quantity, position, is_available)
-           VALUES ($1,$2,$3,'Shade',0,$4,true) RETURNING id`,
-          [productId, `${sku}-${slugify(shade).toUpperCase()}`, shade, i]);
+           VALUES ($1,$2,$3,'Shade',$5,$4,true) RETURNING id`,
+          [productId, `${sku}-${slugify(shade).toUpperCase()}`, shade, i, PER_SHADE_STOCK]);
         variantIdByShade[shade] = v.rows[0].id;
         summary.variants++;
       }
