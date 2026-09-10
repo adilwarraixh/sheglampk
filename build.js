@@ -18,6 +18,11 @@ const { esc, icon, brandIcon, card, stars } = T;
 
 const ROOT = __dirname;
 const OUT_PRODUCT = path.join(ROOT, "product");
+/* Emptied on every build. Generating over the top of the previous run
+   left pages for products that had been unpublished or archived: they
+   were gone from the grid but still served on their own URL, and still
+   listed in the sitemap. A product page must not outlive its product. */
+fs.rmSync(OUT_PRODUCT, { recursive: true, force: true });
 fs.mkdirSync(OUT_PRODUCT, { recursive: true });
 
 const FONT = "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap";
@@ -434,6 +439,7 @@ ${buildOverlays(base)}
 <script src="${base}data/catalog.js"></script>
 <script src="${base}data/templates.js"></script>
 <script src="${base}assets/js/app.js"></script>
+<script src="${base}assets/js/catalogue-sync.js" defer></script>
 </body>
 </html>
 `;

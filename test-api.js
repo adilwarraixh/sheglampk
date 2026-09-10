@@ -87,9 +87,9 @@ const cookieFrom = (res) => String(res.getHeader("set-cookie") || "").split(";")
     INSERT INTO categories (slug, name) VALUES ('test-face','Test Face')
     ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name RETURNING id`;
   const [prod] = await sql`
-    INSERT INTO products (slug, sku, name, category_id, subcategory, price, stock_quantity, is_published)
-    VALUES ('t-blush','T-BLUSH','Test Liquid Blush',${cat.id},'Blush',1990,50,true)
-    ON CONFLICT (slug) DO UPDATE SET price=EXCLUDED.price, stock_quantity=50, is_published=true
+    INSERT INTO products (slug, sku, name, category_id, subcategory, price, stock_quantity, status)
+    VALUES ('t-blush','T-BLUSH','Test Liquid Blush',${cat.id},'Blush',1990,50,'PUBLISHED'::product_status)
+    ON CONFLICT (slug) DO UPDATE SET price=EXCLUDED.price, stock_quantity=50, status='PUBLISHED'::product_status
     RETURNING id`;
   const [variant] = await sql`
     INSERT INTO product_variants (product_id, sku, variant_name, hex, stock_quantity)

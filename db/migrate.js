@@ -76,7 +76,11 @@ function splitStatements(text) {
   let ran = 0;
   for (const file of files) {
     const text = fs.readFileSync(path.join(DIR, file), "utf8");
-    const checksum = sha(text);
+    /* Hash line-ending-independently. Git rewrites LF to CRLF on Windows
+       checkout, which changed every checksum and reported drift on files
+       nobody had touched — a false alarm that teaches you to ignore the
+       real one. */
+    const checksum = sha(text.replace(/\r\n/g, "\n"));
 
     if (applied.has(file)) {
       const drifted = applied.get(file) !== checksum;

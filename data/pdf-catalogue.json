@@ -1,0 +1,127 @@
+{
+  "_source": "PRODUCT LIST.pdf (supplied by the store owner)",
+  "_extracted": "2026-09-10",
+  "_notes": [
+    "Names, colours, net contents, shade names and descriptions are transcribed from the PDF.",
+    "Whitespace artefacts of PDF text extraction were repaired (e.g. 'fora' -> 'for a', 'Blush,featuring' -> 'Blush, featuring'). No wording was changed.",
+    "category/subcategory are derived from the product type in its own name; they are navigation labels, not product claims.",
+    "price is carried from the store's existing catalogue where the product already existed there. null means the PDF gave no price and none was authorised — such products import as DRAFT and cannot be published until a price is set.",
+    "images are the PDF's own embedded images, matched by position in the document; shade order follows the PDF's stated 'images are attached according to the numbering of shades'."
+  ],
+  "products": [
+    {
+      "num": 1,
+      "name": "Camera On Smooth & Blur Primer",
+      "category": "face", "subcategory": "Primer",
+      "color": "Clear", "size": "30g",
+      "description": "Say goodbye to visible pores and hello to a smooth, seamless base. This primer creates a soft-focus blur that minimizes texture and helps your foundation actually stick around. Infused with skin-loving ingredients like Vitamin B12 and Vitamin E, think of it as your real-life beauty filter, with skin benefits baked in!",
+      "shades": ["Clear"],
+      "price": 2090
+    },
+    {
+      "num": 2,
+      "name": "Fall In Line Peel Off Lip Liner Stain",
+      "category": "lips", "subcategory": "Lip Liner",
+      "description": "Treat your lips to an all-day tint with our Fall In Line Peel Off Lip Liner Stain. With this weightless lip liner tint, you can count on your liner to last without feathering or transferring. Effortlessly line your lips with the soft and plush applicator, then peel to unveil a long-lasting look infused with an extra nourishing boost of sodium hyaluronate and vitamin E.",
+      "shades": ["Bare Blush", "Cherry Bark", "Plum Sauce", "Mauvelous", "Pinky Promise", "Brownie Points", "Chocoholic"],
+      "price": 1290
+    },
+    {
+      "num": 3,
+      "name": "Lip Dazzler Glitter Kit",
+      "category": "lips", "subcategory": "Lip Kit",
+      "description": "The ultimate 3-in-1 lip has arrived. Reach for our Lip Dazzler Glitter Kit everytime you have a glamorous outing (or casual day out) for a lip that dares to dazzle! Including a lip adhesive, brush, glitter, and liner, our kit makes it ultra-fast and simple to get a red carpet-worthy look.",
+      "shades": ["Center Stage", "Red Carpet", "Debutante"],
+      "price": 2590
+    },
+    {
+      "num": 4,
+      "name": "Glazed & Locked Glossy Lip Tint",
+      "category": "lips", "subcategory": "Lip Tint",
+      "description": "A glossy lip tint with glass-like shine that sets into a beautiful, natural stain. Even after the gloss fades, vibrant color stays put for a long-lasting, fresh look - non-sticky, always comfortable.",
+      "shades": ["011 Born Ready", "035 Fame Game", "131 Mood Talk", "132 Solo Mood", "139 Fire Within"],
+      "price": 1590
+    },
+    {
+      "num": 5,
+      "name": "Lashlighter Up & Out Mascara",
+      "category": "eyes", "subcategory": "Mascara",
+      "description": "Your makeup routine just got brighter! Our Lashlighter Up & Out Mascara is here to lift, lengthen, and light up your look in one smooth swipe. Its feather-comb brush is expertly designed to hug your eye shape, while three rows of micro-tooth combs catch and coat every lash from root to tip. The result? A fanned-out, fluttery finish with zero clumps. Infused with peptides and jojoba oil, this lash-loving formula nourishes and protects while you wear it, so your lashes look better now and later. Plus, it's waterproof, so your look stays bright-eyed throughout the day. Long, lifted lashes with zero effort? That's what we call a highlight.",
+      "shades": [],
+      "price": 1790
+    },
+    {
+      "num": 6,
+      "name": "Color Bloom Liquid Blush Matte Finish",
+      "category": "face", "subcategory": "Blush",
+      "description": "Get flushed with our Color Bloom Liquid Blush, featuring nourishing ingredients and a long-wearing, lightweight gel-cream formula that loves your skin. A sponge tip applicator applies highly pigmented, matte color like a dream and leaves your cheeks pretty 'n plump!",
+      "shades": ["On Point", "Love Cake", "Rose Ritual"],
+      "price": 1990,
+      "priceNote": "Carried from the existing listing 'Color Bloom Liquid Blush'. The PDF name adds 'Matte Finish' — confirm the price still applies."
+    },
+    {
+      "num": 7,
+      "name": "Bounce Putty Pocket Lip Pot",
+      "category": "lips", "subcategory": "Lip Balm",
+      "description": "Let's take this blur on the road! Spring into our Bounce Putty Pocket Lip Pot for a matte lip moment on the go. Sheer things out for a subtle pinch of color or layer your look for a little more intensity.",
+      "shades": [],
+      "price": 1890
+    },
+    {
+      "num": 8,
+      "name": "Melt Touch Ultra-Hydrating Primer",
+      "category": "face", "subcategory": "Primer",
+      "color": "White", "size": "30g",
+      "description": "The cheat code for a stunning buttery glow has landed! Featuring a buttery-smooth formula, our Melt Touch Hydrating Primer melts on contact, blending the freshness of a lotion, the depth of a serum, and the comfort of a moisturizer for a skincare-first priming experience. Powered by shea butter, squalane, hyaluronic acid, and ceramides, it deeply hydrates, strengthens your skin barrier, and leaves zero greasiness behind.",
+      "shades": ["White"],
+      "price": 1190
+    },
+    {
+      "num": 9,
+      "name": "Lock'd In Setting Spray",
+      "category": "face", "subcategory": "Setting Spray",
+      "color": "White", "size": "55ml",
+      "description": "Stay matte all day, every day! Our long-lasting Matte Fresh Setting Spray provides a mattifying effect while controlling and combatting shine. Plus, it instantly smooths and makes your skin appear like silk, creating a soft and luminous finish!\n\n- Mattifying effect\n- Quick-drying\n- Oil-controlling ingredients",
+      "shades": ["White"],
+      "price": 2790,
+      "issue": "DESCRIPTION MISMATCH: the PDF titles this 'Lock'd In Setting Spray' but its description describes 'Matte Fresh Setting Spray'. Transcribed exactly as supplied rather than silently corrected. Confirm which product this is before publishing."
+    },
+    {
+      "num": 10,
+      "name": "Good Grip Hydrating Primer",
+      "category": "face", "subcategory": "Primer",
+      "color": "Mint Blue", "size": "45ml",
+      "description": "Buckle in base makeup, because you're not going anywhere! Our newest oil and silicone-free primer features a refreshing gel texture that makes your skin soft, smooth, healthy, and moist. Additionally, this primer gets absorbed into your skin in a flash and keeps your makeup in place for hours on end.",
+      "shades": ["Mint Blue"],
+      "price": 3990
+    },
+    {
+      "num": 11,
+      "name": "Camera On Blurring Setting Powder Balm",
+      "category": "face", "subcategory": "Setting Powder",
+      "color": "White-5%", "size": "5g",
+      "description": "Lights, camera, action! Our Camera On Blurring Setting Powder Balm is your new go-to for film and flash-ready looks. This unique balm-to-powder formula instantly absorbs and controls oil, leaving a matte, powder-free finish. It's perfect for setting and touch-ups, providing long-lasting oil control and prevents your makeup from creasing or drying out throughout the day. Stick it in your makeup bag (or even your back pocket) for on-the-go glam!",
+      "shades": ["White-5%"],
+      "price": 1390
+    },
+    {
+      "num": 12,
+      "name": "Pore Off Primer",
+      "category": "face", "subcategory": "Primer",
+      "color": "Beige", "size": "30g",
+      "description": "SOFT. SMOOTH. PORELESS.\n\nVanish pores with our Pore Off Primer. It blurs imperfections and creates a flawlessly smooth canvas, like a magic trick for your face. For skin that's airbrushed and ready to conquer the day, this primer's got you covered.",
+      "shades": ["Beige"],
+      "price": null,
+      "issue": "NO PRICE: this product is not in the store's existing catalogue and the PDF gives no price. Imported as DRAFT — set a price in the admin portal to publish it."
+    },
+    {
+      "num": 13,
+      "name": "Jelly Wow Hydrating Lip Oil",
+      "category": "lips", "subcategory": "Lip Oil",
+      "color": "Berry Involved",
+      "description": "Ditch the gloss and reach for our moisturizing, non-sticky lip oil instead. We infused this innovative formula with lip-loving ingredients to deliver a healthy, moisturizing shine that feels divine.",
+      "shades": ["Berry Involved"],
+      "price": 1690
+    }
+  ]
+}

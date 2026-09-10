@@ -422,8 +422,18 @@
     return null;
   }
 
-  /* Product image resolution. Never returns stock photography. */
+  /* Product image resolution. Never returns stock photography.
+
+     An explicit URL from the database wins: images are now filed per
+     product AND shade, so matching a filename against the product slug
+     no longer finds them. photoFile() stays as the fallback for photos
+     dropped into the folder by hand. */
   function imageFor(p, w, variant) {
+    if (p.images && p.images.length) {
+      const i = Math.min(variant || 0, p.images.length - 1);
+      return String(p.images[i]).replace(/^\//, "");
+    }
+    if (p.image) return String(p.image).replace(/^\//, "");
     if (SITE.imageMode === "local") {
       const f = photoFile(p.slug);
       if (f) return `assets/img/products/${f}`;
@@ -464,8 +474,14 @@
       inStock: stock > 0,
       isNew: !!r.isNew,
       isBestSeller: !!r.isBestSeller,
+      isFeatured: !!r.isFeatured,
       desc: r.desc,
+      shortDesc: r.shortDesc || null,
       sku: r.sku || "SGPK-" + String(1000 + _id),
+      /* Carried before imageFor() runs, because that is what it reads. */
+      images: r.images && r.images.length ? r.images : null,
+      seoTitle: r.seoTitle || null,
+      seoDescription: r.seoDescription || null,
     };
     p.discount = discountPct(p);
     p.reviews = REVIEWS[slug] || [];
