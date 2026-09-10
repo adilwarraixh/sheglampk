@@ -28,3 +28,6 @@ node_modules/
 
 # Generated deployment secrets — never commit
 DEPLOY-ENV.txt
+
+.vercel
+.env*
