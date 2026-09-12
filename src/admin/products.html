@@ -199,10 +199,12 @@
     if (A.can("products:create")) items.push(["Duplicate", () => duplicate(id, name)]);
     if (status !== "ARCHIVED" && A.can("products:delete")) items.push(["Archive", () => archive(id, name)]);
     if (status === "ARCHIVED") items.push(["Restore as draft", () => setStatus(id, "DRAFT", name)]);
+    if (A.can("products:delete")) items.push(["Delete permanently", () => deleteForever(id, name), true]);
 
     const menu = document.createElement("div");
     menu.className = "rowmenu";
-    menu.innerHTML = items.map((it, i) => `<button data-i="${i}">${esc(it[0])}</button>`).join("");
+    menu.innerHTML = items.map((it, i) =>
+      `<button data-i="${i}"${it[2] ? ' class="is-danger"' : ""}>${esc(it[0])}</button>`).join("");
     document.body.appendChild(menu);
     const r = btn.getBoundingClientRect();
     menu.style.top = (window.scrollY + r.bottom + 6) + "px";
@@ -237,6 +239,21 @@
     } catch (e) { A.toast(e.message, true); }
   }
 
+  /* Typing the word, not clicking OK, because this cannot be undone. */
+  async function deleteForever(id, name) {
+    const typed = prompt(`Permanently delete “${name}”?\n\nIts shades and photo links are removed and it cannot be restored. ` +
+      `Past orders keep their own record of what was bought.\n\nIf you might want it back, use Archive instead.\n\nType DELETE to confirm.`);
+    if (typed === null) return;
+    if (typed.trim() !== "DELETE") { A.toast("Not deleted — type DELETE to confirm.", true); return; }
+    try {
+      const r = await A.api("/api/admin/products/" + id + "?permanent=1", { method: "DELETE" });
+      A.toast("Deleted");
+      notice(`“${name}” deleted.${r.ordersKept ? ` ${r.ordersKept} past order${r.ordersKept === 1 ? "" : "s"} still show what was bought.` : ""} ${shopSentence(r.rebuild)}`,
+        shopProblem(r.rebuild));
+      load(); loadShopState();
+    } catch (e) { A.toast(e.message, true); notice(e.message, true); }
+  }
+
   async function archive(id, name) {
     if (!confirm(`Archive “${name}”?\n\nIt disappears from the shop but is not deleted — past orders keep working. You can restore it later.`)) return;
     try {
@@ -262,10 +279,10 @@
 
   function showSavedNotice() {
     const q = new URLSearchParams(location.search);
-    const name = q.get("saved");
+    const name = q.get("saved") || q.get("deleted");
     if (!name) return;
     const rebuild = { status: q.get("rebuild"), error: q.get("rebuildError") };
-    notice(`“${name}” saved. ${shopSentence(rebuild)}`.trim(), shopProblem(rebuild));
+    notice(`“${name}” ${q.get("deleted") ? "deleted" : "saved"}. ${shopSentence(rebuild)}`.trim(), shopProblem(rebuild));
     history.replaceState(null, "", location.pathname);
   }
 

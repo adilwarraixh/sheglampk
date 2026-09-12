@@ -148,6 +148,33 @@ async function refused(fn, pattern) {
     check("a duplicate keeps each photo on its shade", copyRose && copyImg && String(copyImg.variant_id) === String(copyRose.id));
 
     /* ---------------------------------------------------------- */
+    console.log("\n=== PERMANENT DELETE ===");
+    const doomed = await P.createProduct({
+      name: `Delete Me ${tag}`, status: "DRAFT", price: 100, categoryId: cat.id,
+      variants: [{ name: "Only", hex: "#123456", stock: 1 }],
+      images: [{ url: `/assets/img/${tag}-delete.png`, shade: "Only" }],
+    });
+    created.push(doomed.id);
+    const [pastOrder] = await sql`
+      INSERT INTO orders (reference, customer_name, customer_phone, shipping_address, payment_method, subtotal, total)
+      VALUES (${"TEST-" + tag + "-D"}, 'Test', '0000000000', 'Test', 'Cash on Delivery', 100, 100) RETURNING id`;
+    await sql`
+      INSERT INTO order_items (order_id, product_id, variant_id, product_name, variant_name, sku, unit_price, quantity, line_total)
+      VALUES (${pastOrder.id}, ${doomed.id}, (SELECT id FROM product_variants WHERE product_id = ${doomed.id}),
+              ${"Delete Me " + tag}, 'Only', 'TST-DEL', 100, 1, 100)`;
+    const removed = await P.deleteProduct(doomed.id);
+    check("delete reports the product and the orders that keep it", removed && removed.orders === 1, JSON.stringify(removed));
+    const [{ n: remains }] = await sql`
+      SELECT (SELECT count(*) FROM products WHERE id = ${doomed.id})
+           + (SELECT count(*) FROM product_variants WHERE product_id = ${doomed.id})
+           + (SELECT count(*) FROM product_images WHERE product_id = ${doomed.id}) AS n`;
+    check("product, its shades and its photo links are gone", Number(remains) === 0, String(remains));
+    const [pastLine] = await sql`SELECT product_id, variant_id, product_name, variant_name, unit_price FROM order_items WHERE order_id = ${pastOrder.id}`;
+    check("the past order still shows what was bought",
+      pastLine && pastLine.product_id === null && pastLine.variant_name === "Only" && Number(pastLine.unit_price) === 100, JSON.stringify(pastLine));
+    check("deleting a product that no longer exists returns nothing", (await P.deleteProduct(doomed.id)) === null);
+
+    /* ---------------------------------------------------------- */
     console.log("\n=== SHOP REBUILDS ===");
     check("without a hook it says so instead of pretending", (await R.requestRebuild("t")).status === "not-configured");
 
@@ -191,7 +218,7 @@ async function refused(fn, pattern) {
   } finally {
     if (server) server.close();
     process.env.DEPLOY_HOOK_URL = "";
-    await sql`DELETE FROM orders WHERE reference = ${"TEST-" + tag}`;
+    await sql`DELETE FROM orders WHERE reference LIKE ${"TEST-" + tag + "%"}`;
     for (const id of created) await sql`DELETE FROM products WHERE id = ${id}`;
     if (rebuildBefore) {
       await sql`

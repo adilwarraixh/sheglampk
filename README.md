@@ -246,9 +246,15 @@ A product **cannot be published without a price or a category**. The API refuses
 
 ### Edit or retire a product
 
-Edit from the list. To retire one, use **Archive** rather than deleting: order lines
-reference products, and archiving keeps past orders reading correctly. Archived
-products vanish from the shop but stay in the database.
+Edit from the list. To take a product off the shop there are two options (Super Admin
+only):
+
+- **Archive** — hidden from the shop but kept, so it can be restored as a draft later.
+  Use this for anything you might sell again.
+- **Delete permanently** — in the list's **⋯** menu or at the bottom of the product
+  form. You type `DELETE` to confirm. The product, its shades and its photo links are
+  removed for good. Past orders are unaffected: each order line keeps its own copy of
+  the name, shade, SKU, price and photo. Uploaded photos stay in the media library.
 
 ### Upload images
 

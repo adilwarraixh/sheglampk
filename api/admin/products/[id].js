@@ -70,6 +70,23 @@ module.exports = handler(async (req, res) => {
     DELETE: async () => {
       const session = await guard(req, res, "products:delete");
       if (!session) return;
+
+      // ?permanent=1 removes the product for good; plain DELETE archives.
+      if (String((req.query || {}).permanent) === "1") {
+        const removed = await P.deleteProduct(id);
+        if (!removed) return fail(res, 404, "Product not found");
+        await auth.audit({
+          actorId: session.user.id, actorUsername: session.user.username,
+          action: "PRODUCT_DELETED", targetType: "product", targetId: String(id),
+          detail: { name: removed.name, sku: removed.sku, status: removed.status, ordersKept: removed.orders },
+          ip: clientIp(req),
+        });
+        const rebuild = removed.status === "PUBLISHED"
+          ? await R.requestRebuild(`deleted “${removed.name}”`, { by: session.user.username })
+          : { status: "not-needed" };
+        return ok(res, { deleted: { id: removed.id, name: removed.name }, ordersKept: removed.orders, rebuild });
+      }
+
       const before = await P.statusOf(id);
       const product = await P.archiveProduct(id);
       if (!product) return fail(res, 404, "Product not found");

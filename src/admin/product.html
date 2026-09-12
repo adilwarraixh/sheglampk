@@ -154,6 +154,7 @@
             <button class="btn btn--primary btn--block" type="submit" id="save">Save product</button>
             <a class="btn btn--outline btn--block" href="/admin/products" style="margin-top:8px">Cancel</a>
             <p class="sub" id="viewLive" hidden style="margin-top:10px;text-align:center"></p>
+            <button type="button" class="btn btn--danger btn--block" id="deleteBtn" hidden style="margin-top:12px">Delete product</button>
           </div>
         </aside>
       </form>
@@ -161,6 +162,22 @@
   </div>
 </div>
 <div class="mask" id="mask"></div>
+
+<!-- Colour picker: click the shade in its photo. -->
+<div class="pickmodal" id="pickModal" hidden>
+  <div class="pickmodal__box" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+    <div class="pickmodal__head">
+      <b id="pickTitle">Pick the shade colour</b>
+      <button type="button" class="btn btn--outline btn--sm" id="pickClose">Close</button>
+    </div>
+    <p class="sub" id="pickHelp">Click the part of the photo that shows the shade itself — the tip, the stick or the
+      formula — not the packaging.</p>
+    <div class="pickmodal__stage"><canvas id="pickCanvas"></canvas></div>
+    <div class="pickmodal__foot">
+      <span class="pickmodal__chip" id="pickChip"></span><code id="pickHex">Move over the photo</code>
+    </div>
+  </div>
+</div>
 
 <script src="/admin/admin.js"></script>
 <script>
@@ -192,6 +209,7 @@
       meta = { statuses: r.statuses, categories: r.categories, subcategories: r.subcategories };
       fillMeta();
       fill(r.product);
+      if (A.can("products:delete")) $("#deleteBtn").hidden = false;
     }
 
     if (readOnly) {
@@ -266,6 +284,7 @@
       <div class="v-colour">
         <input class="v-pick${hex ? "" : " is-unset"}" type="color" value="${esc(hex || "#e9e9ec")}" title="Pick the swatch colour" aria-label="Pick the swatch colour">
         <input class="v-hex" placeholder="no colour" value="${esc(hex || "")}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Colour code">
+        <button type="button" class="btn btn--outline btn--sm v-fromphoto" title="Pick the colour by clicking this shade's photo">Pick</button>
       </div>
       <input class="v-sku" placeholder="SKU" value="${esc(v.sku || "")}" maxlength="60" aria-label="Shade SKU">
       <input class="v-stock" type="number" min="0" step="1" placeholder="Stock" value="${esc(stock)}" aria-label="Shade stock">
@@ -315,12 +334,111 @@
     refreshShadeOptions();
   });
   $("#variants").addEventListener("click", (e) => {
+    if (readOnly) return;
     const del = e.target.closest(".v-del");
-    if (!del || readOnly) return;
-    del.closest(".vrow").remove();
-    refreshShadeOptions();
-    onChange();
+    if (del) {
+      del.closest(".vrow").remove();
+      refreshShadeOptions();
+      onChange();
+      return;
+    }
+    const fromPhoto = e.target.closest(".v-fromphoto");
+    if (fromPhoto) takeColourFromPhoto(fromPhoto.closest(".vrow"), fromPhoto);
   });
+
+  /* Guessing a swatch colour by eye is how shades ended up grey or wrong,
+     and guessing it from the whole photo picks up the packaging instead of
+     the product. So the admin clicks the shade itself in its photo — the
+     shade's own photo, or the main one when none is linked. */
+  function takeColourFromPhoto(row) {
+    // Only rows with a path: an empty "Add by path" row is not a photo.
+    const rows = $$("#images .irow").filter((r) => r.querySelector(".i-url").value.trim());
+    const own = rows.find((r) => r.dataset.shade && r.dataset.shade === row.dataset.key);
+    const source = own || rows[0];
+    const url = source ? source.querySelector(".i-url").value.trim() : "";
+    if (!url) { A.toast("Add a photo of this shade first.", true); return; }
+    const name = row.querySelector(".v-name").value.trim() || "this shade";
+    openPicker(url, name, !own, (hex) => {
+      const pick = row.querySelector(".v-pick"), code = row.querySelector(".v-hex");
+      code.value = hex; pick.value = hex; pick.classList.remove("is-unset");
+      onChange();
+      A.toast(`Colour set for ${name}. Save the product to keep it.`);
+    });
+  }
+
+  /* ---------- colour picker ---------- */
+  const pickState = { ctx: null, onPick: null };
+
+  function openPicker(url, shadeName, isMainPhoto, onPick) {
+    $("#pickTitle").textContent = `Pick the colour of ${shadeName}`;
+    $("#pickHelp").textContent = (isMainPhoto ? "No photo is linked to this shade, so this is the main photo. " : "") +
+      "Click the part that shows the shade itself — the tip, the stick or the formula — not the packaging.";
+    $("#pickHex").textContent = "Loading the photo…";
+    $("#pickChip").style.background = "#fff";
+    pickState.ctx = null;
+    pickState.onPick = onPick;
+    const canvas = $("#pickCanvas");
+    const img = new Image();
+    img.onload = () => {
+      const maxW = Math.min(588, window.innerWidth - 64), maxH = Math.round(window.innerHeight * 0.6);
+      const scale = Math.min(1, maxW / img.naturalWidth, maxH / img.naturalHeight);
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      try { ctx.getImageData(0, 0, 1, 1); }
+      catch (e) { closePicker(); A.toast("That photo is on another site, so its colour cannot be read.", true); return; }
+      pickState.ctx = ctx;
+      $("#pickHex").textContent = "Move over the photo, then click the shade";
+    };
+    img.onerror = () => { closePicker(); A.toast("That photo could not be loaded.", true); };
+    img.src = url;
+    $("#pickModal").hidden = false;
+  }
+
+  function closePicker() {
+    $("#pickModal").hidden = true;
+    pickState.ctx = null;
+    pickState.onPick = null;
+  }
+
+  /* The average of a 7×7 patch under the pointer, so one glinting pixel
+     does not become the swatch. */
+  function colourAt(ev) {
+    if (!pickState.ctx) return null;
+    const canvas = $("#pickCanvas"), rect = canvas.getBoundingClientRect();
+    const x = Math.round((ev.clientX - rect.left) * canvas.width / rect.width);
+    const y = Math.round((ev.clientY - rect.top) * canvas.height / rect.height);
+    const x0 = Math.max(0, x - 3), y0 = Math.max(0, y - 3);
+    const w = Math.min(canvas.width, x + 4) - x0, h = Math.min(canvas.height, y + 4) - y0;
+    if (w <= 0 || h <= 0) return null;
+    const d = pickState.ctx.getImageData(x0, y0, w, h).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 128) continue;
+      r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+    }
+    if (!n) return null;
+    return "#" + [r, g, b].map((v) => Math.round(v / n).toString(16).padStart(2, "0")).join("");
+  }
+
+  $("#pickCanvas").addEventListener("pointermove", (ev) => {
+    const hex = colourAt(ev);
+    if (!hex) return;
+    $("#pickChip").style.background = hex;
+    $("#pickHex").textContent = hex;
+  });
+  $("#pickCanvas").addEventListener("pointerdown", (ev) => {
+    const hex = colourAt(ev);
+    if (!hex || !pickState.onPick) return;
+    ev.preventDefault();
+    const done = pickState.onPick;
+    closePicker();
+    done(hex);
+  });
+  $("#pickClose").addEventListener("click", closePicker);
+  $("#pickModal").addEventListener("click", (ev) => { if (ev.target.id === "pickModal") closePicker(); });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("#pickModal").hidden) closePicker(); });
 
   /* ---------- images ---------- */
   function imageRow(im = {}) {
@@ -516,6 +634,32 @@
 
   const showErr = (m) => { const e = $("#err"); e.textContent = m || ""; e.hidden = !m; };
   const note = (m) => { const e = $("#note"); e.textContent = m || ""; e.hidden = !m; };
+
+  /* ---------- delete ---------- */
+  /* Typing the word, not clicking OK, because this cannot be undone. */
+  $("#deleteBtn").addEventListener("click", async () => {
+    if (readOnly || isNew) return;
+    const name = val("name") || "this product";
+    const typed = prompt(`Permanently delete “${name}”?\n\nIts shades and photo links are removed and it cannot be restored. ` +
+      `Past orders keep their own record of what was bought.\n\nIf you might want it back, set the status to ARCHIVED instead.\n\nType DELETE to confirm.`);
+    if (typed === null) return;
+    if (typed.trim() !== "DELETE") { A.toast("Not deleted — type DELETE to confirm.", true); return; }
+    const btn = $("#deleteBtn");
+    btn.disabled = true; btn.textContent = "Deleting…";
+    try {
+      const r = await A.api("/api/admin/products/" + encodeURIComponent(id) + "?permanent=1", { method: "DELETE" });
+      const q = new URLSearchParams({ deleted: r.deleted.name });
+      if (r.rebuild && r.rebuild.status) q.set("rebuild", r.rebuild.status);
+      if (r.rebuild && r.rebuild.error) q.set("rebuildError", r.rebuild.error);
+      location.href = "/admin/products?" + q.toString();
+    } catch (err) {
+      // The button is in the sidebar, far from the message area at the top.
+      showErr(err.message);
+      A.toast(err.message, true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      btn.disabled = false; btn.textContent = "Delete product";
+    }
+  });
 
   /* ---------- save ---------- */
   $("#form").addEventListener("submit", async (e) => {
