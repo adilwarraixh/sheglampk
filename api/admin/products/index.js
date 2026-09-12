@@ -2,6 +2,7 @@
    products:create is Super Admin only, so ashba can browse the catalogue
    but not change it. The check is in rbac.js, applied by guard(). */
 const P = require("../../../lib/products-admin.js");
+const R = require("../../../lib/rebuild.js");
 const { ok, fail, guard, handler, methods, readBody, clientIp } = require("../../../lib/http.js");
 const auth = require("../../../lib/auth.js");
 
@@ -36,7 +37,11 @@ module.exports = handler(async (req, res) =>
         action: "PRODUCT_CREATED", targetType: "product", targetId: String(product.id),
         detail: { name: product.name, status: product.status }, ip: clientIp(req),
       });
-      return ok(res, { product });
+      // A draft changes nothing a customer can see, so it needs no rebuild.
+      const rebuild = product.status === "PUBLISHED"
+        ? await R.requestRebuild(`published “${product.name}”`, { by: session.user.username })
+        : { status: "not-needed" };
+      return ok(res, { product, rebuild });
     },
   })
 );

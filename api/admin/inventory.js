@@ -1,6 +1,7 @@
 /* /api/admin/inventory — stock levels (inventory:view) and updates
    (inventory:update, Super Admin only). */
 const D = require("../../lib/admin-data.js");
+const R = require("../../lib/rebuild.js");
 const { ok, fail, guard, handler, methods, readBody, clientIp } = require("../../lib/http.js");
 const auth = require("../../lib/auth.js");
 
@@ -26,7 +27,9 @@ module.exports = handler(async (req, res) =>
         targetId: String(body.variantId || body.productId),
         detail: { name: r.name, quantity: r.quantity }, ip: clientIp(req),
       });
-      return ok(res, r);
+      // Pages show "in stock" / "sold out", so a stock change is a shop change.
+      const rebuild = await R.requestRebuild(`stock of “${r.name}” set to ${r.quantity}`, { by: session.user.username });
+      return ok(res, { ...r, rebuild });
     },
   })
 );

@@ -124,12 +124,15 @@
       try {
         /* An absolute figure, not a delta — two people counting the same
            shelf must not both add their count. */
-        await A.api("/api/admin/inventory", {
+        const r = await A.api("/api/admin/inventory", {
           method: "PATCH",
           body: b.dataset.variant ? { variantId: Number(b.dataset.variant), quantity: qty }
                                   : { productId: Number(b.dataset.product), quantity: qty },
         });
-        A.toast("Stock updated");
+        const shop = r.rebuild && r.rebuild.status;
+        const shopFailed = shop === "failed" || shop === "not-configured";
+        A.toast(shop === "queued" ? "Stock updated — the live shop updates in a minute or two"
+          : shopFailed ? "Stock updated, but the live shop could not be updated. See Products." : "Stock updated", shopFailed);
         load();
       } catch (e) { A.toast(e.message, true); b.disabled = false; b.textContent = "Save"; }
     }));

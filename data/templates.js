@@ -26,6 +26,20 @@
   const imgSrc = (src, base) =>
     !src || /^(data:|https?:|\/)/.test(src) ? src : (base || "") + src;
 
+  /* A shade swatch. The colour is typed in the admin portal and lands in a
+     style attribute, so only a strict #rgb / #rrggbb value is used. A shade
+     with no colour shows its own photo instead, and one with neither shows
+     a neutral — never the literal "background:null" that left swatches
+     blank. */
+  const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+  function swatchStyle(s, base) {
+    const hex = s && String(s.hex || "").trim();
+    if (hex && HEX.test(hex)) return `background:${hex}`;
+    if (s && s.image && /^[\w\/.\-]+$/.test(s.image))
+      return `background:#f3f3f4 url('${imgSrc(s.image, base)}') center/cover`;
+    return "background:#e9e9ec";
+  }
+
   /* ---------- Icon set ---------- */
   const ICONS = {
     search: '<circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>',
@@ -93,10 +107,10 @@
       <span class="price--off">-${p.discount}%</span>`;
   }
 
-  function swatchRow(p, max = 5) {
+  function swatchRow(p, max = 5, base = "") {
     if (!p.shades || !p.shades.length) return "";
     const shown = p.shades.slice(0, max)
-      .map((s) => `<span class="card__swatch" style="background:${s.hex}" title="${esc(s.name)}"></span>`)
+      .map((s) => `<span class="card__swatch" style="${swatchStyle(s, base)}" title="${esc(s.name)}"></span>`)
       .join("");
     const more = p.shades.length > max
       ? `<span class="card__swatch--more">+${p.shades.length - max}</span>` : "";
@@ -120,22 +134,26 @@
     const promo = p.oldPrice ? `<p class="card__promo">Save ${money(p.oldPrice - p.price)}</p>` : "";
     const rating = p.reviewCount
       ? `<div class="card__rating">${stars(p.rating)} <span>${p.rating} (${p.reviewCount})</span></div>` : "";
-    return `<article class="card" data-id="${p.id}">
+    /* Keyed by slug. p.id is the product's position in this build's
+       catalogue and moves when a product is unpublished, so a cart saved
+       against it could later point at a different product. */
+    const key = esc(p.slug);
+    return `<article class="card" data-id="${key}">
   <div class="card__media">
     <a href="${href}" aria-label="${esc(p.name)}">
       <img src="${imgSrc(p.image, base)}" alt="${esc(p.name)}" loading="lazy" width="500" height="600"
            data-tile="${p.tile}" data-fallback="${esc(p.name.charAt(0))}">
     </a>
     ${flags(p)}
-    <button class="card__wish js-wish" data-id="${p.id}" aria-label="Save ${esc(p.name)} to wishlist">${icon("heart", 17)}</button>
-    <button class="card__quick js-quick" data-id="${p.id}">Quick view</button>
+    <button class="card__wish js-wish" data-id="${key}" aria-label="Save ${esc(p.name)} to wishlist">${icon("heart", 17)}</button>
+    <button class="card__quick js-quick" data-id="${key}">Quick view</button>
   </div>
   ${promo}
   <h3 class="card__name"><a href="${href}">${esc(p.name)}</a></h3>
-  ${swatchRow(p)}
+  ${swatchRow(p, 5, base)}
   ${rating}
   <div class="card__prices">${priceBlock(p)}</div>
-  <button class="card__cta js-add" data-id="${p.id}" ${p.inStock ? "" : "disabled"}>${p.inStock ? "Add to Cart" : "Sold out"}</button>
+  <button class="card__cta js-add" data-id="${key}" ${p.inStock ? "" : "disabled"}>${p.inStock ? "Add to Cart" : "Sold out"}</button>
 </article>`;
   }
 
@@ -165,5 +183,5 @@
     return `<nav class="crumbs container" aria-label="Breadcrumb">${parts.join("")}</nav>`;
   }
 
-  return { esc, imgSrc, icon, brandIcon, logo, stars, priceBlock, swatchRow, flags, card, grid, reviewItem, crumbs, money };
+  return { esc, imgSrc, swatchStyle, icon, brandIcon, logo, stars, priceBlock, swatchRow, flags, card, grid, reviewItem, crumbs, money };
 });

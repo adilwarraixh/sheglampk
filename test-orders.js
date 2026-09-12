@@ -15,6 +15,8 @@ const { sql } = require(P + "/db/client");
 process.env.MAIL_PROVIDER = "none";
 delete process.env.RESEND_API_KEY;
 delete process.env.BREVO_API_KEY;
+// Selling the last unit asks for a shop rebuild; a test run must never start one.
+process.env.DEPLOY_HOOK_URL = "";
 
 const auth = require(P + "/lib/auth");
 const notify = require(P + "/lib/order-emails");

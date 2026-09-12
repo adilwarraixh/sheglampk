@@ -43,10 +43,15 @@ The storefront is pre-rendered static HTML, so it is fast and works with JavaScr
 disabled. `db/export-catalogue.js` writes the catalogue into `data/products.json` at
 build time, and `build.js` bakes that into the pages.
 
-After the page loads, `assets/js/catalogue-sync.js` refetches `/api/products` and
-swaps the grid if it differs. That is why **publishing a product does not need a
-deploy** — it appears on the next page load. The baked HTML is the floor, not the
-ceiling: if the API is unreachable the page keeps what the build gave it.
+Because the pages are generated, **a change made in the portal reaches customers when
+the site is rebuilt** — and the portal starts that rebuild itself. Saving a published
+product, a stock level, a CSV import or a hero slide calls a Vercel Deploy Hook
+(`DEPLOY_HOOK_URL`), and the live shop updates in a minute or two. `lib/rebuild.js`
+folds a burst of saves into one build, and the bar at the top of `/admin/products` says
+whether the shop is up to date, still updating, or needs **Update shop now**.
+
+A product's URL opened before its page exists lands on a "being prepared" page that
+opens the product by itself once the build is live.
 
 | Layer | Where |
 |---|---|
@@ -84,8 +89,8 @@ npm run dev                    # http://localhost:5601
 Vercel runs, so the portal can be exercised end to end before deploying.
 
 **Rebuild after changing** `data/catalog.js`, `src/content.js`, `build.js`, or anything
-in `assets/`. Product and hero changes made in the admin portal need `npm run build`
-only to update the *static* copy — they are live on the site immediately.
+in `assets/`. On Vercel, product, stock and hero changes made in the admin portal start
+that rebuild automatically; locally, run `npm run build` to see them.
 
 ---
 
@@ -104,6 +109,7 @@ dashboard**, never in a file. `.env.example` documents every one.
 | `SITE_BASE_URL` | for email | Used for the customer's tracking link |
 | `ADMIN_BASE_URL` | for email | Used for the "View order" link in the alert |
 | `CRON_SECRET` | production | Authenticates the notification retry sweep |
+| `DEPLOY_HOOK_URL` | production | Vercel Deploy Hook the portal calls so saved changes reach the live shop. A secret: anyone holding it can redeploy the site |
 
 `MAIL_PROVIDER` defaults to `none`, which is deliberate: **an unconfigured shop still
 takes orders.** Notifications are recorded and can be sent later from the portal.
@@ -151,17 +157,26 @@ Hosted on Vercel, deployed from GitHub `main`. **Every push to `main` deploys.**
 1. **Import the repo** at vercel.com/new. Vercel reads `vercel.json` — do not override
    the build command or output directory.
 
-2. **Add the environment variables** (Settings → Environment Variables, Production
-   scope). All eight from the table above.
+2. **Create the deploy hook** the portal uses to update the live shop:
 
-3. **Turn off Deployment Protection** (Settings → Deployment Protection → Vercel
+   ```bash
+   vercel deploy-hooks create shop-rebuild --ref main
+   ```
+
+   Its URL is the value for `DEPLOY_HOOK_URL`. Without it every save still works, but
+   customers do not see the change until the next push to `main`.
+
+3. **Add the environment variables** (Settings → Environment Variables, Production
+   scope, Sensitive). All nine from the table above.
+
+4. **Turn off Deployment Protection** (Settings → Deployment Protection → Vercel
    Authentication → Disabled). Pro accounts enable it by default, and it makes the
    whole shop ask visitors to log into Vercel.
 
-4. **Add the domain** (Settings → Domains): `sheglampk.online` and `www`. Use the DNS
+5. **Add the domain** (Settings → Domains): `sheglampk.online` and `www`. Use the DNS
    records Vercel shows you.
 
-5. **Redeploy.** Environment variables are snapshotted at build time — adding them does
+6. **Redeploy.** Environment variables are snapshotted at build time — adding them does
    not affect a deployment that already exists.
 
 ### Deploying afterwards
@@ -216,11 +231,18 @@ the API refuses regardless.
 
 ### Add a product
 
-`/admin/products` → **+ Add New Product**. Fill in name, price, stock, category, add
-images, set status to **PUBLISHED**, save. It is on the shop immediately — no deploy.
+`/admin/products` → **+ Add New Product**. Fill in name, price, category, shades and
+images, set status to **PUBLISHED**, save. The live shop rebuilds and shows it within a
+minute or two; the bar at the top of the product list says when it is live.
 
-A product **cannot be published without a price**. The API and a database constraint
-both refuse it.
+- **Shades** each have a name, stock and colour. The colour is the swatch customers pick
+  from — use the picker, or type a code like `#E83E70`. Left blank, the swatch shows
+  that shade's photo instead.
+- **Photos**: choose which shade each photo shows. Picking that shade on the product
+  page switches to its photo.
+- **Stock** for a product with shades is the total of its shades, so set it per shade.
+
+A product **cannot be published without a price or a category**. The API refuses both.
 
 ### Edit or retire a product
 
@@ -257,8 +279,8 @@ by a delta, so two people counting the same shelf cannot both add their count.
 ### Change the homepage hero
 
 `/admin/homepage`. Three video slides with headline, subtext and buttons. Videos are
-referenced by path — put the file in `assets/video/` and reference it. Changes show on
-the next deploy.
+referenced by path — put the file in `assets/video/` and reference it. Saving a slide
+rebuilds the live homepage automatically.
 
 ### Manage the other admin account
 
@@ -306,7 +328,7 @@ Each order's drawer in `/admin/orders` shows the state of both emails, with **Re
 npm test
 ```
 
-Runs five suites against the real database and the real route modules, so the guard,
+Runs six suites against the real database and the real route modules, so the guard,
 CSRF and RBAC rules are exercised as deployed:
 
 | Suite | Covers |
@@ -316,12 +338,17 @@ CSRF and RBAC rules are exercised as deployed:
 | `test-media.js` | upload validation and serving |
 | `test-import.js` | CSV parsing, analysis, apply |
 | `test-orders.js` | the full order and notification workflow |
+| `test-catalogue.js` | shade ids and photo links surviving a save, colours, stock totals, retired shades, shop rebuilds |
 
-The suites use the live database. They set real passwords on the real accounts and
-**scramble them on cleanup**, so a run never leaves a usable credential behind —
-re-issue with `npm run db:passwords` afterwards.
+The suites use the live database. They set temporary passwords on the real accounts to
+exercise login, then **put the original credentials back** (`test-helpers.js`) and end
+only the sessions the run opened, so a real admin stays signed in with the password
+they chose. Products a suite creates are drafts and are deleted afterwards; real
+products it updates are restored exactly.
 
 `test-orders.js` forces `MAIL_PROVIDER=none`, so running tests never sends live email.
+The suites clear `DEPLOY_HOOK_URL`, and the rebuild tests use a local stand-in for
+Vercel, so a run never starts a real build.
 
 ---
 
@@ -378,10 +405,25 @@ Homepage sections draw on merchandising flags. If nothing is flagged Featured or
 Bestseller, the main section falls back to the catalogue. If the page is genuinely empty,
 check that products are **PUBLISHED** and have a price.
 
+### A change made in the portal is not showing on the shop
+
+Look at the bar at the top of `/admin/products`:
+
+- **Updating** — a build is running. Give it a minute or two.
+- **Did not update** or **has not run** — press **Update shop now**, and check the
+  latest deployment in the Vercel dashboard for a build error.
+- **Automatic shop updates are not set up** — `DEPLOY_HOOK_URL` is missing. Create the
+  hook (see [First-time setup](#first-time-setup)), add the variable, redeploy.
+
+The build log line `automatic rebuilds: deploy hook configured` confirms Vercel has the
+variable.
+
 ### A product page 404s
 
 `build.js` empties `product/` on every build, so pages for unpublished or archived
-products are removed. If a published product has no page, run `npm run build`.
+products are removed. A product published moments ago shows a "being prepared" page
+until its rebuild finishes. If a published product still has no page after that, press
+**Update shop now**.
 
 ---
 

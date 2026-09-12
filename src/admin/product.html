@@ -47,7 +47,8 @@
                 <textarea id="description" rows="8" maxlength="20000"></textarea></div>
               <div class="grid2">
                 <div class="field"><label for="brand">Brand</label><input id="brand" value="SHEGLAM" maxlength="80"></div>
-                <div class="field"><label for="categoryId">Category</label><select id="categoryId"></select></div>
+                <div class="field"><label for="categoryId">Category</label><select id="categoryId"></select>
+                  <p class="sub" id="catHint" hidden></p></div>
               </div>
               <div class="grid2">
                 <div class="field"><label for="subcategory">Subcategory</label>
@@ -78,7 +79,8 @@
               <div class="grid3">
                 <div class="field"><label for="sku">SKU</label><input id="sku" maxlength="60"></div>
                 <div class="field"><label for="stockQuantity">Stock quantity</label>
-                  <input id="stockQuantity" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+                  <input id="stockQuantity" type="number" min="0" step="1" value="0" inputmode="numeric">
+                  <p class="sub" id="stockHint" hidden>The total of the shade stock below.</p></div>
                 <div class="field"><label for="lowStockThreshold">Low stock at</label>
                   <input id="lowStockThreshold" type="number" min="0" step="1" value="5" inputmode="numeric"></div>
               </div>
@@ -91,7 +93,10 @@
               <button type="button" class="btn btn--outline btn--sm" id="addVariant">+ Add shade</button></div>
             <div class="card__body">
               <div id="variants"></div>
-              <p class="sub">Leave empty for products sold in a single option. Stock here is per shade.</p>
+              <p class="sub">Leave empty for a product sold in a single option. Stock is per shade, and the
+                product's stock is their total. The colour is the swatch customers choose from: use the
+                picker, or type a code such as <code>#E83E70</code>. If you leave the code blank, the shop
+                shows that shade's photo in the swatch instead.</p>
             </div>
           </section>
 
@@ -109,9 +114,10 @@
               </div>
               <div id="uploadMsg" class="msg" hidden></div>
               <div id="images"></div>
-              <p class="sub">The first image is the main one. Uploaded files are stored in the
-                database and served from <code>/api/media/…</code>; you can also point at a file
-                already in <code>/assets/img/products/</code>.</p>
+              <p class="sub">The first image is the main one. Choose the shade a photo shows, and customers
+                see that photo when they pick the shade. Uploaded files are stored in the database and
+                served from <code>/api/media/…</code>; you can also point at a file already in
+                <code>/assets/img/products/</code>.</p>
             </div>
           </section>
 
@@ -190,9 +196,8 @@
 
     if (readOnly) {
       // Ashba can read a product but not save it. The API refuses too.
-      $$("#form input, #form select, #form textarea").forEach((el) => (el.disabled = true));
-      $("#save").remove();
-      $("#addVariant").remove(); $("#addImage").remove();
+      $$("#form input, #form select, #form textarea, #form button").forEach((el) => (el.disabled = true));
+      ["#save", "#addVariant", "#addImage", "#uploadBtn", "#dropzone"].forEach((s) => { const el = $(s); if (el) el.remove(); });
       note("You have view-only access to the catalogue.");
     }
   }).catch(() => {});
@@ -238,69 +243,145 @@
     onChange();
   }
 
-  /* ---------- variants ---------- */
+  /* ---------- shades ---------- */
+  let nextKey = 0;
+  const normHex = (s) => {
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(s || "").trim());
+    return m ? "#" + (m[1].length === 3 ? m[1].replace(/./g, "$&$&") : m[1]).toLowerCase() : null;
+  };
+
+  /* A colour input can never be empty, so on its own it saved #e9e9ec — a
+     plain grey — for every shade nobody picked a colour for, and the shop
+     showed that grey as the shade. The code box beside it can be left
+     blank, which means "no colour yet".
+
+     Each row has a key (its id, or a temporary one for a new shade) so a
+     photo can point at a shade that has not been saved yet. */
   function variantRow(v = {}) {
-    return `<div class="vrow" data-id="${v.id || ""}">
-      <input class="v-name"  placeholder="Shade name" value="${esc(v.variant_name || v.name || "")}" maxlength="120">
-      <input class="v-hex"   type="color" value="${esc(v.hex || "#e9e9ec")}" title="Swatch colour">
-      <input class="v-sku"   placeholder="SKU" value="${esc(v.sku || "")}" maxlength="60">
-      <input class="v-stock" type="number" min="0" step="1" placeholder="Stock" value="${v.stock_quantity != null ? v.stock_quantity : (v.stock != null ? v.stock : 0)}">
+    const key = v.id ? String(v.id) : "new-" + (++nextKey);
+    const hex = normHex(v.hex);
+    const stock = v.stock_quantity != null ? v.stock_quantity : (v.stock != null ? v.stock : 0);
+    return `<div class="vrow" data-id="${esc(v.id || "")}" data-key="${esc(key)}">
+      <input class="v-name" placeholder="Shade name" value="${esc(v.variant_name || v.name || "")}" maxlength="120" aria-label="Shade name">
+      <div class="v-colour">
+        <input class="v-pick${hex ? "" : " is-unset"}" type="color" value="${esc(hex || "#e9e9ec")}" title="Pick the swatch colour" aria-label="Pick the swatch colour">
+        <input class="v-hex" placeholder="no colour" value="${esc(hex || "")}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Colour code">
+      </div>
+      <input class="v-sku" placeholder="SKU" value="${esc(v.sku || "")}" maxlength="60" aria-label="Shade SKU">
+      <input class="v-stock" type="number" min="0" step="1" placeholder="Stock" value="${esc(stock)}" aria-label="Shade stock">
       <button type="button" class="btn btn--outline btn--sm v-del" aria-label="Remove shade">✕</button>
     </div>`;
   }
   function renderVariants(list) {
     $("#variants").innerHTML = list.map(variantRow).join("");
-    bindRemovers("#variants", ".v-del");
+    refreshShadeOptions();
   }
+  const shadeRows = () => $$("#variants .vrow")
+    .map((row) => ({ row, key: row.dataset.key, name: row.querySelector(".v-name").value.trim() }))
+    .filter((s) => s.name);
+
   function readVariants() {
-    return $$("#variants .vrow").map((r) => ({
-      id: r.dataset.id || null,
-      name: r.querySelector(".v-name").value.trim(),
-      hex: r.querySelector(".v-hex").value,
-      sku: r.querySelector(".v-sku").value.trim() || null,
-      stock: Number(r.querySelector(".v-stock").value || 0),
-    })).filter((v) => v.name);
+    const problems = [];
+    const seen = new Set();
+    const variants = shadeRows().map(({ row, name }) => {
+      const raw = row.querySelector(".v-hex").value.trim();
+      const hex = raw ? normHex(raw) : null;
+      if (raw && !hex) problems.push(`“${name}”: “${raw}” is not a colour code. Use one like #E83E70, or leave it blank.`);
+      if (seen.has(name.toLowerCase())) problems.push(`The shade “${name}” is listed twice.`);
+      seen.add(name.toLowerCase());
+      return {
+        id: row.dataset.id || null,
+        name,
+        hex,
+        sku: row.querySelector(".v-sku").value.trim() || null,
+        stock: Number(row.querySelector(".v-stock").value || 0),
+      };
+    });
+    return { variants, problems };
   }
+
+  $("#variants").addEventListener("input", (e) => {
+    const row = e.target.closest(".vrow");
+    if (!row) return;
+    const pick = row.querySelector(".v-pick"), code = row.querySelector(".v-hex");
+    if (e.target === pick) {
+      code.value = pick.value;
+      pick.classList.remove("is-unset");
+    } else if (e.target === code) {
+      const h = normHex(code.value);
+      if (h) { pick.value = h; pick.classList.remove("is-unset"); }
+      else if (!code.value.trim()) pick.classList.add("is-unset");
+    }
+    refreshShadeOptions();
+  });
+  $("#variants").addEventListener("click", (e) => {
+    const del = e.target.closest(".v-del");
+    if (!del || readOnly) return;
+    del.closest(".vrow").remove();
+    refreshShadeOptions();
+    onChange();
+  });
 
   /* ---------- images ---------- */
   function imageRow(im = {}) {
     const url = typeof im === "string" ? im : (im.url || "");
-    return `<div class="irow">
-      <input class="i-url" placeholder="/assets/img/products/file.png" value="${esc(url)}" maxlength="500">
-      <input class="i-alt" placeholder="Alt text" value="${esc(im.alt || "")}" maxlength="200">
+    return `<div class="irow" data-shade="${esc(im.variant_id ? String(im.variant_id) : "")}">
+      <input class="i-url" placeholder="/assets/img/products/file.png" value="${esc(url)}" maxlength="500" aria-label="Image path">
+      <input class="i-alt" placeholder="Alt text" value="${esc(im.alt || "")}" maxlength="200" aria-label="Alt text">
+      <select class="i-shade" aria-label="Shade shown in this photo"></select>
       <img class="i-thumb" src="${esc(url)}" alt="" onerror="this.style.visibility='hidden'">
       <button type="button" class="btn btn--outline btn--sm i-del" aria-label="Remove image">✕</button>
     </div>`;
   }
   function renderImages(list) {
     $("#images").innerHTML = list.map(imageRow).join("");
-    bindRemovers("#images", ".i-del");
-    $$("#images .i-url").forEach((el) => el.addEventListener("input", () => {
-      const t = el.parentElement.querySelector(".i-thumb");
-      t.src = el.value; t.style.visibility = "visible";
-      onChange();
-    }));
+    refreshShadeOptions();
+  }
+  /* Rebuilt whenever the shades change. A photo remembers its shade by key,
+     not by name, so renaming a shade keeps its photo attached. */
+  function refreshShadeOptions() {
+    const shades = shadeRows();
+    $$("#images .irow").forEach((row) => {
+      const sel = row.querySelector(".i-shade");
+      const chosen = sel.options.length ? sel.value : row.dataset.shade;
+      sel.innerHTML = `<option value="">${shades.length ? "Not a particular shade" : "No shades"}</option>` +
+        shades.map((s) => `<option value="${esc(s.key)}">${esc(s.name)}</option>`).join("");
+      sel.value = shades.some((s) => s.key === chosen) ? chosen : "";
+      row.dataset.shade = sel.value;
+      sel.disabled = readOnly || !shades.length;
+    });
   }
   function readImages() {
+    const names = new Map(shadeRows().map((s) => [s.key, s.name]));
     return $$("#images .irow").map((r) => ({
       url: r.querySelector(".i-url").value.trim(),
       alt: r.querySelector(".i-alt").value.trim() || null,
+      shade: names.get(r.querySelector(".i-shade").value) || null,
     })).filter((i) => i.url);
   }
-
-  function bindRemovers(scope, sel) {
-    $$(scope + " " + sel).forEach((b) => b.addEventListener("click", () => {
-      b.parentElement.remove(); onChange();
-    }));
-  }
+  $("#images").addEventListener("input", (e) => {
+    if (!e.target.classList.contains("i-url")) return;
+    const t = e.target.parentElement.querySelector(".i-thumb");
+    t.src = e.target.value; t.style.visibility = "visible";
+  });
+  $("#images").addEventListener("change", (e) => {
+    if (e.target.classList.contains("i-shade")) e.target.closest(".irow").dataset.shade = e.target.value;
+  });
+  $("#images").addEventListener("click", (e) => {
+    const del = e.target.closest(".i-del");
+    if (!del || readOnly) return;
+    del.closest(".irow").remove();
+    onChange();
+  });
 
   const addV = $("#addVariant"); if (addV) addV.addEventListener("click", () => {
     $("#variants").insertAdjacentHTML("beforeend", variantRow());
-    bindRemovers("#variants", ".v-del"); onChange();
+    refreshShadeOptions(); onChange();
+    const names = $$("#variants .v-name"); names[names.length - 1].focus();
   });
   const addI = $("#addImage"); if (addI) addI.addEventListener("click", () => {
     $("#images").insertAdjacentHTML("beforeend", imageRow());
-    renderImagesRebind();
+    refreshShadeOptions();
   });
 
   /* ---------- upload ---------- */
@@ -346,7 +427,7 @@
         // Land it as a new image row, ready to save with the product.
         $("#images").insertAdjacentHTML("beforeend",
           imageRow({ url: res.media.url, alt: val("name") || file.name.replace(/\.[^.]+$/, "") }));
-        renderImagesRebind();
+        refreshShadeOptions();
         onChange();
         done++;
         if (res.media.deduped) problems.push(`${file.name}: already uploaded, reused the existing copy`);
@@ -356,7 +437,7 @@
     }
 
     const parts = [];
-    if (done) parts.push(`<b>${done} image${done === 1 ? "" : "s"} added.</b> Save the product to keep them.`);
+    if (done) parts.push(`<b>${done} image${done === 1 ? "" : "s"} added.</b> Choose the shade each one shows, then save the product to keep them.`);
     if (problems.length) parts.push(problems.map(esc).join("<br>"));
     uploadMsg(parts.join("<br>"), problems.length && !done);
   }
@@ -373,17 +454,8 @@
     ["dragleave", "drop"].forEach((ev) => zone.addEventListener(ev, (e) => {
       e.preventDefault(); zone.classList.remove("is-over");
     }));
-    zone.addEventListener("drop", (e) => uploadFiles(e.dataTransfer && e.dataTransfer.files));
-    zone.addEventListener("click", () => picker && picker.click());
-  }
-  function renderImagesRebind() {
-    bindRemovers("#images", ".i-del");
-    $$("#images .i-url").forEach((el) => {
-      el.oninput = () => {
-        const t = el.parentElement.querySelector(".i-thumb");
-        t.src = el.value; t.style.visibility = "visible"; onChange();
-      };
-    });
+    zone.addEventListener("drop", (e) => { if (!readOnly) uploadFiles(e.dataTransfer && e.dataTransfer.files); });
+    zone.addEventListener("click", () => { if (!readOnly && picker) picker.click(); });
   }
 
   /* ---------- live preview + hints ---------- */
@@ -405,7 +477,7 @@
 
     const hint = {
       DRAFT: "Not visible to customers. Use this while you are still writing the listing.",
-      PUBLISHED: "Live on the shop and purchasable.",
+      PUBLISHED: "Live on the shop and purchasable. After saving, the shop updates within a minute or two.",
       UNPUBLISHED: "Hidden from the shop. Nothing is lost — you can publish it again.",
       ARCHIVED: "Retired. Hidden from the shop and from search, but kept so past orders still work.",
     }[status] || "";
@@ -415,6 +487,23 @@
       ? "This product has no price, so it cannot be published yet."
       : "A product cannot be published without a regular price.";
     $("#priceHint").style.color = (status === "PUBLISHED" && price === null) ? "var(--err)" : "";
+
+    const needsCategory = status === "PUBLISHED" && !F("categoryId").value;
+    $("#catHint").textContent = needsCategory ? "Choose a category — a published product needs one." : "";
+    $("#catHint").style.color = needsCategory ? "var(--err)" : "";
+    $("#catHint").hidden = !needsCategory;
+
+    /* A product with shades has no stock of its own: it has theirs. */
+    const shades = shadeRows();
+    const stockEl = F("stockQuantity");
+    if (shades.length) {
+      stockEl.value = shades.reduce((sum, s) => sum + (parseInt(s.row.querySelector(".v-stock").value, 10) || 0), 0);
+      stockEl.disabled = true;
+      $("#stockHint").hidden = false;
+    } else {
+      stockEl.disabled = readOnly;
+      $("#stockHint").hidden = true;
+    }
 
     const s = val("slug") || slugify(val("name"));
     $("#slugHint").textContent = s ? `Customers will see /product/${s}.html` : "";
@@ -433,6 +522,13 @@
     e.preventDefault();
     if (readOnly) return;
     showErr("");
+
+    const { variants, problems } = readVariants();
+    if (problems.length) {
+      showErr(problems.join(" "));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
 
     const body = {
       name: val("name"),
@@ -456,11 +552,14 @@
       slug: val("slug"),
       seoTitle: val("seoTitle"),
       seoDescription: val("seoDescription"),
-      variants: readVariants(),
+      variants,
       images: readImages(),
     };
 
     if (!body.name) { showErr("A product name is required."); F("name").focus(); return; }
+    if (body.status === "PUBLISHED" && !body.categoryId) {
+      showErr("Choose a category before publishing."); F("categoryId").focus(); return;
+    }
 
     const btn = $("#save");
     btn.disabled = true; btn.textContent = "Saving…";
@@ -469,7 +568,11 @@
         ? await A.api("/api/admin/products", { method: "POST", body })
         : await A.api("/api/admin/products/" + encodeURIComponent(id), { method: "PATCH", body });
       A.toast("Saved");
-      location.href = "/admin/products?saved=" + encodeURIComponent(r.product.name);
+      // The list page explains whether and when the live shop changes.
+      const q = new URLSearchParams({ saved: r.product.name, status: r.product.status });
+      if (r.rebuild && r.rebuild.status) q.set("rebuild", r.rebuild.status);
+      if (r.rebuild && r.rebuild.error) q.set("rebuildError", r.rebuild.error);
+      location.href = "/admin/products?" + q.toString();
     } catch (err) {
       showErr(err.message);
       window.scrollTo({ top: 0, behavior: "smooth" });

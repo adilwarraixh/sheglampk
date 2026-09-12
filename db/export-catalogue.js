@@ -24,6 +24,15 @@ async function main() {
   const { sql, describeTarget } = require("./client.js");
   console.log(`\nCatalogue export ← ${describeTarget()}`);
 
+  /* Stamped before reading, so a change saved while this export runs is not
+     mistaken for one it includes (see lib/rebuild.js). Only a production
+     build counts: a local or preview build does not change the live shop. */
+  if (process.env.VERCEL_ENV === "production") {
+    try { await require("../lib/rebuild.js").markExported(); }
+    catch (e) { console.warn(`  (could not record the export time: ${e.message})`); }
+  }
+  console.log(`  automatic rebuilds: ${process.env.DEPLOY_HOOK_URL ? "deploy hook configured" : "DEPLOY_HOOK_URL is not set"}`);
+
   const products = await sql`
     SELECT p.id, p.slug, p.sku, p.name, p.subcategory, p.short_description, p.description,
            p.finish, p.size, p.price, p.sale_price, p.stock_quantity,
@@ -38,7 +47,8 @@ async function main() {
   const ids = products.map((p) => p.id);
   const variants = ids.length ? await sql`
     SELECT product_id, id, variant_name, hex, stock_quantity, position
-      FROM product_variants WHERE product_id = ANY(${ids}) ORDER BY product_id, position` : [];
+      FROM product_variants WHERE product_id = ANY(${ids}) AND is_available
+     ORDER BY product_id, position` : [];
   const images = ids.length ? await sql`
     SELECT product_id, variant_id, url, alt, position, is_primary
       FROM product_images WHERE product_id = ANY(${ids}) ORDER BY product_id, position` : [];

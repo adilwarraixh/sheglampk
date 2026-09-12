@@ -22,7 +22,12 @@ const { sql } = require(ROOT + "/db/client.js");
 const auth = require(ROOT + "/lib/auth.js");
 
 async function snapshotCredentials() {
-  return sql`SELECT id, password_hash, password_salt, must_change_password FROM users`;
+  const users = await sql`SELECT id, password_hash, password_salt, must_change_password FROM users`;
+  /* Sessions opened from now on belong to the run. Remembered on the
+     snapshot so restore can end those and leave a real admin signed in. */
+  const [{ now }] = await sql`SELECT now() AS now`;
+  users.startedAt = now;
+  return users;
 }
 
 async function restoreCredentials(snapshot) {
@@ -42,8 +47,13 @@ async function restoreCredentials(snapshot) {
                          must_change_password = true WHERE id = ${u.id}`;
     }
   }
-  // Sessions opened during the run are not the owner's; end them.
-  await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL`;
+  // Sessions opened during the run are not the owner's; end those — only
+  // those — so running the tests does not sign a real admin out.
+  if (snapshot && snapshot.startedAt) {
+    await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL AND created_at >= ${snapshot.startedAt}`;
+  } else {
+    await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL`;
+  }
   await sql`DELETE FROM login_attempts`;
 }
 

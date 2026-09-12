@@ -37,6 +37,34 @@
   let wishlist = store.get("sgpk_wishlist", []);
   let orders = store.get("sgpk_orders", []);
 
+  /* Cart, wishlist and recently viewed are keyed by product slug. They used
+     to store the product's position in the build's catalogue, which shifts
+     whenever a product is unpublished, so a saved cart could quietly point
+     at a different product after the site was rebuilt. A position cannot be
+     trusted across builds, so old cart lines are dropped; wishlist and
+     history entries, where a wrong guess costs nothing, are translated.
+     Lines for products or shades no longer on sale go too — they would
+     count in the badge and then fail at checkout. */
+  const isLegacyKey = (id) => typeof id === "number" || /^\d+$/.test(String(id));
+  const slugFor = (id) => { const p = byId(id); return p ? p.slug : null; };
+  (function migrateSavedKeys() {
+    const before = JSON.stringify([cart, wishlist]);
+    cart = (Array.isArray(cart) ? cart : []).filter((l) => {
+      if (!l || isLegacyKey(l.id)) return false;
+      const p = bySlug(String(l.id));
+      if (!p) return false;
+      return p.shades && p.shades.length ? p.shades.some((s) => s.name === l.shade) : !l.shade;
+    }).map((l) => ({ id: String(l.id), shade: l.shade || "", qty: clamp(parseInt(l.qty, 10) || 1, 1, 99) }));
+    wishlist = Array.from(new Set((Array.isArray(wishlist) ? wishlist : []).map(slugFor).filter(Boolean)));
+    if (JSON.stringify([cart, wishlist]) !== before) {
+      store.set("sgpk_cart", cart);
+      store.set("sgpk_wishlist", wishlist);
+    }
+    const recent = store.get("sgpk_recent", []);
+    const recentNow = Array.from(new Set((Array.isArray(recent) ? recent : []).map(slugFor).filter(Boolean)));
+    if (JSON.stringify(recentNow) !== JSON.stringify(recent)) store.set("sgpk_recent", recentNow);
+  })();
+
   const lineKey = (id, shade) => `${id}::${shade || ""}`;
   const saveCart = () => store.set("sgpk_cart", cart);
   const saveWish = () => store.set("sgpk_wishlist", wishlist);
@@ -145,6 +173,7 @@
   function addToCart(id, shade, qty) {
     const p = byId(id);
     if (!p) return;
+    id = p.slug;                 // saved lines are keyed by slug; see migrateSavedKeys
     if (!p.inStock) { toast("That one is sold out", false); return; }
     if (p.shades && p.shades.length && !shade) {
       // No shade chosen — send the shopper to the product page to pick one.
@@ -226,16 +255,20 @@
      --------------------------------------------------------- */
   function toggleWish(id) {
     const p = byId(id);
-    const i = wishlist.indexOf(id);
+    if (!p) return;
+    const i = wishlist.indexOf(p.slug);
     if (i > -1) { wishlist.splice(i, 1); toast(`${p.name} removed from wishlist`); }
-    else { wishlist.push(id); toast(`${p.name} saved to wishlist`); }
+    else { wishlist.push(p.slug); toast(`${p.name} saved to wishlist`); }
     saveWish(); renderWishlist(); updateBadges(); syncWishButtons();
   }
+  /* Compared through byId(): +dataset.id never matched an id stored as a
+     string or a slug, so a saved product's heart never showed as saved. */
+  const isSaved = (id) => { const p = byId(id); return !!p && wishlist.includes(p.slug); };
   function syncWishButtons() {
-    $$(".js-wish").forEach((b) => b.classList.toggle("is-on", wishlist.includes(+b.dataset.id)));
+    $$(".js-wish").forEach((b) => b.classList.toggle("is-on", isSaved(b.dataset.id)));
     const pw = $("#pdpWish");
     if (pw) {
-      const on = wishlist.includes(+pw.dataset.id);
+      const on = isSaved(pw.dataset.id);
       pw.classList.toggle("is-on", on);
       pw.querySelector("span").textContent = on ? "Saved" : "Save";
     }
@@ -261,7 +294,7 @@
           <a class="btn btn--rose btn--sm" style="margin-top:8px" href="${BASE}product/${p.slug}.html">
             ${p.shades && p.shades.length ? "Choose shade" : "View product"}</a>
         </div>
-        <button class="lineitem__x js-wish-rm" data-id="${p.id}" aria-label="Remove">${T.icon("close", 16)}</button>
+        <button class="lineitem__x js-wish-rm" data-id="${T.esc(p.slug)}" aria-label="Remove">${T.icon("close", 16)}</button>
       </div>`;
     }).join("");
   }
@@ -274,6 +307,7 @@
     const lines = [`Hello ${SITE.name}! I'd like to place an order:`, ""];
     cart.forEach((l) => {
       const p = byId(l.id);
+      if (!p) return;
       lines.push(`• ${p.name}${l.shade ? " — " + l.shade : ""} (x${l.qty}) — ${money(p.price * l.qty)}`);
     });
     const sub = cartSubtotal();
@@ -381,12 +415,15 @@
     const words = q.split(/\s+/);
     return PRODUCTS
       .map((p) => {
-        const hay = `${p.name} ${p.categoryLabel} ${p.sub} ${p.finish} ${(p.shades || []).map((s) => s.name).join(" ")}`.toLowerCase();
+        // Category, subcategory and finish are optional, and a null one
+        // used to throw here and take the whole search down.
+        const hay = [p.name, p.categoryLabel, p.sub, p.finish, ...(p.shades || []).map((s) => s.name)]
+          .filter(Boolean).join(" ").toLowerCase();
         let score = 0;
         words.forEach((w) => {
           if (hay.includes(w)) score += 1;
           if (p.name.toLowerCase().startsWith(w)) score += 2;
-          if (p.sub.toLowerCase().includes(w)) score += 1;
+          if ((p.sub || "").toLowerCase().includes(w)) score += 1;
         });
         return { p, score };
       })
@@ -410,7 +447,7 @@
           ? hits.slice(0, 6).map((p) => `<a class="searchres__item" href="${BASE}product/${p.slug}.html">
               <img class="searchres__thumb" src="${T.imgSrc(p.image, BASE)}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
               <div><div class="searchres__name">${T.esc(p.name)}</div>
-              <div class="searchres__meta">${T.esc(p.sub)} · ${money(p.price)}</div></div></a>`).join("")
+              <div class="searchres__meta">${p.sub ? T.esc(p.sub) + " · " : ""}${money(p.price)}</div></div></a>`).join("")
             + `<a class="searchres__all" href="${BASE}search.html?q=${encodeURIComponent(q)}">See all ${hits.length} results</a>`
           : `<div class="empty"><h3>No matches for “${T.esc(q)}”</h3>
              <p>Try a category like “blush”, “primer” or “lip gloss”.</p></div>`;
@@ -660,25 +697,25 @@
       <div class="qv">
         <div class="qv__media"><img src="${T.imgSrc(p.imageLarge, BASE)}" alt="${T.esc(p.name)}" data-tile="${p.galleryTiles[0]}" data-fallback="${T.esc(p.name.charAt(0))}"></div>
         <div class="qv__info">
-          <span class="pdp__cat">${T.esc(p.categoryLabel)} · ${T.esc(p.sub)}</span>
+          <span class="pdp__cat">${[p.categoryLabel, p.sub].filter(Boolean).map(T.esc).join(" · ")}</span>
           <h2 class="pdp__name">${T.esc(p.name)}</h2>
           ${p.reviewCount ? `<div class="pdp__ratingrow">${T.stars(p.rating)} <span>${p.rating} (${p.reviewCount})</span></div>` : ""}
           <div class="pdp__pricerow">
             <span class="pdp__price">${money(p.price)}</span>
             ${p.oldPrice ? `<span class="pdp__old">${money(p.oldPrice)}</span><span class="pdp__save">-${p.discount}%</span>` : ""}
           </div>
-          <p class="pdp__tax">Inclusive of all taxes · ${T.esc(p.size)}</p>
+          <p class="pdp__tax">${["Inclusive of all taxes", p.size, p.finish && p.finish + " finish"].filter(Boolean).map(T.esc).join(" · ")}</p>
           ${p.shades && p.shades.length ? `
             <div class="optblock">
               <div class="optblock__head"><span class="optblock__label">Shade: <b id="qvShadeName">Select</b></span></div>
               <div class="shades" id="qvShades">
                 ${p.shades.map((s) => `<button class="shade ${s.stock ? "" : "is-out"}" data-shade="${T.esc(s.name)}"
-                    style="background:${s.hex}" title="${T.esc(s.name)}" ${s.stock ? "" : "disabled"}></button>`).join("")}
+                    style="${T.swatchStyle(s, BASE)}" title="${T.esc(s.name)}" aria-label="${T.esc(s.name)}" ${s.stock ? "" : "disabled"}></button>`).join("")}
               </div>
             </div>` : ""}
           <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px">${T.esc(p.desc)}</p>
           <div class="buyrow">
-            <button class="btn btn--primary btn--block" id="qvAdd" data-id="${p.id}">Add to Cart</button>
+            <button class="btn btn--primary btn--block" id="qvAdd" data-id="${T.esc(p.slug)}">Add to Cart</button>
           </div>
           <a class="viewall" href="${BASE}product/${p.slug}.html">Full details ${T.icon("chevronR", 15)}</a>
         </div>
@@ -691,6 +728,10 @@
         b.classList.add("is-on");
         picked = b.dataset.shade;
         $("#qvShadeName").textContent = picked;
+        // Show the chosen shade's own photo, where there is one.
+        const s = p.shades.find((x) => x.name === picked);
+        const img = $("#qvBody .qv__media img");
+        if (s && s.image && img) { delete img.dataset.failed; img.src = T.imgSrc(s.image, BASE); }
       })
     );
     on($("#qvAdd"), "click", () => {
@@ -714,14 +755,17 @@
     let shade = "";
     const qtyInput = $("#pdpQty");
 
-    // Gallery
-    $$(".gallery__thumb").forEach((th) =>
-      on(th, "click", () => {
-        $$(".gallery__thumb").forEach((x) => x.classList.remove("is-on"));
-        th.classList.add("is-on");
-        $("#galleryMain").src = th.dataset.full;
-      })
-    );
+    // Gallery. The same photo is written "../api/media/7" on a thumbnail and
+    // "/api/media/7" in the catalogue, so paths are compared without prefix.
+    const bare = (src) => String(src || "").replace(/^(\.\.\/)+|^\//, "");
+    function showImage(src) {
+      const img = $("#galleryMain");
+      if (!img || !src) return;
+      delete img.dataset.failed;           // let the fallback tile work for the new photo too
+      img.src = src;
+      $$(".gallery__thumb").forEach((x) => x.classList.toggle("is-on", bare(x.dataset.full) === bare(src)));
+    }
+    $$(".gallery__thumb").forEach((th) => on(th, "click", () => showImage(th.dataset.full)));
     const main = $("#galleryMainWrap");
     on(main, "click", () => main.classList.toggle("is-zoomed"));
 
@@ -733,6 +777,8 @@
         shade = b.dataset.shade;
         $("#pdpShadeName").textContent = shade;
         const s = p.shades.find((x) => x.name === shade);
+        // Show the chosen shade's own photo, where there is one.
+        if (s && s.image) showImage(T.imgSrc(s.image, BASE));
         const line = $("#pdpStock");
         if (line && s) {
           line.className = "stockline" + (s.stock === 0 ? " is-out" : s.stock <= 5 ? " is-low" : "");
@@ -893,15 +939,15 @@
 
   function trackRecentlyViewed(p) {
     let rv = store.get("sgpk_recent", []);
-    rv = [p.id].concat(rv.filter((x) => x !== p.id)).slice(0, 8);
+    rv = [p.slug].concat(rv.filter((x) => x !== p.slug)).slice(0, 8);
     store.set("sgpk_recent", rv);
   }
 
   function renderRecentlyViewed() {
     const box = $("#recentGrid");
     if (!box) return;
-    const ids = store.get("sgpk_recent", []).filter((id) => id !== +(document.body.dataset.productId || -1));
-    const items = ids.map(byId).filter(Boolean).slice(0, 5);
+    const current = document.body.dataset.slug || "";
+    const items = store.get("sgpk_recent", []).filter((s) => s !== current).map(bySlug).filter(Boolean).slice(0, 5);
     if (!items.length) { const s = box.closest("section"); if (s) s.style.display = "none"; return; }
     box.innerHTML = items.map((p) => T.card(p, BASE)).join("");
     syncWishButtons();
@@ -922,6 +968,7 @@
     if (!box) return;
     box.innerHTML = cart.map((l) => {
       const p = byId(l.id);
+      if (!p) return "";
       return `<div class="coline">
         <img src="${T.imgSrc(p.image, BASE)}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
         <div><div>${T.esc(p.name)}</div>
@@ -1108,8 +1155,8 @@
         payment: "Cash on Delivery",   // the only method accepted; enforced in api/orders.js
         items: cart.map((l) => {
           const p = byId(l.id);
-          return { sku: p.sku, name: p.name, shade: l.shade, qty: l.qty, price: p.price };
-        }),
+          return p ? { sku: p.sku, name: p.name, shade: l.shade, qty: l.qty, price: p.price } : null;
+        }).filter(Boolean),
         subtotal: sub, shipping: ship, total: sub + ship,
         status: "Received",
       };

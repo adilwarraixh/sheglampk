@@ -61,6 +61,14 @@
 
       <div class="msg" id="notice" hidden></div>
 
+      <!-- Whether customers can see the latest changes yet. Product pages are
+           built from the catalogue, so a save reaches the shop on the rebuild
+           it triggers, not instantly. -->
+      <div class="shopstate" id="shopState" hidden>
+        <span id="shopStateText"></span>
+        <button type="button" class="btn btn--outline btn--sm" id="rebuildBtn" hidden>Update shop now</button>
+      </div>
+
       <section class="card">
         <div class="scroll">
           <table class="tbl">
@@ -97,7 +105,9 @@
       // matches what the API will actually allow.
       const b = $("#addBtn"); if (b) b.remove();
     }
+    showSavedNotice();
     await load();
+    loadShopState();
   }).catch(() => {});
 
   async function load() {
@@ -212,12 +222,10 @@
 
   async function setStatus(id, status, name) {
     try {
-      await A.api("/api/admin/products/" + id, { method: "PATCH", body: { status } });
+      const r = await A.api("/api/admin/products/" + id, { method: "PATCH", body: { status } });
       A.toast(`${name} is now ${status.toLowerCase()}`);
-      notice(status === "PUBLISHED"
-        ? `“${name}” is live on the shop now.`
-        : `“${name}” has been removed from the shop.`, false);
-      load();
+      notice(`“${name}” is now ${status.toLowerCase()}. ${shopSentence(r.rebuild)}`, shopProblem(r.rebuild));
+      load(); loadShopState();
     } catch (e) { A.toast(e.message, true); notice(e.message, true); }
   }
 
@@ -232,12 +240,68 @@
   async function archive(id, name) {
     if (!confirm(`Archive “${name}”?\n\nIt disappears from the shop but is not deleted — past orders keep working. You can restore it later.`)) return;
     try {
-      await A.api("/api/admin/products/" + id, { method: "DELETE" });
+      const r = await A.api("/api/admin/products/" + id, { method: "DELETE" });
       A.toast("Archived");
-      notice(`“${name}” archived. Past orders that include it are unaffected.`, false);
-      load();
+      notice(`“${name}” archived. Past orders that include it are unaffected. ${shopSentence(r.rebuild)}`, shopProblem(r.rebuild));
+      load(); loadShopState();
     } catch (e) { A.toast(e.message, true); notice(e.message, true); }
   }
+
+  /* ---------- does the live shop show the latest changes? ---------- */
+  function shopSentence(rebuild) {
+    const r = rebuild || {};
+    switch (r.status) {
+      case "queued": return "The live shop is updating and will show this within a minute or two.";
+      case "not-needed": return "It isn't on the shop, so nothing there changes.";
+      case "not-configured": return "The live shop will not change yet: automatic updates are not set up (DEPLOY_HOOK_URL is missing on Vercel).";
+      case "failed": return `The live shop could not be told to update${r.error ? ` (${r.error})` : ""}. Use “Update shop now”.`;
+      default: return "";
+    }
+  }
+  const shopProblem = (rebuild) => !!rebuild && (rebuild.status === "failed" || rebuild.status === "not-configured");
+
+  function showSavedNotice() {
+    const q = new URLSearchParams(location.search);
+    const name = q.get("saved");
+    if (!name) return;
+    const rebuild = { status: q.get("rebuild"), error: q.get("rebuildError") };
+    notice(`“${name}” saved. ${shopSentence(rebuild)}`.trim(), shopProblem(rebuild));
+    history.replaceState(null, "", location.pathname);
+  }
+
+  let shopTimer;
+  async function loadShopState() {
+    clearTimeout(shopTimer);
+    let s;
+    try { s = (await A.api("/api/admin/rebuild")).rebuild; } catch (e) { return; }
+    const time = (d) => d ? new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+    const views = {
+      live: ["", s.exportedAt ? `The live shop is up to date (last updated ${when(s.exportedAt)}).` : "The live shop is up to date."],
+      queued: ["is-warn", `Updating the live shop — requested at ${time(s.requestedAt)}${s.requestedBy ? " by " + s.requestedBy : ""}. It usually takes a minute or two.`],
+      publishing: ["is-warn", "Updating the live shop — the new pages are being published now."],
+      failed: ["is-err", `The live shop did not update${s.error ? ": " + s.error : ""}. Your changes are saved but customers cannot see them yet.`],
+      stuck: ["is-err", `A shop update was requested at ${time(s.requestedAt)} but has not run. Recent changes may not be visible to customers yet.`],
+      "not-configured": ["is-err", "Automatic shop updates are not set up, so saved changes do not reach customers until the site is redeployed. Add DEPLOY_HOOK_URL on Vercel — see the README."],
+      unknown: ["is-warn", "Could not check whether the live shop is up to date."],
+    };
+    const [cls, text] = views[s.state] || views.unknown;
+    $("#shopState").className = "shopstate " + cls;
+    $("#shopStateText").textContent = text;
+    $("#rebuildBtn").hidden = !A.can("products:update") || !s.configured || s.state === "queued" || s.state === "publishing";
+    $("#shopState").hidden = false;
+    if (s.state === "queued" || s.state === "publishing") shopTimer = setTimeout(loadShopState, 15000);
+  }
+
+  $("#rebuildBtn").addEventListener("click", async () => {
+    const btn = $("#rebuildBtn");
+    btn.disabled = true;
+    try {
+      const r = await A.api("/api/admin/rebuild", { method: "POST" });
+      const okay = r.result.status === "queued";
+      A.toast(okay ? "Shop update requested" : (r.result.error || "The update could not be started"), !okay);
+    } catch (e) { A.toast(e.message, true); }
+    finally { btn.disabled = false; loadShopState(); }
+  });
 
   let debounce;
   $("#q").addEventListener("input", () => {

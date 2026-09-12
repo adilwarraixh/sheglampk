@@ -217,9 +217,21 @@ dl.meta dd{word-break:break-word;}
 .stickysave{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;}
 
 /* variant + image editors */
-.vrow{display:grid;grid-template-columns:1fr 52px 1fr 90px 40px;gap:8px;margin-bottom:8px;align-items:center;}
-.vrow input[type=color]{padding:2px;height:38px;cursor:pointer;}
-.irow{display:grid;grid-template-columns:1fr 1fr 44px 40px;gap:8px;margin-bottom:8px;align-items:center;}
+.vrow{display:grid;grid-template-columns:1fr 150px 1fr 90px 40px;gap:8px;margin-bottom:8px;align-items:center;}
+.v-colour{display:flex;gap:6px;align-items:center;min-width:0;}
+.v-colour input[type=color]{width:42px;flex:none;padding:2px;height:38px;cursor:pointer;}
+/* No colour chosen yet: the shop shows the shade's photo instead. */
+.v-colour input[type=color].is-unset{opacity:.3;}
+.v-colour .v-hex{flex:1;min-width:0;font-family:ui-monospace,Consolas,monospace;font-size:13px;}
+.irow{display:grid;grid-template-columns:1fr 1fr 170px 44px 40px;gap:8px;margin-bottom:8px;align-items:center;}
+
+/* live-shop status on the product list */
+.shopstate{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;
+  margin-bottom:14px;font-size:13.5px;}
+.shopstate[hidden]{display:none;}
+.shopstate.is-warn{border-color:var(--warn);background:var(--warn-soft);}
+.shopstate.is-err{border-color:var(--err);background:var(--err-soft);}
 .i-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#f2f2f4;}
 
 /* preview card */
@@ -250,10 +262,10 @@ dl.meta dd{word-break:break-word;}
 }
 @media (max-width:640px){
   .grid2,.grid3{grid-template-columns:1fr;}
-  .vrow{grid-template-columns:1fr 52px 40px;}
+  .vrow{grid-template-columns:1fr 150px 40px;}
   .vrow .v-sku,.vrow .v-stock{grid-column:1/-1;}
   .irow{grid-template-columns:1fr 44px 40px;}
-  .irow .i-alt{grid-column:1/-1;}
+  .irow .i-alt,.irow .i-shade{grid-column:1/-1;}
 }
 
 /* inventory stock setter */

@@ -2,6 +2,7 @@
    DELETE archives rather than removing: order_items reference products,
    and a past order must keep showing what was actually bought. */
 const P = require("../../../lib/products-admin.js");
+const R = require("../../../lib/rebuild.js");
 const { ok, fail, guard, handler, methods, readBody, clientIp } = require("../../../lib/http.js");
 const auth = require("../../../lib/auth.js");
 
@@ -27,6 +28,7 @@ module.exports = handler(async (req, res) => {
       const session = await guard(req, res, "products:update");
       if (!session) return;
       const body = await readBody(req);
+      const before = await P.statusOf(id);
       let product;
       try {
         // A bare {status} is the list view's publish/unpublish/archive action.
@@ -41,7 +43,11 @@ module.exports = handler(async (req, res) => {
         action: "PRODUCT_UPDATED", targetType: "product", targetId: String(id),
         detail: { name: product.name, status: product.status }, ip: clientIp(req),
       });
-      return ok(res, { product });
+      // The shop changes if the product is on it now, or was until this save.
+      const rebuild = before === "PUBLISHED" || product.status === "PUBLISHED"
+        ? await R.requestRebuild(`updated “${product.name}”`, { by: session.user.username })
+        : { status: "not-needed" };
+      return ok(res, { product, rebuild });
     },
 
     POST: async () => {
@@ -64,6 +70,7 @@ module.exports = handler(async (req, res) => {
     DELETE: async () => {
       const session = await guard(req, res, "products:delete");
       if (!session) return;
+      const before = await P.statusOf(id);
       const product = await P.archiveProduct(id);
       if (!product) return fail(res, 404, "Product not found");
       await auth.audit({
@@ -71,7 +78,10 @@ module.exports = handler(async (req, res) => {
         action: "PRODUCT_ARCHIVED", targetType: "product", targetId: String(id),
         detail: { name: product.name }, ip: clientIp(req),
       });
-      return ok(res, { product, note: "Archived, not deleted — past orders still reference it." });
+      const rebuild = before === "PUBLISHED"
+        ? await R.requestRebuild(`archived “${product.name}”`, { by: session.user.username })
+        : { status: "not-needed" };
+      return ok(res, { product, rebuild, note: "Archived, not deleted — past orders still reference it." });
     },
   });
 });

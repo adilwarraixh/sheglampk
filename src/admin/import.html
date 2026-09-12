@@ -228,6 +228,14 @@
   $("#onlyProblems").addEventListener("change", drawRows);
   $("#back").addEventListener("click", () => { analysis = null; fileText = null; showErr(""); step(1); });
 
+  /* Products reach the live shop on the rebuild the import starts. */
+  const shopNote = (rebuild) => ({
+    queued: "The live shop is updating and will show published products within a minute or two.",
+    "not-needed": "Nothing on the live shop changed.",
+    "not-configured": "Automatic shop updates are not set up, so the live shop has not changed yet.",
+    failed: "The live shop could not be told to update — use “Update shop now” on the Products page.",
+  })[(rebuild || {}).status] || "";
+
   /* ---------- step 3 ---------- */
   $("#confirm").addEventListener("click", async () => {
     if (!fileText || !canImport) return;
@@ -250,7 +258,7 @@
           <a class="btn btn--primary" href="/admin/products">View products →</a>
           <a class="btn btn--outline" href="/admin/import" style="margin-left:8px">Import another file</a>
         </p>
-        <p class="sub" style="margin-top:12px">Published products are on the shop straight away.
+        <p class="sub" style="margin-top:12px">${esc(shopNote(r.rebuild))}
           Drafts stay hidden until you publish them.</p>`;
       step(3);
     } catch (e) {

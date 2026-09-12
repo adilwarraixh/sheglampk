@@ -6,6 +6,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["server.js"],
       "port": 5599
+    },
+    {
+      "name": "sheglampk-dist",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["dev-server.js"],
+      "port": 5601
     }
   ]
 }

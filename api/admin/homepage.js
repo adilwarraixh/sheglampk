@@ -1,5 +1,6 @@
 /* /api/admin/homepage — hero slides (homepage:manage, Super Admin only) */
 const S = require("../../lib/site-admin.js");
+const R = require("../../lib/rebuild.js");
 const { ok, fail, guard, handler, methods, readBody, clientIp } = require("../../lib/http.js");
 const auth = require("../../lib/auth.js");
 
@@ -23,7 +24,9 @@ module.exports = handler(async (req, res) =>
         targetType: "hero_slide", targetId: String(slide.id),
         detail: { headline: slide.headline, enabled: slide.is_enabled }, ip: clientIp(req),
       });
-      return ok(res, { slide });
+      // The hero is baked into the homepage at build time.
+      const rebuild = await R.requestRebuild(`homepage slide “${slide.headline}” saved`, { by: session.user.username });
+      return ok(res, { slide, rebuild });
     },
     DELETE: async () => {
       const session = await guard(req, res, "homepage:manage");
@@ -37,7 +40,8 @@ module.exports = handler(async (req, res) =>
         action: "HERO_SLIDE_DELETED", targetType: "hero_slide", targetId: String(id),
         detail: { headline: slide.headline }, ip: clientIp(req),
       });
-      return ok(res, { slide });
+      const rebuild = await R.requestRebuild(`homepage slide “${slide.headline}” removed`, { by: session.user.username });
+      return ok(res, { slide, rebuild });
     },
   })
 );

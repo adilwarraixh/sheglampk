@@ -6,6 +6,7 @@
 
    Run:  node test-api.js
    ========================================================= */
+process.env.DEPLOY_HOOK_URL = "";      // a test run never starts a real build
 const crypto = require("crypto");
 const { sql } = require("./db/client.js");
 const auth = require("./lib/auth.js");
@@ -327,7 +328,9 @@ const cookieFrom = (res) => String(res.getHeader("set-cookie") || "").split(";")
   await sql`DELETE FROM products WHERE id = ${prod.id}`;
   await sql`DELETE FROM categories WHERE id = ${cat.id}`;
   await sql`DELETE FROM customers WHERE phone IN ('03220305000','03005550000')`;
-  await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL`;
+  // Only the sessions this run opened, so a real admin stays signed in.
+  await sql`UPDATE sessions SET revoked_at = now()
+             WHERE revoked_at IS NULL AND created_at >= ${savedCredentials.startedAt || new Date(0)}`;
 
   /* Put the credentials back exactly as they were found. The passwords the
      suite set are discarded with the rows they were written to, so nothing

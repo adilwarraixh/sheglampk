@@ -167,7 +167,6 @@ const rnd = () => "Tst" + crypto.randomBytes(9).toString("hex") + "9";
 
   /* ---------- leave the accounts locked ---------- */
   await restoreCredentials(savedCredentials);
-  await sql`UPDATE sessions SET revoked_at = now() WHERE revoked_at IS NULL`;
 
   console.log("\n" + results.join("\n"));
   console.log(`\n${pass} passed, ${fail} failed\n`);

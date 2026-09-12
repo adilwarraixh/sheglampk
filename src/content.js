@@ -660,31 +660,9 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Terms" }])}
 </div>`,
   });
 
-  /* ---------------- 404 ---------------- */
-  out.push({
-    file: "404.html",
-    page: "404",
-    title: `Page not found | ${SITE.name}`,
-    description: "The page you were looking for does not exist.",
-    hideNewsletter: true,
-    body: `
-<div class="container notfound">
-  <b>404</b>
-  <h1>We could not find that page</h1>
-  <p>It may have moved, or the link might be out of date.</p>
-  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-    <a class="btn btn--primary" href="index.html">Back to home</a>
-    <a class="btn btn--outline" href="best-sellers.html">Shop bestsellers</a>
-  </div>
-</div>
-
-<section class="section section--alt">
-  <div class="container">
-    ${sechead("", "Popular right now")}
-    <div class="grid">${FEEDS.best().slice(0, 5).map((p) => card(p, "")).join("")}</div>
-  </div>
-</section>`,
-  });
+  /* The 404 page is generated in build.js: it answers at any URL, so it needs
+     absolute paths, it must stay out of the sitemap, and it handles a
+     product whose page is still being built. */
 
   return out;
 }

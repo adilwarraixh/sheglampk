@@ -134,8 +134,8 @@
       const card = b.closest(".slidecard");
       b.disabled = true; b.textContent = "Saving…";
       try {
-        await A.api("/api/admin/homepage", { method: "PUT", body: readCard(card) });
-        A.toast("Slide saved");
+        const r = await A.api("/api/admin/homepage", { method: "PUT", body: readCard(card) });
+        shopToast("Slide saved", r.rebuild);
         load();
       } catch (e) { showErr(e.message); b.disabled = false; b.textContent = "Save slide"; }
     }));
@@ -144,11 +144,20 @@
       if (!confirm(`Remove the slide “${b.dataset.h}”?`)) return;
       showErr("");
       try {
-        await A.api("/api/admin/homepage?id=" + b.dataset.id, { method: "DELETE" });
-        A.toast("Slide removed");
+        const r = await A.api("/api/admin/homepage?id=" + b.dataset.id, { method: "DELETE" });
+        shopToast("Slide removed", r.rebuild);
         load();
       } catch (e) { showErr(e.message); }
     }));
+  }
+
+  /* The hero is built into the homepage, so a change reaches visitors on
+     the rebuild the save starts. Say which happened. */
+  function shopToast(done, rebuild) {
+    const status = rebuild && rebuild.status;
+    const failed = status === "failed" || status === "not-configured";
+    A.toast(status === "queued" ? `${done} — the live homepage updates in a minute or two`
+      : failed ? `${done}, but the live shop could not be updated. See Products.` : done, failed);
   }
 
   $("#addSlide").addEventListener("click", async () => {

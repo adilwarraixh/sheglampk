@@ -8,6 +8,7 @@
    ========================================================= */
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const D = require("./data/catalog.js");
 const T = require("./data/templates.js");
@@ -47,6 +48,21 @@ fs.writeFileSync(
     ";\n",
   "utf8"
 );
+
+/* Everything under /assets is served with a one-year immutable cache (see
+   vercel.json), so a browser that has a file never asks for it again.
+   Each script and stylesheet URL carries a hash of its contents: a changed
+   file gets a new URL, and returning visitors get the fix instead of the
+   copy they cached before it. */
+const version = (rel) =>
+  crypto.createHash("sha1").update(fs.readFileSync(path.join(ROOT, rel))).digest("hex").slice(0, 10);
+const V = {
+  css: version("assets/css/style.css"),
+  app: version("assets/js/app.js"),
+  products: version("data/products.js"),
+  catalog: version("data/catalog.js"),
+  templates: version("data/templates.js"),
+};
 
 /* =========================================================
    CHROME
@@ -398,7 +414,7 @@ function writePage(o) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(o.title)}</title>
 <meta name="description" content="${esc(o.description)}">
-<link rel="canonical" href="${canonical}">
+${o.noindex ? `<meta name="robots" content="noindex">` : `<link rel="canonical" href="${canonical}">`}
 <meta name="theme-color" content="#e83e70">
 <meta property="og:type" content="${o.ogType || "website"}">
 <meta property="og:site_name" content="${esc(SITE.name)}">
@@ -413,7 +429,7 @@ function writePage(o) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://images.unsplash.com">
 <link rel="stylesheet" href="${FONT}">
-<link rel="stylesheet" href="${base}assets/css/style.css">
+<link rel="stylesheet" href="${base}assets/css/style.css?v=${V.css}">
 <script>
 /* Which products have real photography. Must load before catalog.js so
    client-side re-renders resolve images the same way the build did. */
@@ -437,11 +453,10 @@ ${o.body}
 ${o.hideNewsletter ? "" : buildNewsletter(base)}
 ${buildFooter(base)}
 ${buildOverlays(base)}
-<script src="${base}data/products.js"></script>
-<script src="${base}data/catalog.js"></script>
-<script src="${base}data/templates.js"></script>
-<script src="${base}assets/js/app.js"></script>
-<script src="${base}assets/js/catalogue-sync.js" defer></script>
+<script src="${base}data/products.js?v=${V.products}"></script>
+<script src="${base}data/catalog.js?v=${V.catalog}"></script>
+<script src="${base}data/templates.js?v=${V.templates}"></script>
+<script src="${base}assets/js/app.js?v=${V.app}"></script>
 </body>
 </html>
 `;
@@ -713,6 +728,11 @@ PRODUCTS.forEach((p) => {
      whole build down — it just loses that breadcrumb. */
   const cat = CATEGORIES.find((c) => c.key === p.category) || null;
   if (!cat) console.warn(`  ! ${p.slug} has no category; its breadcrumb will skip one level.`);
+  /* Category, subcategory, size and finish are all optional. Joining only
+     the parts that exist avoids lines like "Face · " and
+     "Inclusive of all taxes ·  ·  finish". */
+  const joined = (parts) => parts.filter(Boolean).map(esc).join(" &middot; ");
+  const catLine = joined([cat && cat.label, p.sub]);
   const related = PRODUCTS.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 5);
   const crumbs = [
     { label: "Home", href: "../index.html" },
@@ -746,7 +766,7 @@ ${crumbHTML(crumbs)}
     </div>
 
     <div class="pdp__info">
-      <span class="pdp__cat">${cat ? esc(cat.label) + " &middot; " : ""}${esc(p.sub)}</span>
+      <span class="pdp__cat">${catLine}</span>
       <h1 class="pdp__name">${esc(p.name)}</h1>
       <div class="pdp__ratingrow">
         ${p.reviewCount
@@ -759,7 +779,7 @@ ${crumbHTML(crumbs)}
         <span class="pdp__price">${money(p.price)}</span>
         ${p.oldPrice ? `<span class="pdp__old">${money(p.oldPrice)}</span><span class="pdp__save">-${p.discount}%</span>` : ""}
       </div>
-      <p class="pdp__tax">Inclusive of all taxes &middot; ${esc(p.size)} &middot; ${esc(p.finish)} finish</p>
+      <p class="pdp__tax">${joined(["Inclusive of all taxes", p.size, p.finish && p.finish + " finish"])}</p>
 
       ${p.shades && p.shades.length ? `
       <div class="optblock" id="shade">
@@ -769,15 +789,15 @@ ${crumbHTML(crumbs)}
         </div>
         <div class="shades" id="pdpShades">
           ${p.shades.map((s) => `
-            <button class="shade ${s.stock ? "" : "is-out"}" data-shade="${esc(s.name)}" style="background:${s.hex}"
+            <button class="shade ${s.stock ? "" : "is-out"}" data-shade="${esc(s.name)}" style="${T.swatchStyle(s, "../")}"
                     title="${esc(s.name)}${s.stock ? "" : " — out of stock"}" ${s.stock ? "" : "disabled"}
                     aria-label="${esc(s.name)}"></button>`).join("")}
         </div>
-      </div>` : `
+      </div>` : p.size ? `
       <div class="optblock">
         <div class="optblock__head"><span class="optblock__label">Size: <b>${esc(p.size)}</b></span></div>
         <div class="sizepills"><span class="sizepill is-on">${esc(p.size)}</span></div>
-      </div>`}
+      </div>` : ""}
 
       <div class="stockline ${p.inStock ? "" : "is-out"}" id="pdpStock">
         <span class="dot"></span><span class="stockline__label">${p.inStock ? "In stock — ships within 1–2 days" : "Out of stock"}</span>
@@ -790,7 +810,7 @@ ${crumbHTML(crumbs)}
           <button type="button" id="qtyInc" aria-label="Increase quantity">+</button>
         </div>
         <button class="btn btn--primary" style="flex:1" id="pdpAdd" ${p.inStock ? "" : "disabled"}>Add to Cart</button>
-        <button class="btn btn--outline js-wish" id="pdpWish" data-id="${p.id}" style="flex:none;width:110px">
+        <button class="btn btn--outline js-wish" id="pdpWish" data-id="${esc(p.slug)}" style="flex:none;width:110px">
           ${icon("heart", 16)} <span>Save</span></button>
       </div>
       <button class="btn btn--rose btn--block" id="pdpBuy" ${p.inStock ? "" : "disabled"}>Buy it now</button>
@@ -807,15 +827,15 @@ ${crumbHTML(crumbs)}
       <div class="acc" style="margin-top:26px">
         <div class="acc__item is-open">
           <button class="acc__btn" type="button">Description ${icon("plus", 16)}</button>
-          <div class="acc__body"><p>${esc(p.desc)}</p></div>
+          <div class="acc__body"><p>${p.desc ? esc(p.desc) : "Message us on WhatsApp for full details of this product before you order."}</p></div>
         </div>
         <div class="acc__item">
           <button class="acc__btn" type="button">Details ${icon("plus", 16)}</button>
           <div class="acc__body">
             <dl>
-              <dt>Category</dt><dd>${cat ? esc(cat.label) + " &middot; " : ""}${esc(p.sub)}</dd>
-              <dt>Finish</dt><dd>${esc(p.finish)}</dd>
-              <dt>Size</dt><dd>${esc(p.size)}</dd>
+              ${catLine ? `<dt>Category</dt><dd>${catLine}</dd>` : ""}
+              ${p.finish ? `<dt>Finish</dt><dd>${esc(p.finish)}</dd>` : ""}
+              ${p.size ? `<dt>Size</dt><dd>${esc(p.size)}</dd>` : ""}
               ${p.shades ? `<dt>Shades</dt><dd>${p.shades.length} available</dd>` : ""}
               <dt>SKU</dt><dd>${esc(p.sku)}</dd>
             </dl>
@@ -908,9 +928,9 @@ ${crumbHTML(crumbs)}
       file: path.join("product", p.slug + ".html"),
       page: "product",
       base: "../",
-      bodyAttrs: ` data-slug="${p.slug}" data-product-id="${p.id}"`,
-      title: `${p.name} — ${cat.label} | ${SITE.name}`,
-      description: `Buy the ${p.name} in Pakistan. ${p.desc} ${money(p.price)} with cash on delivery nationwide.`.slice(0, 300),
+      bodyAttrs: ` data-slug="${esc(p.slug)}"`,
+      title: `${p.name}${cat ? ` — ${cat.label}` : ""} | ${SITE.name}`,
+      description: `Buy the ${p.name} in Pakistan. ${p.desc ? p.desc + " " : ""}${money(p.price)} with cash on delivery nationwide.`.slice(0, 300),
       ogType: "product",
       ogImage: p.imageLarge,
       body,
@@ -920,10 +940,10 @@ ${crumbHTML(crumbs)}
           "@type": "Product",
           name: p.name,
           image: galleryImgs,
-          description: p.desc,
+          description: p.desc || undefined,
           sku: p.sku,
           brand: { "@type": "Brand", name: "SHEGLAM" },
-          category: `${cat.label} > ${p.sub}`,
+          category: [cat && cat.label, p.sub].filter(Boolean).join(" > ") || undefined,
           offers: {
             "@type": "Offer",
             priceCurrency: "PKR",
@@ -935,7 +955,7 @@ ${crumbHTML(crumbs)}
         }, ratingLd),
         breadcrumbLd([
           { label: "Home", href: "" },
-          { label: cat.label, href: cat.page },
+          ...(cat ? [{ label: cat.label, href: cat.page }] : []),
           { label: p.name, href: `product/${p.slug}.html` },
         ]),
       ],
@@ -956,6 +976,59 @@ CONTENT.pages({ D, T, icon, brandIcon }).forEach((pg) => {
       hideNewsletter: pg.hideNewsletter,
     })
   );
+});
+
+/* ---- 404 ----
+   Vercel serves this for any path with no file. It is not in the sitemap,
+   and its links are absolute because it answers at whatever URL was asked
+   for.
+
+   A product published a moment ago gets its page once the rebuild that
+   publishing started has finished — about a minute. Until then its URL
+   lands here, so if the shop already knows the product the page says so
+   and opens the product by itself when it is ready. */
+writePage({
+  file: "404.html",
+  page: "notfound",
+  base: "/",
+  noindex: true,
+  hideNewsletter: true,
+  title: `Page not found | ${SITE.name}`,
+  description: "That page could not be found.",
+  body: `
+<div class="container">
+  <div class="notfound" id="notfound">
+    <b>404</b>
+    <h1>We couldn't find that page</h1>
+    <p>The link may be out of date, or the page may have moved.</p>
+    <a class="btn btn--primary" href="/index.html">Back to the shop</a>
+  </div>
+</div>
+<script>
+(function () {
+  var m = /^\\/product\\/([a-z0-9-]+)\\.html$/.exec(location.pathname);
+  if (!m) return;
+  fetch("/api/products/" + m[1], { headers: { Accept: "application/json" } })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || !d.product) return;
+      var box = document.getElementById("notfound");
+      box.innerHTML = "<h1></h1><p>This product has just been added and its page is being prepared. " +
+        "It will open here by itself, usually within a minute or two.</p>" +
+        '<a class="btn btn--outline" href="/index.html">Keep shopping</a>';
+      box.querySelector("h1").textContent = d.product.name;
+      var tries = 0;
+      (function wait() {
+        if (++tries > 40) return;                  // stop after about ten minutes
+        setTimeout(function () {
+          fetch(location.pathname, { method: "HEAD", cache: "no-store" })
+            .then(function (r) { if (r.ok) location.reload(); else wait(); }, wait);
+        }, 15000);
+      })();
+    })
+    .catch(function () {});
+})();
+</script>`,
 });
 
 /* =========================================================

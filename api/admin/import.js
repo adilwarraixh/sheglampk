@@ -7,6 +7,7 @@
    Analyse needs only products:view so ashba can check a file; performing
    it needs products:import, which is Super Admin only. */
 const I = require("../../lib/product-import.js");
+const R = require("../../lib/rebuild.js");
 const { ok, fail, guard, handler, methods, readBody, clientIp } = require("../../lib/http.js");
 const auth = require("../../lib/auth.js");
 
@@ -60,7 +61,10 @@ module.exports = handler(async (req, res) =>
                   skipped: result.skipped, failed: result.failed.length },
         ip: clientIp(req),
       });
-      return ok(res, result);
+      const rebuild = result.created || result.updated
+        ? await R.requestRebuild(`CSV import: ${result.created} added, ${result.updated} updated`, { by: session.user.username })
+        : { status: "not-needed" };
+      return ok(res, { ...result, rebuild });
     },
   })
 );
