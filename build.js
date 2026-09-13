@@ -38,6 +38,25 @@ const FAVICON =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#e83e70"/><path fill="#fff" d="M32 12c0 11 9 20 20 20-11 0-20 9-20 20 0-11-9-20-20-20 11 0 20-9 20-20Z"/></svg>`
   );
 
+/* TikTok Pixel, as supplied by TikTok Events Manager. It goes in the <head>
+   of every storefront page — the home page included — because TikTok can
+   only attribute product views, add-to-carts and orders on pages that load
+   it. The admin portal is not built here, so it never loads the pixel. The
+   ID is public by design; set SITE.tiktokPixel to "" to switch it off. */
+const TIKTOK_PIXEL = /^[A-Z0-9]{10,32}$/.test(SITE.tiktokPixel || "") ? `<!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+
+  ttq.load('${SITE.tiktokPixel}');
+  ttq.page();
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->` : "";
+
 /* Products live in data/products.json (admin-editable). The browser cannot
    require JSON, so emit a tiny script that hands it the same array. */
 fs.writeFileSync(
@@ -443,6 +462,7 @@ addEventListener("error",function(e){
   if(el.dataset.tile)el.src=el.dataset.tile;
 },true);
 </script>
+${TIKTOK_PIXEL}
 ${jsonLd}
 </head>
 <body data-page="${o.page}" data-base="${base}"${o.bodyAttrs || ""}>

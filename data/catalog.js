@@ -66,6 +66,7 @@
     /* ---- Analytics: paste IDs to switch on ---- */
     ga4: "",        // "G-XXXXXXXXXX"
     metaPixel: "",  // "1234567890"
+    tiktokPixel: "DAJ9H1RC77UES97514I0",  // TikTok Events Manager pixel ID; "" to switch off
 
     /* ---- Product images -------------------------------------------------
        "local"  → assets/img/products/<slug>.jpg   (use this once you have

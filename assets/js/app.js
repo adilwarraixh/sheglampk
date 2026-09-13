@@ -105,6 +105,40 @@
       const map = { add_to_cart: "AddToCart", begin_checkout: "InitiateCheckout", purchase: "Purchase", view_item: "ViewContent", search: "Search" };
       if (map[name]) window.fbq("track", map[name], params || {});
     }
+    if (window.ttq) trackTikTok(name, params || {});
+  }
+
+  /* TikTok standard events, in TikTok's parameter shape. The pixel itself is
+     loaded in <head> by build.js. Only products and order value are sent —
+     never the customer's name, phone, email or address.
+
+     Orders are cash on delivery, so a placed order is sent as PlaceAnOrder
+     and also as CompletePayment, the event TikTok's purchase-optimised
+     campaigns look for. The order reference is the event_id, so a retried
+     confirmation is not counted twice. */
+  function trackTikTok(name, p) {
+    const contents = (p.items || []).map((i) => ({
+      content_id: i.item_id, content_type: "product", content_name: i.item_name,
+      quantity: i.quantity || 1, ...(i.price != null ? { price: i.price } : {}),
+    }));
+    const base = {
+      ...(contents.length ? { contents } : {}),
+      ...(p.value != null ? { value: p.value, currency: p.currency || SITE.currency } : {}),
+    };
+    const send = (event, extra, opts) => {
+      try { window.ttq.track(event, { ...base, ...extra }, opts); } catch (e) { /* never break the shop */ }
+    };
+    switch (name) {
+      case "view_item": send("ViewContent"); break;
+      case "add_to_cart": send("AddToCart"); break;
+      case "begin_checkout": send("InitiateCheckout"); break;
+      case "purchase":
+        send("PlaceAnOrder", {}, { event_id: `${p.transaction_id}-order` });
+        send("CompletePayment", {}, { event_id: `${p.transaction_id}-payment` });
+        break;
+      case "search": send("Search", { query: p.search_term }); break;
+      case "generate_lead": send("Subscribe"); break;
+    }
   }
 
   /* ---------------------------------------------------------

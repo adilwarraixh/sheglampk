@@ -566,7 +566,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Privacy" }])}
     <li><strong>Contact messages</strong> — anything you send us through the contact form or WhatsApp.</li>
     <li><strong>Newsletter signups</strong> — your email address, if you subscribe.</li>
     <li><strong>Reviews</strong> — the name and text you choose to publish.</li>
-    <li><strong>Usage data</strong> — if analytics are enabled, aggregated statistics about pages visited. This does not identify you personally.</li>
+    <li><strong>Usage data</strong> — the pages you visit and shop actions such as viewing a product, adding to cart and placing an order, recorded by the TikTok Pixel so we can measure our TikTok advertising.</li>
   </ul>
 
   <h2>What stays on your own device</h2>
@@ -585,11 +585,12 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Privacy" }])}
   <ul>
     <li><strong>Courier companies</strong> — your name, address and phone number, so they can deliver the parcel.</li>
     <li><strong>Our form and email provider</strong> — order details reach us by email.</li>
+    <li><strong>TikTok</strong> — through the TikTok Pixel: the pages you view and the products you view, add to cart or order, with the order value, so we can measure and improve our TikTok ads. We do not send TikTok your name, phone number, email or address.</li>
   </ul>
-  <p>We do not sell your data. We do not share it with advertisers. We do not pass your number to other sellers.</p>
+  <p>We do not sell your data. We do not pass your number to other sellers.</p>
 
   <h2>Cookies and analytics</h2>
-  <p>This site does not set advertising cookies of its own. If website analytics are enabled, they may set cookies to count visits. You can block cookies in your browser settings; the shop will still work.</p>
+  <p>This site uses the TikTok Pixel, which sets cookies so TikTok can measure visits and the results of our ads. You can block cookies in your browser settings or limit ad tracking in your TikTok privacy settings; the shop will still work.</p>
 
   <h2>How long we keep it</h2>
   <p>Order records are kept for two years for accounting and warranty purposes. Contact messages are kept for one year. Newsletter subscriptions are kept until you unsubscribe.</p>
