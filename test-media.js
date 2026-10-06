@@ -106,12 +106,23 @@ const BLOB_TOKEN=process.env.BLOB_READ_WRITE_TOKEN; delete process.env.BLOB_READ
     const up=await call(R.up,{method:"POST",cookie:U.cookie,csrf:U.csrf,body:{data:b64(unique),filename:"blob.png"}});
     const url=up.body.media&&up.body.media.url;
     t("upload goes to Blob, in this environment's folder",up.statusCode===200&&/^https:\/\/[^/]+\/media-local\/[0-9a-f]{64}\.png$/.test(url||""),url);
-    const [row]=await sql`SELECT bytes IS NULL AS no_bytes, blob_url FROM media WHERE id=${up.body.media.id}`;
-    t("the database keeps the address, not the bytes",row&&row.no_bytes&&row.blob_url===url);
+    const [row]=await sql`SELECT bytes IS NOT NULL AS has_bytes, blob_url FROM media WHERE id=${up.body.media.id}`;
+    t("the database keeps the address and the bytes (so a rollback covers it)",row&&row.has_bytes&&row.blob_url===url);
     const got=Buffer.from(await (await fetch(url)).arrayBuffer());
     t("Blob serves exactly the uploaded bytes",got.equals(unique),`${got.length} vs ${unique.length}`);
     const redirect=await call(R.get,{query:{id:String(up.body.media.id)}});
-    t("/api/media/:id sends the browser to Blob",redirect.statusCode===301&&redirect.getHeader("location")===url);
+    t("/api/media/:id sends the browser to Blob, temporarily (cached an hour)",redirect.statusCode===302&&redirect.getHeader("location")===url
+      &&redirect.getHeader("cache-control")==="public, max-age=3600",`${redirect.statusCode} ${redirect.getHeader("cache-control")}`);
+    // Another row pointing at the same file (a re-upload racing a delete): deleting this one must keep the file.
+    const [twin]=await sql`INSERT INTO media (sha256, filename, mime, extension, byte_size, blob_url)
+      VALUES (${"e".repeat(64)}, 'twin.png', 'image/png', 'png', 1, ${url}) RETURNING id`;
+    const realDel0=blob.del; const twinCalls=[]; blob.del=async(u)=>{twinCalls.push(u);};
+    await M.deleteMedia(up.body.media.id);
+    blob.del=realDel0;
+    t("a file another image still uses is not removed",twinCalls.length===0,JSON.stringify(twinCalls));
+    // Now the twin is the only user; give the test row back so the next check deletes it for real.
+    await sql`UPDATE media SET sha256=${up.body.media.sha256||"d".repeat(64)} WHERE id=${twin.id}`;
+    up.body.media.id=twin.id;
     const gone=await call(R.up,{method:"DELETE",cookie:U.cookie,csrf:U.csrf,query:{id:String(up.body.media.id)}});
     let stillThere=true; try{await blob.head(url);}catch{stillThere=false;}
     t("deleting the image removes the stored file",gone.statusCode===200&&!stillThere);

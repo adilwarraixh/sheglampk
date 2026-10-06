@@ -51,7 +51,7 @@ function check(name, condition, detail = "") {
     return { cookie: `sgpk_session=${s.token}`, csrf: s.csrf, token: s.token };
   };
   const U = await mk("umama"), A = await mk("ashba");
-  const created = [];
+  const created = [], madeProducts = [];
 
   try {
     console.log("\n=== COLLECTIONS IN THE ADMIN ===");
@@ -102,6 +102,37 @@ function check(name, condition, detail = "") {
     check("the audit log shows what changed", audit && audit.detail.changes && audit.detail.changes.ruleSubcategories
       && audit.detail.changes.productIds, audit && JSON.stringify(audit.detail.changes));
 
+    console.log("\n=== BY NAME, ARCHIVED PICKS, A COLLECTION DELETED MEANWHILE ===");
+    const [cat] = await sql`SELECT id FROM categories WHERE is_active ORDER BY position LIMIT 1`;
+    const mkProduct = async (suffix, sku) => PA.createProduct({ name: `${tag} ${suffix}`, sku: `TST-${sku}-${tag}`,
+      status: "PUBLISHED", categoryId: cat.id, price: 1000, stockQuantity: 3 });
+    const alpha = await mkProduct("Alpha", "A");
+    madeProducts.push(alpha.id);
+    r = await call({ method: "PATCH", cookie: U.cookie, csrf: U.csrf, query: { id: String(id) },
+      body: { ...body, productIds: [p1.id], includeNamePrefix: tag } });
+    const beta = await mkProduct("Beta", "B");          // published after the rule was set
+    madeProducts.push(beta.id);
+    snap = await snapshot();
+    col = snap.collections.find((c) => c.slug === `${tag}-edit`);
+    check("a name rule includes every product whose name starts with it, including ones added later",
+      col && col.dbIds.includes(Number(alpha.id)) && col.dbIds.includes(Number(beta.id)) && col.dbIds.includes(p1.id),
+      col && JSON.stringify(col.dbIds));
+    await call({ method: "PATCH", cookie: U.cookie, csrf: U.csrf, query: { id: String(id) },
+      body: { ...body, productIds: [p1.id, Number(alpha.id)], includeNamePrefix: "" } });
+    await PA.archiveProduct(alpha.id);
+    const view = (await call({ cookie: U.cookie })).body;
+    const mine = view.collections.find((c) => c.id === id);
+    check("an archived product still picked is listed in the picker", view.products.some((p) => p.id === Number(alpha.id) && p.status === "ARCHIVED"));
+    await call({ method: "PATCH", cookie: U.cookie, csrf: U.csrf, query: { id: String(id) }, body: { ...body, productIds: mine.picks } });
+    const [{ kept }] = await sql`SELECT count(*)::int AS kept FROM product_collections WHERE collection_id = ${id} AND product_id = ${alpha.id}`;
+    check("so saving the collection keeps that pick", kept === 1);
+    const [gone] = await sql`INSERT INTO collections (slug, title) VALUES (${tag + "-gone"}, 'Gone') RETURNING id`;
+    await sql`DELETE FROM collections WHERE id = ${gone.id}`;
+    r = await call({ method: "PATCH", cookie: U.cookie, csrf: U.csrf, query: { id: String(gone.id) },
+      body: { ...body, slug: `${tag}-gone`, productIds: [p1.id] } });
+    const [{ stray }] = await sql`SELECT count(*)::int AS stray FROM product_collections WHERE collection_id = ${gone.id}`;
+    check("saving a collection deleted meanwhile is a 404, and its picks go nowhere", r.statusCode === 404 && stray === 0, String(r.statusCode));
+
     r = await call({ method: "PATCH", cookie: U.cookie, csrf: U.csrf, query: { id: String(id) }, body: { ...body, isActive: false } });
     snap = await snapshot();
     check("a hidden collection leaves the shop", r.statusCode === 200 && !snap.collections.some((c) => c.slug === `${tag}-edit`));
@@ -133,6 +164,7 @@ function check(name, condition, detail = "") {
     check("…and still finds part of a SKU", bySku.products.some((p) => p.sku === sku[0].sku));
   } finally {
     for (const id of created) await sql`DELETE FROM collections WHERE id = ${id}`;
+    for (const pid of madeProducts) await sql`DELETE FROM products WHERE id = ${pid}`;
     await sql`DELETE FROM collections WHERE slug LIKE ${tag + "%"}`;
     await auth.revokeSession(U.token);
     await auth.revokeSession(A.token);

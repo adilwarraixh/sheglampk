@@ -13,7 +13,7 @@
 
    Safe by construction:
    - nothing is deleted: the bytes stay in the media table, so --rollback
-     only points product photos back at /api/media/:id;
+     points product photos back at /api/media/:id and serves from there;
    - each upload is downloaded again and its sha256 compared before the
      row records where it lives;
    - product photos switch only once every image has verified;
@@ -32,20 +32,27 @@ const ROLLBACK = process.argv.includes("--rollback");
 const ENV = process.env.SGPK_TARGET === "production" ? "production" : "preview";
 const sha = (b) => crypto.createHash("sha256").update(b).digest("hex");
 
+/* Back to serving every image from the database: product photos point at
+   /api/media/:id again, and that stops redirecting to Blob. One
+   transaction, so the shop never sees half of it. The Blob files stay;
+   --apply again re-links them (same names, same bytes). */
 async function rollback() {
-  const moved = await sql`
-    UPDATE product_images i SET url = '/api/media/' || m.id
-      FROM media m WHERE i.url = m.blob_url AND m.bytes IS NOT NULL
-    RETURNING i.id`;
-  console.log(`  ${moved.length} product photo(s) point at /api/media/:id again.`);
-  console.log("  The Blob copies and media.blob_url stay; /api/media/:id still redirects while blob_url is set.");
-  console.log("  To serve from the database again as well:  UPDATE media SET blob_url = NULL WHERE bytes IS NOT NULL;\n");
+  const [moved, unlinked] = await sql.transaction([
+    sql`UPDATE product_images i SET url = '/api/media/' || m.id
+          FROM media m WHERE i.url = m.blob_url AND m.bytes IS NOT NULL
+        RETURNING i.id`,
+    sql`UPDATE media SET blob_url = NULL WHERE blob_url IS NOT NULL AND bytes IS NOT NULL RETURNING id`,
+  ]);
+  const [{ stuck }] = await sql`SELECT count(*)::int AS stuck FROM media WHERE bytes IS NULL`;
+  console.log(`  ${moved.length} product photo(s) point at /api/media/:id again; ${unlinked.length} image(s) served from the database.`);
+  if (stuck) console.log(`  ! ${stuck} image(s) have no bytes in the database and still need Blob.`);
+  console.log('  Rebuild the shop ("Update shop now" in Products) so its pages use the old addresses.\n');
 }
 
 async function main() {
   console.log(`\nMedia → Vercel Blob  (${describeTarget()}, folder ${M.blobFolder(ENV)}/)`);
+  if (ROLLBACK) return rollback();                 // touches only the database
   if (!M.blobConfigured()) throw new Error("BLOB_READ_WRITE_TOKEN is not set.");
-  if (ROLLBACK) return rollback();
 
   const todo = await sql`SELECT id, sha256, mime, extension FROM media WHERE blob_url IS NULL ORDER BY id`;
   const [{ photos }] = await sql`SELECT count(*)::int AS photos FROM product_images WHERE url LIKE '/api/media/%'`;

@@ -73,6 +73,9 @@
           </div>
           <div class="field"><label>Subcategory (any of)</label><div class="subs" id="ruleSubs"></div></div>
 
+          <div class="field"><label for="namePrefix">Also include every product whose name starts with</label>
+            <input id="namePrefix" maxlength="60" placeholder="e.g. Camera On — leave empty for none"></div>
+
           <h3 style="font-size:14px;margin:8px 0 10px">Hand-picked products</h3>
           <div class="bar"><input type="search" id="pickSearch" placeholder="Find a product"><span class="sub" id="pickCount"></span></div>
           <div class="picks" id="picks"></div>
@@ -114,6 +117,7 @@
   function describe(c) {
     const parts = [];
     if (c.picks.length) parts.push(`${c.picks.length} picked`);
+    if (c.include_name_prefix) parts.push(`names starting “${c.include_name_prefix}”`);
     if (c.rule_category_id != null) parts.push("category " + ((data.categories.find((x) => x.id === c.rule_category_id) || {}).name || "?"));
     if ((c.rule_subcategories || []).length) parts.push(c.rule_subcategories.join(" or "));
     if (c.rule_price_under != null) parts.push("under " + money(c.rule_price_under));
@@ -126,7 +130,9 @@
     const f = form();
     const subs = f.ruleSubcategories.map((s) => s.toLowerCase());
     const hasRules = f.ruleCategoryId != null || subs.length || f.rulePriceUnder != null;
-    return data.products.filter((p) => p.status === "PUBLISHED" && (f.productIds.includes(p.id) || (hasRules
+    const prefix = (f.includeNamePrefix || "").trim().toLowerCase();
+    return data.products.filter((p) => p.status === "PUBLISHED" && (f.productIds.includes(p.id)
+      || (prefix.length >= 2 && p.name.toLowerCase().startsWith(prefix)) || (hasRules
       && (f.ruleCategoryId == null || p.category_id === f.ruleCategoryId)
       && (!subs.length || subs.includes(String(p.subcategory || "").toLowerCase()))
       && (f.rulePriceUnder == null || p.price < f.rulePriceUnder))));
@@ -137,7 +143,7 @@
     return {
       title: $("#title").value, slug: $("#slug").value.trim().toLowerCase(), subtitle: $("#subtitle").value,
       blurb: $("#blurb").value, tint: $("#tint").value.trim(), position: Number($("#position").value || 0),
-      isActive: $("#isActive").checked,
+      isActive: $("#isActive").checked, includeNamePrefix: $("#namePrefix").value.trim(),
       ruleCategoryId: num($("#ruleCategory").value), rulePriceUnder: num($("#rulePrice").value),
       ruleSubcategories: [...document.querySelectorAll("#ruleSubs input:checked")].map((i) => i.value),
       productIds: [...document.querySelectorAll("#picks input:checked")].map((i) => Number(i.value)),
@@ -156,6 +162,7 @@
     $("#ruleCategory").innerHTML = `<option value="">Any category</option>` +
       data.categories.map((x) => `<option value="${x.id}"${x.id === c.rule_category_id ? " selected" : ""}>${esc(x.name)}</option>`).join("");
     $("#rulePrice").value = c.rule_price_under == null ? "" : c.rule_price_under;
+    $("#namePrefix").value = c.include_name_prefix || "";
     const chosen = (c.rule_subcategories || []).map((s) => s.toLowerCase());
     // The rule's own subcategories too, even if no product has one today — or saving would drop them.
     const offered = data.subcategories.concat((c.rule_subcategories || [])
