@@ -29,6 +29,19 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, "product"), { recursive: true });
 fs.mkdirSync(path.join(OUT, "data"), { recursive: true });
 
+/* Pages are still files named x.html here, but every address a customer,
+   a crawler or a link sees is clean: /face, /product/<slug>, / for home.
+   next.config.ts redirects each old .html address there permanently and
+   serves the file behind the clean one. cleanLinks() is the one place a
+   page's links, canonical, og:url and JSON-LD URLs are made clean, so no
+   template can leak an .html address. */
+const cleanPath = (file) => file.replace(/\\/g, "/").replace(/(^|\/)index\.html$/, "$1").replace(/\.html$/, "");
+const DOMAIN_RE = new RegExp(SITE.domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "/((?:[a-z0-9-]+/)*)([a-z0-9-]+)\\.html", "g");
+const cleanLinks = (html) => html
+  .replace(DOMAIN_RE, (m, dir, name) => `${SITE.domain}/${dir}${name === "index" ? "" : name}`)
+  .replace(/href="((?:\.\.\/|\/)?(?:[a-z0-9-]+\/)*)([a-z0-9-]+)\.html(?=[?#"])/g,
+    (m, pre, name) => `href="${name === "index" ? (pre || "/") : pre + name}`);
+
 /* JSON placed inside a <script> element. A "</script>" or "<!--" in any
    value — a product name, an approved customer review, a collection
    title — would otherwise end the element and run as markup. Escaped,
@@ -443,7 +456,7 @@ function buildOverlays(base) {
    ========================================================= */
 function writePage(o) {
   const base = o.base || "";
-  const canonical = SITE.domain + "/" + (o.file === "index.html" ? "" : o.file);
+  const canonical = SITE.domain + "/" + cleanPath(o.file);
   const ogImage = o.ogImage || PRODUCTS[0].imageLarge;
 
   const jsonLd = (o.jsonLd || []).map(
@@ -504,7 +517,7 @@ ${buildOverlays(base)}
 </body>
 </html>
 `;
-  fs.writeFileSync(path.join(OUT, o.file), html, "utf8");
+  fs.writeFileSync(path.join(OUT, o.file), cleanLinks(html), "utf8");
   return o.file;
 }
 
@@ -759,7 +772,7 @@ ${crumbHTML([{ label: "Home", href: "index.html" }, { label: "Search" }])}
     <h1 id="searchTitle">Search</h1>
     <p class="listhead__count" id="searchCount"></p>
   </div>
-  <form class="searchbar__field" style="max-width:520px;margin-bottom:28px" onsubmit="location.href='search.html?q='+encodeURIComponent(document.getElementById('searchQuery').value);return false;">
+  <form class="searchbar__field" style="max-width:520px;margin-bottom:28px" onsubmit="location.href='search?q='+encodeURIComponent(document.getElementById('searchQuery').value);return false;">
     ${icon("search", 19)}
     <input type="search" id="searchQuery" placeholder="Search products…" aria-label="Search products">
   </form>
@@ -1052,7 +1065,7 @@ writePage({
 </div>
 <script>
 (function () {
-  var m = /^\\/product\\/([a-z0-9-]+)\\.html$/.exec(location.pathname);
+  var m = /^\\/product\\/([a-z0-9-]+)(?:\\.html)?$/.exec(location.pathname);
   if (!m) return;
   fetch("/api/products/" + m[1], { headers: { Accept: "application/json" } })
     .then(function (r) { return r.ok ? r.json() : null; })
@@ -1082,8 +1095,7 @@ writePage({
    ========================================================= */
 const today = new Date().toISOString().slice(0, 10);
 const urls = written
-  .map((f) => f.replace(/\\/g, "/"))
-  .map((f) => (f === "index.html" ? "" : f))
+  .map(cleanPath)
   .map((f) => ({
     loc: `${SITE.domain}/${f}`,
     pri: f === "" ? "1.0" : f.startsWith("product/") ? "0.8" : "0.7",

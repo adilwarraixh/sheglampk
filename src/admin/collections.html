@@ -107,7 +107,7 @@
     $("#rows").innerHTML = data.collections.length ? data.collections.map((c) => `
       <tr data-id="${c.id}">
         <td><span class="swatch" style="background:${/^#[0-9a-fA-F]{6}$/.test(c.tint || "") ? c.tint : "#3d3d3d"}"></span>${esc(c.title)}</td>
-        <td class="sub">/collection-${esc(c.slug)}.html</td>
+        <td class="sub">/collection-${esc(c.slug)}</td>
         <td class="num">${c.members.length}</td>
         <td class="sub">${esc(describe(c))}</td>
         <td>${c.is_active ? '<span class="pill" style="background:#e6f6ec;color:#17803d">On the shop</span>' : '<span class="pill" style="background:#f1f1f3;color:#666">Hidden</span>'}</td>
@@ -186,7 +186,7 @@
     const slug = $("#slug").value.trim().toLowerCase();
     $("#slugHint").textContent = current && current.id && slug !== current.slug
       ? "Changing this moves the page; links to the old address will stop working."
-      : slug ? `Page: /collection-${slug}.html` : "";
+      : slug ? `Page: /collection-${slug}` : "";
   }
 
   const slugify = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);

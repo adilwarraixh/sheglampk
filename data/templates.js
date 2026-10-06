@@ -91,7 +91,7 @@
     const inner = hasImage
       ? `<img class="logo__img" src="${base}assets/img/logo.png" alt="SHEGLAM.PK" width="180" height="40">`
       : `<span class="logo__word">SHE<span class="logo__g">${SPARKLE}G</span>LAM<span class="logo__tld">.PK</span></span>`;
-    return `<a class="logo${o.cls ? " " + o.cls : ""}" href="${base}index.html" aria-label="SHEGLAM.PK home">${inner}</a>`;
+    return `<a class="logo${o.cls ? " " + o.cls : ""}" href="${base || "/"}" aria-label="SHEGLAM.PK home">${inner}</a>`;
   }
 
   /* ---------- Small pieces ---------- */
@@ -132,7 +132,7 @@
 
   /* ---------- Product card ---------- */
   function card(p, base = "") {
-    const href = `${base}product/${p.slug}.html`;
+    const href = `${base}product/${p.slug}`;
     // The image already carries a Bestseller/New flag, so this line is kept
     // for the offer message rather than repeating the badge.
     const promo = p.oldPrice ? `<p class="card__promo">Save ${money(p.oldPrice - p.price)}</p>` : "";

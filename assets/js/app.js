@@ -214,7 +214,7 @@
     if (!p.inStock) { toast("That one is sold out", false); return; }
     if (p.shades && p.shades.length && !shade) {
       // No shade chosen — send the shopper to the product page to pick one.
-      location.href = `${BASE}product/${p.slug}.html#shade`;
+      location.href = `${BASE}product/${p.slug}#shade`;
       return;
     }
     qty = qty || 1;
@@ -245,7 +245,7 @@
       box.innerHTML = `<div class="drawer__empty">${T.icon("cart", 40, 1.2)}
         <h4>Your cart is empty</h4>
         <p>Browse the bestsellers and find something you love.</p>
-        <a class="btn btn--primary" href="${BASE}best-sellers.html">Shop bestsellers</a></div>`;
+        <a class="btn btn--primary" href="${BASE}best-sellers">Shop bestsellers</a></div>`;
     } else {
       box.innerHTML = cart.map((l) => {
         const p = byId(l.id);
@@ -254,7 +254,7 @@
         return `<div class="lineitem">
           <img class="lineitem__img" src="${T.imgSrc(p.image, BASE)}" alt="${T.esc(p.name)}" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
           <div>
-            <div class="lineitem__name"><a href="${BASE}product/${p.slug}.html">${T.esc(p.name)}</a></div>
+            <div class="lineitem__name"><a href="${BASE}product/${p.slug}">${T.esc(p.name)}</a></div>
             ${l.shade ? `<div class="lineitem__variant">Shade: ${T.esc(l.shade)}</div>` : ""}
             <div class="lineitem__price">${money(p.price * l.qty)}</div>
             <div class="lineitem__qty">
@@ -318,7 +318,7 @@
       box.innerHTML = `<div class="drawer__empty">${T.icon("heart", 40, 1.2)}
         <h4>Nothing saved yet</h4>
         <p>Tap the heart on any product to keep it here.</p>
-        <a class="btn btn--primary" href="${BASE}face.html">Start browsing</a></div>`;
+        <a class="btn btn--primary" href="${BASE}face">Start browsing</a></div>`;
       return;
     }
     box.innerHTML = wishlist.map((id) => {
@@ -327,9 +327,9 @@
       return `<div class="lineitem">
         <img class="lineitem__img" src="${T.imgSrc(p.image, BASE)}" alt="${T.esc(p.name)}" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
         <div>
-          <div class="lineitem__name"><a href="${BASE}product/${p.slug}.html">${T.esc(p.name)}</a></div>
+          <div class="lineitem__name"><a href="${BASE}product/${p.slug}">${T.esc(p.name)}</a></div>
           <div class="lineitem__price">${money(p.price)}</div>
-          <a class="btn btn--rose btn--sm" style="margin-top:8px" href="${BASE}product/${p.slug}.html">
+          <a class="btn btn--rose btn--sm" style="margin-top:8px" href="${BASE}product/${p.slug}">
             ${p.shades && p.shades.length ? "Choose shade" : "View product"}</a>
         </div>
         <button class="lineitem__x js-wish-rm" data-id="${T.esc(p.slug)}" aria-label="Remove">${T.icon("close", 16)}</button>
@@ -482,18 +482,18 @@
         const hits = searchProducts(q);
         track("search", { search_term: q });
         res.innerHTML = hits.length
-          ? hits.slice(0, 6).map((p) => `<a class="searchres__item" href="${BASE}product/${p.slug}.html">
+          ? hits.slice(0, 6).map((p) => `<a class="searchres__item" href="${BASE}product/${p.slug}">
               <img class="searchres__thumb" src="${T.imgSrc(p.image, BASE)}" alt="" data-tile="${p.tile}" data-fallback="${T.esc(p.name.charAt(0))}">
               <div><div class="searchres__name">${T.esc(p.name)}</div>
               <div class="searchres__meta">${p.sub ? T.esc(p.sub) + " · " : ""}${money(p.price)}</div></div></a>`).join("")
-            + `<a class="searchres__all" href="${BASE}search.html?q=${encodeURIComponent(q)}">See all ${hits.length} results</a>`
+            + `<a class="searchres__all" href="${BASE}search?q=${encodeURIComponent(q)}">See all ${hits.length} results</a>`
           : `<div class="empty"><h3>No matches for “${T.esc(q)}”</h3>
              <p>Try a category like “blush”, “primer” or “lip gloss”.</p></div>`;
       }, 160);
     });
     on(input, "keydown", (e) => {
       if (e.key === "Enter" && input.value.trim()) {
-        location.href = `${BASE}search.html?q=${encodeURIComponent(input.value.trim())}`;
+        location.href = `${BASE}search?q=${encodeURIComponent(input.value.trim())}`;
       }
     });
     $$(".searchbar__hints button").forEach((b) =>
@@ -516,7 +516,7 @@
         : searching ? `<div class="empty"><h3>Searching…</h3></div>`
         : `<div class="empty"><h3>No products matched “${T.esc(q)}”</h3>
            <p>Check the spelling, or browse a category instead.</p>
-           <a class="btn btn--primary" href="${BASE}face.html">Shop face</a></div>`;
+           <a class="btn btn--primary" href="${BASE}face">Shop face</a></div>`;
       syncWishButtons();
     };
     const local = searchProducts(q);
@@ -778,7 +778,7 @@
           <div class="buyrow">
             <button class="btn btn--primary btn--block" id="qvAdd" data-id="${T.esc(p.slug)}">Add to Cart</button>
           </div>
-          <a class="viewall" href="${BASE}product/${p.slug}.html">Full details ${T.icon("chevronR", 15)}</a>
+          <a class="viewall" href="${BASE}product/${p.slug}">Full details ${T.icon("chevronR", 15)}</a>
         </div>
       </div>`;
 
@@ -878,7 +878,7 @@
     on($("#pdpWa"), "click", (e) => {
       const lines = [`Hello ${SITE.name}! I'm interested in:`, "",
         `• ${p.name}${shade ? " — " + shade : ""} (x${qtyInput.value})`,
-        `${money(p.price)} each`, "", `Link: ${SITE.domain}/product/${p.slug}.html`];
+        `${money(p.price)} each`, "", `Link: ${SITE.domain}/product/${p.slug}`];
       e.currentTarget.href = waBase + encodeURIComponent(lines.join("\n"));
     });
 

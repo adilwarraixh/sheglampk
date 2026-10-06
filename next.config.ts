@@ -3,6 +3,18 @@
    every page into public/, and pages/api mounts the handlers unchanged.
    The routing and headers below are vercel.json's, in the same order. */
 import type { NextConfig } from "next";
+import { existsSync, readdirSync } from "fs";
+
+/* Clean addresses. build.js writes each page as a file (face.html,
+   product/<slug>.html) into public/, but customers, Google and every link
+   use /face and /product/<slug>. The list comes from the files actually
+   built, so an unknown address is never guessed at: it gets the 404 page.
+   Pages ported to React live at the clean address themselves, and a
+   React route wins over the rewrite to its old file. */
+const htmlIn = (dir: string) =>
+  existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".html")).map((f) => f.slice(0, -5)) : [];
+const PAGES = htmlIn("public").filter((p) => p !== "index" && p !== "404");
+const PRODUCTS = htmlIn("public/product");
 
 const ADMIN_PAGES = [
   "login", "orders", "password", "products", "product", "inventory", "customers",
@@ -21,6 +33,15 @@ const config: NextConfig = {
   poweredByHeader: false,
   trailingSlash: false,
 
+  // Old .html addresses move permanently (308), keeping any ?query.
+  async redirects() {
+    return [
+      { source: "/index.html", destination: "/", permanent: true },
+      ...PAGES.map((p) => ({ source: `/${p}.html`, destination: `/${p}`, permanent: true })),
+      ...PRODUCTS.map((s) => ({ source: `/product/${s}.html`, destination: `/product/${s}`, permanent: true })),
+    ];
+  },
+
   async rewrites() {
     return {
       beforeFiles: [],
@@ -28,6 +49,8 @@ const config: NextConfig = {
         { source: "/", destination: "/index.html" },
         { source: "/admin", destination: "/admin/index.html" },
         ...ADMIN_PAGES.map((p) => ({ source: `/admin/${p}`, destination: `/admin/${p}.html` })),
+        ...PAGES.map((p) => ({ source: `/${p}`, destination: `/${p}.html` })),
+        ...PRODUCTS.map((s) => ({ source: `/product/${s}`, destination: `/product/${s}.html` })),
       ],
       // Anything else gets the shop's own 404 page, with status 404.
       fallback: [{ source: "/:path*", destination: "/api/not-found" }],

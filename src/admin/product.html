@@ -277,7 +277,7 @@
     if (p.import_notes) note("Flagged during import: " + p.import_notes);
     const live = $("#viewLive");
     if (p.status === "PUBLISHED") {
-      live.innerHTML = `<a href="/product/${esc(p.slug)}.html" target="_blank" rel="noopener">View on the shop ↗</a>`;
+      live.innerHTML = `<a href="/product/${esc(p.slug)}" target="_blank" rel="noopener">View on the shop ↗</a>`;
       live.hidden = false;
     }
     onChange();
@@ -691,7 +691,7 @@
     }
 
     const s = val("slug") || slugify(val("name"));
-    $("#slugHint").textContent = s ? `Customers will see /product/${s}.html` : "";
+    $("#slugHint").textContent = s ? `Customers will see /product/${s}` : "";
   }
   const slugify = (s) => String(s).toLowerCase().replace(/['’]/g, "").replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
