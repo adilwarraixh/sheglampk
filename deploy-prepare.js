@@ -1,7 +1,8 @@
 /* =========================================================
-   deploy-prepare.js — assemble the public site into dist/
+   deploy-prepare.js — assemble the public site into public/
 
-   Vercel (or any static host) should serve ONLY this folder.
+   Next.js serves this folder as static files, and nothing else from the
+   repo root.
    Copying to an allow-list rather than deleting from the repo
    means a new admin or tooling file is excluded by default —
    the safe direction to fail in.
@@ -12,7 +13,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = __dirname;
-const OUT = path.join(ROOT, "dist");
+const OUT = path.join(ROOT, "public");
 
 /* Exact files and whole directories that make up the public site. */
 const COPY_DIRS = ["assets", "product"];
@@ -112,12 +113,12 @@ const leaked = [];
   }
 })(OUT);
 
-console.log(`\n✓ dist/ ready — ${copied} files (${skipped} denied)`);
+console.log(`\n✓ public/ ready — ${copied} files (${skipped} denied)`);
 console.log(`  pages   : ${fs.readdirSync(OUT).filter((f) => f.endsWith(".html")).length}`);
 console.log(`  products: ${fs.existsSync(path.join(OUT, "product")) ? fs.readdirSync(path.join(OUT, "product")).length : 0}`);
 
 if (leaked.length) {
-  console.error("\n✗ REFUSING: private files reached dist/:");
+  console.error("\n✗ REFUSING: private files reached public/:");
   leaked.forEach((f) => console.error("   " + f));
   process.exit(1);
 }

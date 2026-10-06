@@ -57,12 +57,12 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
   const savedCredentials = await snapshotCredentials();
   const U = await mk("umama"), A = await mk("ashba");
   const R = {
-    checkout: "/api/orders.js",
-    adminOrders: "/api/admin/orders/index.js",
-    adminOrder: "/api/admin/orders/[id].js",
-    notif: "/api/admin/notifications.js",
-    retry: "/api/notifications/retry.js",
-    dash: "/api/admin/dashboard.js",
+    checkout: "/handlers/orders.js",
+    adminOrders: "/handlers/admin/orders/index.js",
+    adminOrder: "/handlers/admin/orders/[id].js",
+    notif: "/handlers/admin/notifications.js",
+    retry: "/handlers/notifications/retry.js",
+    dash: "/handlers/admin/dashboard.js",
   };
 
   await sql`DELETE FROM login_attempts`;

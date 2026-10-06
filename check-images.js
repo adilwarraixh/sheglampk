@@ -111,7 +111,7 @@ if (missing.length) {
   });
   console.log("Save each as assets/img/products/<name above>, portrait, 1000x1200px or larger.");
   console.log("Anything missing falls back to a generated studio tile — nothing breaks.\n");
-  console.log("Easier: start the server (node server.js) and open");
+  console.log("Easier: start the site (npm run dev) and open");
   console.log("  http://localhost:5599/tools/photo-import.html");
   console.log("Drop your photos in and it crops, resizes and renames them for you.\n");
 } else {
