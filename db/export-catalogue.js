@@ -32,7 +32,7 @@ async function snapshot(now = new Date()) {
     SELECT p.id, p.slug, p.sku, p.name, p.subcategory, p.short_description, p.description,
            p.finish, p.size, p.price, p.sale_price, p.sale_starts_at, p.sale_ends_at, p.stock_quantity,
            p.is_featured, p.is_bestseller, p.is_new_arrival, p.published_at, p.tags,
-           p.seo_title, p.seo_description,
+           p.seo_title, p.seo_description, p.category_id,
            c.slug AS category_slug
       FROM products p
       LEFT JOIN categories c ON c.id = p.category_id
@@ -40,7 +40,8 @@ async function snapshot(now = new Date()) {
      ORDER BY p.published_at DESC NULLS LAST, p.id DESC`;
 
   const ids = products.map((p) => p.id);
-  const [variants, images, reviews] = await Promise.all([
+  const C = require("../lib/collections.js");
+  const [variants, images, reviews, collections] = await Promise.all([
     ids.length ? sql`
     SELECT product_id, id, variant_name, hex, stock_quantity, position
       FROM product_variants WHERE product_id = ANY(${ids}) AND is_available
@@ -50,6 +51,7 @@ async function snapshot(now = new Date()) {
       FROM product_images WHERE product_id = ANY(${ids}) ORDER BY product_id, position` : [],
     // Only reviews an admin has approved (lib/inbox.js).
     require("../lib/inbox.js").approvedReviews(),
+    C.list({ activeOnly: true }),
   ]);
 
   const group = (rows, key = "product_id") => rows.reduce((m, r) => {
@@ -116,6 +118,11 @@ async function snapshot(now = new Date()) {
     updated: now.toISOString(),
     settings,
     products: out,
+    // Active collections with their members, newest first (lib/collections.js decides who is in).
+    collections: collections.map((c) => ({
+      slug: c.slug, title: c.title, sub: c.subtitle || "", blurb: c.blurb || "", tint: c.tint,
+      dbIds: C.membersOf(c, products, now).map((p) => Number(p.id)),
+    })),
   };
 }
 

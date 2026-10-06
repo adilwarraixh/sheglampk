@@ -12,7 +12,7 @@
     "db:import-pdf": "node db/import-pdf-catalogue.js",
     "db:export": "node db/export-catalogue.js",
     "db:passwords": "node db/issue-temp-passwords.js",
-    "test": "node test-routes.js && node test-auth.js && node test-api.js && node test-media.js && node test-import.js && node test-orders.js && node test-catalogue.js && node test-pricing.js && node test-new-in.js && node test-checkout.js && node test-admin.js && node test-inbox.js",
+    "test": "node test-routes.js && node test-auth.js && node test-api.js && node test-media.js && node test-import.js && node test-orders.js && node test-catalogue.js && node test-pricing.js && node test-new-in.js && node test-checkout.js && node test-admin.js && node test-inbox.js && node test-collections.js",
     "db:seed-hero": "node db/seed-hero.js",
     "db:seed-settings": "node db/seed-settings.js",
     "mail:test": "node db/mail-test.js",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "@vercel/blob": "^2.8.1",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

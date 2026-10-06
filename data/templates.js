@@ -35,7 +35,8 @@
   function swatchStyle(s, base) {
     const hex = s && String(s.hex || "").trim();
     if (hex && HEX.test(hex)) return `background:${hex}`;
-    if (s && s.image && /^[\w\/.\-]+$/.test(s.image))
+    // A path, or an https address such as a Vercel Blob file: no quotes or brackets that could leave url('').
+    if (s && s.image && /^(https:\/\/[\w.-]+)?\/?[\w\/.\-]+$/.test(s.image))
       return `background:#f3f3f4 url('${imgSrc(s.image, base)}') center/cover`;
     return "background:#e9e9ec";
   }

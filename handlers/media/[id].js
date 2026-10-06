@@ -20,6 +20,17 @@ module.exports = handler(async (req, res) =>
       const media = await M.fetchMedia(id);
       if (!media) return fail(res, 404, "Image not found");
 
+      /* Moved to Vercel Blob (lib/media.js): send the browser there. Old
+         pages, emails and past orders keep this address, so it keeps working.
+         Temporary and cached for an hour only, so going back to serving from
+         the database (--rollback) reaches every browser within the hour. */
+      if (media.blob_url) {
+        res.statusCode = 302;
+        res.setHeader("Location", media.blob_url);
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        return res.end();
+      }
+
       const buf = Buffer.isBuffer(media.bytes) ? media.bytes : Buffer.from(media.bytes);
       const etag = `"${media.sha256.slice(0, 32)}"`;
       if (req.headers["if-none-match"] === etag) { res.statusCode = 304; return res.end(); }

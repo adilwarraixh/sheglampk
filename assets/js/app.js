@@ -501,23 +501,42 @@
     );
   }
 
-  function initSearchPage() {
+  async function initSearchPage() {
     if (PAGE !== "search") return;
     const q = new URLSearchParams(location.search).get("q") || "";
-    const hits = searchProducts(q);
     const title = $("#searchTitle"), count = $("#searchCount"), out = $("#searchGrid");
     if (title) title.textContent = q ? `Results for “${q}”` : "Search";
-    if (count) count.textContent = `${hits.length} ${hits.length === 1 ? "product" : "products"}`;
     const box = $("#searchQuery");
     if (box) box.value = q;
-    if (out) {
+    const render = (hits, searching) => {
+      if (count) count.textContent = searching ? "Searching…" : `${hits.length} ${hits.length === 1 ? "product" : "products"}`;
+      if (!out) return;
       out.innerHTML = hits.length
         ? hits.map((p) => T.card(p, BASE)).join("")
+        : searching ? `<div class="empty"><h3>Searching…</h3></div>`
         : `<div class="empty"><h3>No products matched “${T.esc(q)}”</h3>
            <p>Check the spelling, or browse a category instead.</p>
            <a class="btn btn--primary" href="${BASE}face.html">Shop face</a></div>`;
       syncWishButtons();
-    }
+    };
+    const local = searchProducts(q);
+    const asking = !!q.trim();
+    // Nothing found here yet: wait for the server rather than say "no match" too early.
+    render(local, asking && !local.length);
+    if (!asking) return;
+    /* The server's full-text search is stemmed ("blushes" finds Blush).
+       What is already on screen stays where it is, so nothing moves under
+       a tap; anything extra the server found is added after it. No answer
+       in 4s, or any error, keeps the results above. */
+    let extra = [];
+    try {
+      const ctl = new AbortController();
+      setTimeout(() => ctl.abort(), 4000);
+      const r = await fetch(`${BASE}api/products?limit=200&q=${encodeURIComponent(q)}`, { signal: ctl.signal });
+      const data = await r.json();
+      if (r.ok && data.ok) extra = (data.products || []).map((x) => D.bySlug(x.slug)).filter((p) => p && !local.includes(p));
+    } catch (e) { /* keep the local results */ }
+    if (extra.length || !local.length) render(local.concat(extra), false);
   }
 
   /* ---------------------------------------------------------
