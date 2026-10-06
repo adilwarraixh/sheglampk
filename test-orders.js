@@ -20,6 +20,8 @@ process.env.DEPLOY_HOOK_URL = "";
 
 const auth = require(P + "/lib/auth");
 const notify = require(P + "/lib/order-emails");
+const { priceOf } = require(P + "/lib/pricing");
+const { syncProductStock } = require(P + "/lib/stock");
 const { snapshotCredentials, restoreCredentials } = require("./test-helpers.js");
 
 function mockRes() {
@@ -65,9 +67,9 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
 
   await sql`DELETE FROM login_attempts`;
   const [prod] = await sql`
-    SELECT id, name, price FROM products WHERE status = 'PUBLISHED' AND sku = 'SGPK-005' LIMIT 1`;
+    SELECT id, name, price, sale_price, stock_quantity FROM products WHERE status = 'PUBLISHED' AND sku = 'SGPK-005' LIMIT 1`;
   const [variant] = await sql`
-    SELECT v.id, v.stock_quantity, v.variant_name FROM product_variants v
+    SELECT v.id, v.product_id, v.stock_quantity, v.variant_name FROM product_variants v
       JOIN products p ON p.id = v.product_id WHERE p.sku = 'SGPK-002' ORDER BY v.position LIMIT 1`;
 
   const base = {
@@ -111,8 +113,9 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
     items: [{ productId: prod.id, quantity: 1, price: 1, unitPrice: 1 }],
     subtotal: 1, total: 1, shippingFee: 0, discount: 9999 } });
   const [tOrder] = await sql`SELECT subtotal, total, discount, shipping_fee FROM orders WHERE reference = ${tampered.body.reference}`;
-  t("client-sent price ignored", Number(tOrder.subtotal) === Number(prod.price),
-    `sent 1, stored ${Number(tOrder.subtotal)}`);
+  // The price the shop shows: the sale price while one is set.
+  t("client-sent price ignored", Number(tOrder.subtotal) === priceOf(prod).final,
+    `sent 1, stored ${Number(tOrder.subtotal)}, shop price ${priceOf(prod).final}`);
   t("client-sent discount ignored", Number(tOrder.discount) === 0);
 
   /* stock check before selling */
@@ -259,11 +262,10 @@ const PHONES = ["03009998877", "03009998878", "03009998879"];
   /* ---------- cleanup ---------- */
   await sql`DELETE FROM orders WHERE customer_phone = ANY(${PHONES})`;
   await sql`DELETE FROM customers WHERE phone = ANY(${PHONES})`;
+  // Put back exactly the stock the run took, and touch nothing else.
   await sql`UPDATE product_variants SET stock_quantity = ${stockBefore} WHERE id = ${variant.id}`;
-  await sql`
-    UPDATE products p SET stock_quantity =
-      COALESCE((SELECT sum(v.stock_quantity)::int FROM product_variants v WHERE v.product_id = p.id),
-               p.stock_quantity)`;
+  await syncProductStock(variant.product_id);
+  await sql`UPDATE products SET stock_quantity = ${prod.stock_quantity} WHERE id = ${prod.id}`;
   await auth.revokeSession(U.token);
   await auth.revokeSession(A.token);
   await restoreCredentials(savedCredentials);

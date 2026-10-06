@@ -19,6 +19,7 @@ module.exports = handler(async (req, res) => {
       return ok(res, {
         product,
         statuses: P.STATUSES,
+        newForDays: P.NEW_FOR_DAYS,
         categories: await P.categories(),
         subcategories: await P.subcategories(),
       });

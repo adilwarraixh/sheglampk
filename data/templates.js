@@ -121,8 +121,11 @@
     let out = "";
     if (!p.inStock) out += `<span class="flag flag--out">Sold out</span>`;
     if (p.oldPrice) out += `<span class="flag flag--sale">-${p.discount}%</span>`;
-    if (p.isNew) out += `<span class="flag flag--new">New</span>`;
-    if (p.isBestSeller && !p.isNew) out += `<span class="flag flag--best">Bestseller</span>`;
+    /* One of the two, Bestseller first. New now lasts a month after
+       publishing, so in a young catalogue most products are New, and letting
+       New win hid every Bestseller badge. */
+    if (p.isBestSeller) out += `<span class="flag flag--best">Bestseller</span>`;
+    else if (p.isNew) out += `<span class="flag flag--new">New</span>`;
     return out ? `<div class="card__flags">${out}</div>` : "";
   }
 

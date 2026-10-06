@@ -69,6 +69,7 @@
                 <div class="field"><label for="currency">Currency</label>
                   <input id="currency" value="PKR" maxlength="8"></div>
               </div>
+              <p class="sub" id="priceSummary"></p>
               <p class="sub" id="priceHint">A product cannot be published without a regular price.</p>
             </div>
           </section>
@@ -141,7 +142,8 @@
               <p class="sub" id="statusHint"></p>
               <label class="check"><input type="checkbox" id="isFeatured"> Featured</label>
               <label class="check"><input type="checkbox" id="isBestseller"> Bestseller</label>
-              <label class="check"><input type="checkbox" id="isNewArrival"> New arrival</label>
+              <label class="check"><input type="checkbox" id="isNewArrival"> Keep showing as New</label>
+              <p class="sub" id="newHint"></p>
             </div>
           </section>
 
@@ -187,8 +189,9 @@
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
   const isNew = !id;
-  let meta = { statuses: [], categories: [], subcategories: [] };
+  let meta = { statuses: [], categories: [], subcategories: [], newForDays: 30 };
   let readOnly = false;
+  let newUntil = null;      // when this product stops counting as New, once published
 
   const F = (k) => $("#" + k);
   const val = (k) => F(k).value.trim();
@@ -199,14 +202,14 @@
 
     if (isNew) {
       const m = await A.api("/api/admin/products?limit=1");
-      meta = { statuses: m.statuses, categories: m.categories, subcategories: m.subcategories };
+      meta = { statuses: m.statuses, categories: m.categories, subcategories: m.subcategories, newForDays: m.newForDays };
       fillMeta();
       renderVariants([]); renderImages([]);
       F("status").value = "DRAFT";
       onChange();
     } else {
       const r = await A.api("/api/admin/products/" + encodeURIComponent(id));
-      meta = { statuses: r.statuses, categories: r.categories, subcategories: r.subcategories };
+      meta = { statuses: r.statuses, categories: r.categories, subcategories: r.subcategories, newForDays: r.newForDays };
       fillMeta();
       fill(r.product);
       if (A.can("products:delete")) $("#deleteBtn").hidden = false;
@@ -250,6 +253,7 @@
     F("isFeatured").checked = p.is_featured;
     F("isBestseller").checked = p.is_bestseller;
     F("isNewArrival").checked = p.is_new_arrival;
+    newUntil = p.new_until ? new Date(p.new_until) : null;
     renderVariants(p.variants || []);
     renderImages(p.images || []);
     if (p.import_notes) note("Flagged during import: " + p.import_notes);
@@ -600,6 +604,31 @@
       ARCHIVED: "Retired. Hidden from the shop and from search, but kept so past orders still work.",
     }[status] || "";
     $("#statusHint").textContent = hint;
+
+    /* Said in words, so a sale price is never mistaken for the regular one.
+       The server checks the same thing and charges priceOf() in lib/pricing.js. */
+    const summary = $("#priceSummary");
+    summary.style.color = "";
+    if (price === null) summary.textContent = "";
+    else if (sale === null) summary.textContent = `Customers pay ${money(price)}.`;
+    else if (sale >= price) {
+      summary.textContent = "The sale price must be lower than the regular price.";
+      summary.style.color = "var(--err)";
+    } else {
+      summary.textContent = `On sale: customers pay ${money(sale)}, saving ${money(price - sale)} ` +
+        `(${Math.round((1 - sale / price) * 100)}% off ${money(price)}). Clear the sale price to end the sale — ` +
+        `the regular price stays as it is.`;
+    }
+
+    const days = meta.newForDays || 30;
+    const day = (d) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    $("#newHint").textContent = F("isNewArrival").checked
+      ? "Shown as New until you untick this."
+      : !newUntil
+        ? `Shown as New on the shop for ${days} days from when it is first published.`
+        : newUntil > new Date()
+          ? `Shown as New until ${day(newUntil)} (${days} days after it was first published). Tick to keep it New after that.`
+          : `No longer New — it was first published more than ${days} days ago. Tick to show it as New again.`;
 
     $("#priceHint").textContent = (status === "PUBLISHED" && price === null)
       ? "This product has no price, so it cannot be published yet."

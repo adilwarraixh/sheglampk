@@ -11,17 +11,7 @@
 const notify = require("../../lib/order-emails.js");
 const mailer = require("../../lib/mailer.js");
 const auth = require("../../lib/auth.js");
-const { ok, fail, methods, handler } = require("../../lib/http.js");
-const crypto = require("crypto");
-
-function secretMatches(req) {
-  const expected = (process.env.CRON_SECRET || "").trim();
-  if (!expected) return false;
-  const header = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim()
-    || String(req.headers["x-cron-secret"] || "").trim();
-  if (!header || header.length !== expected.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(header), Buffer.from(expected));
-}
+const { ok, fail, methods, handler, cronSecretMatches } = require("../../lib/http.js");
 
 module.exports = handler(async (req, res) =>
   methods(req, res, {
@@ -31,7 +21,7 @@ module.exports = handler(async (req, res) =>
 );
 
 async function run(req, res) {
-  let authorised = secretMatches(req);
+  let authorised = cronSecretMatches(req);
   if (!authorised) {
     const session = await auth.getSession(auth.readCookie(req.headers.cookie));
     authorised = !!(session && session.user && !session.user.mustChangePassword);

@@ -457,7 +457,11 @@
       isFeatured: !!r.isFeatured,
       desc: r.desc,
       shortDesc: r.shortDesc || null,
-      sku: r.sku || "SGPK-" + String(1000 + _id),
+      /* A product with no SKU gets one from its database id, which never
+         changes. Its position in the catalogue moves every time a newer
+         product is published, and would hand its old placeholder (and its
+         ad-pixel history) to a different product. */
+      sku: r.sku || (r.dbId != null ? "SGPK-P" + r.dbId : "SGPK-" + String(1000 + _id)),
       /* Carried before imageFor() runs, because that is what it reads. */
       /* Database id, carried so the checkout can tell the server exactly
          which row to price and reserve. */

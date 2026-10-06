@@ -75,8 +75,13 @@ module.exports = handler(async (req, res) =>
           customerNote: String(body.customerNote || "").slice(0, 1000) || null,
           items: body.items,
           idempotencyKey: String(body.idempotencyKey || "").trim() || null,
+          // The total the customer was shown — compared, never charged.
+          expectedTotal: body.expectedTotal,
         });
       } catch (e) {
+        // Nothing was written. The real figures go back so the customer
+        // can confirm them rather than being charged a surprise.
+        if (e.code === "PRICE_CHANGED") return fail(res, 409, e.message, { priceChanged: true, ...e.quote });
         // Genuine input problems get a clear message; anything else is a 500
         // handled by the wrapper, so internals are never exposed.
         return fail(res, 400, e.message);
@@ -113,6 +118,7 @@ module.exports = handler(async (req, res) =>
         total: order.total,
         subtotal: order.subtotal,
         shippingFee: order.shippingFee,
+        items: order.items,                 // absent on a replayed request
         placedAt: order.placedAt,
         duplicate: !!order.duplicate,
         // Whether the customer's copy actually went out, so the

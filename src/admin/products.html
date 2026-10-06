@@ -43,7 +43,7 @@
           <option value="">All products</option>
           <option value="featured">Featured</option>
           <option value="bestseller">Bestseller</option>
-          <option value="new">New arrival</option>
+          <option value="new">New</option>
           <option value="sale">On sale</option>
         </select>
         <select id="sort">
@@ -154,7 +154,7 @@
     const flags = [
       p.is_featured ? "Featured" : null,
       p.is_bestseller ? "Bestseller" : null,
-      p.is_new_arrival ? "New" : null,
+      p.is_new ? "New" : null,           // worked out the way the shop does
     ].filter(Boolean).map((f) => `<span class="pill">${f}</span>`).join(" ") || `<span class="sub">—</span>`;
 
     const canEdit = A.can("products:update");

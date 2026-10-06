@@ -4,6 +4,9 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": null,
+  "regions": [
+    "sin1"
+  ],
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
@@ -168,6 +171,10 @@
     {
       "path": "/api/notifications/retry",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/daily",
+      "schedule": "0 21 * * *"
     }
   ]
 }

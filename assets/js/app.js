@@ -41,8 +41,9 @@
      to store the product's position in the build's catalogue, which shifts
      whenever a product is unpublished, so a saved cart could quietly point
      at a different product after the site was rebuilt. A position cannot be
-     trusted across builds, so old cart lines are dropped; wishlist and
-     history entries, where a wrong guess costs nothing, are translated.
+     trusted across builds, so old position entries are dropped — cart,
+     wishlist and history alike. (Translating them by position stopped being
+     even roughly right once the catalogue began listing newest first.)
      Lines for products or shades no longer on sale go too — they would
      count in the badge and then fail at checkout. */
   const isLegacyKey = (id) => typeof id === "number" || /^\d+$/.test(String(id));
@@ -55,13 +56,15 @@
       if (!p) return false;
       return p.shades && p.shades.length ? p.shades.some((s) => s.name === l.shade) : !l.shade;
     }).map((l) => ({ id: String(l.id), shade: l.shade || "", qty: clamp(parseInt(l.qty, 10) || 1, 1, 99) }));
-    wishlist = Array.from(new Set((Array.isArray(wishlist) ? wishlist : []).map(slugFor).filter(Boolean)));
+    const keep = (list) => Array.from(new Set((Array.isArray(list) ? list : [])
+      .filter((id) => !isLegacyKey(id)).map(slugFor).filter(Boolean)));
+    wishlist = keep(wishlist);
     if (JSON.stringify([cart, wishlist]) !== before) {
       store.set("sgpk_cart", cart);
       store.set("sgpk_wishlist", wishlist);
     }
     const recent = store.get("sgpk_recent", []);
-    const recentNow = Array.from(new Set((Array.isArray(recent) ? recent : []).map(slugFor).filter(Boolean)));
+    const recentNow = keep(recent);
     if (JSON.stringify(recentNow) !== JSON.stringify(recent)) store.set("sgpk_recent", recentNow);
   })();
 
@@ -519,9 +522,11 @@
   /* ---------------------------------------------------------
      Listing pages — filters, sort, pagination
      --------------------------------------------------------- */
+  /* The catalogue arrives newest first (db/export-catalogue.js), so a
+     lower id is a more recently published product. */
   const SORTS = {
     recommend: (a, b) => (b.isBestSeller - a.isBestSeller) || a.id - b.id,
-    new: (a, b) => (b.isNew - a.isNew) || b.id - a.id,
+    new: (a, b) => (b.isNew - a.isNew) || a.id - b.id,
     "price-asc": (a, b) => a.price - b.price,
     "price-desc": (a, b) => b.price - a.price,
     rating: (a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount,
@@ -546,7 +551,9 @@
     const PER_PAGE = 20;
     let shown = PER_PAGE;
 
-    const state = { sub: [], finish: [], shade: [], min: null, max: null, sort: "recommend", inStock: false };
+    // New In opens newest first; everything else on the usual order.
+    const defaultSort = root.dataset.sort || "recommend";
+    const state = { sub: [], finish: [], shade: [], min: null, max: null, sort: defaultSort, inStock: false };
 
     /* --- read URL --- */
     (function readURL() {
@@ -565,7 +572,7 @@
       if (state.finish.length) q.set("finish", state.finish.join(","));
       if (state.min != null) q.set("min", state.min);
       if (state.max != null) q.set("max", state.max);
-      if (state.sort !== "recommend") q.set("sort", state.sort);
+      if (state.sort !== defaultSort) q.set("sort", state.sort);
       if (state.inStock) q.set("stock", "1");
       const s = q.toString();
       history.replaceState(null, "", s ? `?${s}` : location.pathname);
@@ -1016,8 +1023,17 @@
     $("#coTotal").textContent = money(sub + ship);
   }
 
+  /* The server's figures, kept when it answered with a different total than
+     this page showed. Sending its total back is the customer confirming it,
+     and the order (and its WhatsApp fallback) then uses these figures, not
+     the page's. */
+  let confirmedQuote = null;
+
   function openCheckout() {
     if (!cart.length) { toast("Your cart is empty", false); return; }
+    confirmedQuote = null;
+    const box = $("#coError");
+    if (box) box.hidden = true;
     closeAll();
     renderCheckoutSummary();
     $("#coFormState").style.display = "";
@@ -1194,6 +1210,12 @@
         subtotal: sub, shipping: ship, total: sub + ship,
         status: "Received",
       };
+      if (confirmedQuote) {
+        Object.assign(order, {
+          items: confirmedQuote.items, subtotal: confirmedQuote.subtotal,
+          shipping: confirmedQuote.shippingFee, total: confirmedQuote.total,
+        });
+      }
 
       const itemLines = order.items
         .map((i) => `  • ${i.name}${i.shade ? " — " + i.shade : ""}  x${i.qty}  ${money(i.price * i.qty)}`)
@@ -1204,7 +1226,7 @@
          order, decrements stock and triggers the shop's notification
          email. Everything after it (Web3Forms, the spreadsheet) is a
          legacy fallback and must not decide whether the order exists. */
-      let apiOrder = null, apiError = null;
+      let apiOrder = null, apiError = null, changed = null;
       try {
         const res = await fetch(BASE + "api/orders", {
           method: "POST",
@@ -1218,6 +1240,8 @@
             customerNote: order.notes || null,
             paymentMethod: order.payment,
             idempotencyKey: checkoutKey,
+            // Checked, never charged: the server refuses if its total differs.
+            expectedTotal: order.total,
             // Server prices these from the database; we only say what and how many.
             items: cart.map((l) => {
               const p = byId(l.id);
@@ -1236,11 +1260,35 @@
           order.total = data.total;
           order.subtotal = data.subtotal;
           order.shipping = data.shippingFee;
+          if (Array.isArray(data.items) && data.items.length) order.items = data.items;
+        } else if (res.status === 409 && data.priceChanged) {
+          changed = data;
         } else {
           apiError = data.error || "Your order could not be placed.";
         }
       } catch (err) {
         apiError = "We could not reach the server. Please check your connection.";
+      }
+
+      if (changed) {
+        /* This page is older than a price change. Nothing was saved: show
+           the real figures, and let the next press confirm them. */
+        const shown = order.total;
+        confirmedQuote = changed;
+        $$("#coLines .coline strong").forEach((el, i) => {
+          const it = (changed.items || [])[i];
+          if (it) el.textContent = money(it.price * it.qty);
+        });
+        $("#coSub").textContent = money(changed.subtotal);
+        $("#coShip").textContent = changed.shippingFee ? money(changed.shippingFee) : "Free";
+        $("#coTotal").textContent = money(changed.total);
+        btn.disabled = false;
+        btn.textContent = "Place order";
+        const box = $("#coError");
+        const msg = `Prices have changed since this page was loaded. Your order comes to <b>${money(changed.total)}</b>, ` +
+          `not ${money(shown)}. Press Place order to confirm it at ${money(changed.total)}, or refresh the page to see the latest prices.`;
+        if (box) { box.innerHTML = msg; box.hidden = false; } else toast(msg.replace(/<[^>]+>/g, ""), false);
+        return;
       }
 
       if (!apiOrder) {
@@ -1291,6 +1339,7 @@
 
       /* This order is committed; the next one must not reuse its key. */
       checkoutKey = null;   // a new order needs a new key
+      confirmedQuote = null;
 
       orders = [order].concat(orders).slice(0, 30);
       store.set("sgpk_orders", orders);

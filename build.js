@@ -518,13 +518,13 @@ function sortControls() {
 
 /* Listing page body shared by categories, feeds and collections */
 function listingBody(opts) {
-  const { title, blurb, crumbs, feed, collection, items, hero } = opts;
+  const { title, blurb, crumbs, feed, collection, items, hero, sort } = opts;
   return `
 ${hero || ""}
 ${crumbHTML(crumbs)}
 <div class="container">
   ${hero ? "" : `<div class="listhead"><h1>${esc(title)}</h1>${blurb ? `<p>${esc(blurb)}</p>` : ""}</div>`}
-  <div class="listlayout" id="listing" data-feed="${feed}"${collection ? ` data-collection="${collection}"` : ""}>
+  <div class="listlayout" id="listing" data-feed="${feed}"${collection ? ` data-collection="${collection}"` : ""}${sort ? ` data-sort="${sort}"` : ""}>
     <aside class="filters" id="filters">
       <div class="filters__head">
         <h2>Filter</h2>
@@ -648,7 +648,9 @@ CATEGORIES.forEach((c) => {
 
 /* ---- Feed pages ---- */
 [
-  { file: "new-in.html", page: "new", feed: "new", title: "New In", blurb: "The latest arrivals, added to the shelf this season." },
+  { file: "new-in.html", page: "new", feed: "new", title: "New In", sort: "new",
+    blurb: "The latest arrivals, newest first.",
+    emptyNote: "Nothing has been added in the last few weeks — new arrivals appear here as soon as they go on sale." },
   { file: "best-sellers.html", page: "best", feed: "best", title: "Bestsellers", blurb: "The products our customers reorder the most.",
     emptyNote: "We mark bestsellers once real orders start coming in, so this stays honest." },
   { file: "sale.html", page: "sale", feed: "sale", title: "Sale", blurb: "Reduced while stocks last — no code needed.",
@@ -662,7 +664,7 @@ CATEGORIES.forEach((c) => {
       page: f.page,
       title: `${f.title} | ${SITE.name}`,
       description: `${f.blurb} Genuine SHEGLAM products in Pakistan with cash on delivery.`,
-      body: listingBody({ title: f.title, blurb: f.blurb, crumbs, feed: f.feed, items, emptyNote: f.emptyNote }),
+      body: listingBody({ title: f.title, blurb: f.blurb, crumbs, feed: f.feed, items, emptyNote: f.emptyNote, sort: f.sort }),
       jsonLd: [breadcrumbLd(crumbs.map((x, i) => ({ ...x, href: i ? f.file : "" }))), itemListLd(items, f.title)],
     })
   );
