@@ -55,7 +55,7 @@ opens the product by itself once the build is live.
 
 | Layer | Where |
 |---|---|
-| Storefront pages | generated at the repo root by `build.js` |
+| Storefront pages | generated into `.build/` by `build.js` from the database on every deploy (not committed) |
 | Page content | `src/content.js` |
 | Site config | `data/catalog.js` (name, contact, delivery thresholds) |
 | Admin portal | `src/admin/*.html` → served at `/admin/*` |

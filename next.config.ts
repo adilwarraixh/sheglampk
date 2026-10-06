@@ -6,7 +6,7 @@ import type { NextConfig } from "next";
 
 const ADMIN_PAGES = [
   "login", "orders", "password", "products", "product", "inventory", "customers",
-  "analytics", "audit", "users", "homepage", "settings", "import", "inbox",
+  "analytics", "audit", "users", "homepage", "settings", "import", "inbox", "collections",
 ];
 
 const h = (pairs: Record<string, string>) => Object.entries(pairs).map(([key, value]) => ({ key, value }));
@@ -41,8 +41,8 @@ const config: NextConfig = {
       { source: "/admin", headers: ADMIN_HEADERS },
       { source: "/admin/:path*", headers: ADMIN_HEADERS },
       { source: "/api/:path*", headers: h({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" }) },
+      // The handler sets its own caching: a year on an image, an hour on a redirect to Blob.
       { source: "/api/media/:path*", headers: h({
-        "Cache-Control": "public, max-age=31536000, immutable",
         "X-Content-Type-Options": "nosniff",
         "X-Robots-Tag": "all",
       }) },

@@ -16,12 +16,9 @@ const ROOT = __dirname;
 const OUT = path.join(ROOT, "public");
 
 /* Exact files and whole directories that make up the public site. */
-const COPY_DIRS = ["assets", "product"];
+const COPY_DIRS = ["assets"];
 const COPY_FILES = [
-  "sitemap.xml",
-  "robots.txt",
   "data/catalog.js",     // site config + derivation
-  "data/products.js",    // generated product data for the browser
   "data/templates.js",   // shared card markup
 ];
 
@@ -30,6 +27,8 @@ const COPY_FILES = [
    file must never leave this machine. */
 const COPY_TREES = [
   { from: path.join("src", "admin"), to: "admin" },   // /admin/login, /admin, /admin/orders
+  // Everything build.js generated: the pages, product/, sitemap.xml, robots.txt, data/products.js
+  { from: ".build", to: "" },
 ];
 
 /* Never shipped, even if something above would otherwise sweep them in. */
@@ -88,10 +87,10 @@ function copyDir(relDir) {
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
-// Generated pages live at the repo root; take the .html files only.
-fs.readdirSync(ROOT, { withFileTypes: true })
-  .filter((e) => e.isFile() && e.name.endsWith(".html"))
-  .forEach((e) => copyFile(e.name));
+if (!fs.existsSync(path.join(ROOT, ".build", "index.html"))) {
+  console.error("\n✗ .build/ has no pages. Run node build.js first.\n");
+  process.exit(1);
+}
 
 COPY_DIRS.forEach(copyDir);
 COPY_FILES.forEach(copyFile);

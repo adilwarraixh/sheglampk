@@ -10,7 +10,9 @@ data/backups/
 Thumbs.db
 *.tmp
 
-# Build output: deploy-prepare.js writes public/, Next.js writes .next/
+# Build output: build.js writes .build/ (every generated page), deploy-prepare.js
+# assembles public/, Next.js writes .next/. None of it is source.
+.build/
 dist/
 public/
 .next/

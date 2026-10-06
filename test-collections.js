@@ -27,7 +27,7 @@ function mockRes() {
 }
 async function call({ method = "GET", cookie, csrf, query = {}, body }) {
   const res = mockRes();
-  await require(P + "/api/admin/collections.js")({
+  await require(P + "/handlers/admin/collections.js")({
     method, url: "/api/admin/collections", headers: { cookie: cookie || "", ...(csrf ? { "x-csrf-token": csrf } : {}) },
     socket: { remoteAddress: "127.0.0.1" }, query, body, on() {},
   }, res);
