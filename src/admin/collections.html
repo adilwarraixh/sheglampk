@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Collections — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+<style>
+  .picks{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 10px}
+  .picks label{display:flex;gap:10px;align-items:center;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .picks label:last-child{border-bottom:0}
+  .picks .sub{margin-left:auto}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  .subs{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+  @media (max-width:760px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Collections</h1>
+      <button class="btn btn--primary btn--sm" id="newBtn">New collection</button>
+    </header>
+    <div class="content">
+      <div class="msg" id="notice" hidden></div>
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th>Collection</th><th>Web address</th><th class="num">Products</th><th>Shows</th><th>Status</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <p class="sub" style="padding:12px 2px">A collection shows the products you tick, plus every published product that matches all of its rules.
+        Each one has its own page on the shop and a card on the Collections page.</p>
+
+      <section class="card" id="editor" hidden style="margin-top:18px">
+        <div class="card__head"><h2 id="edTitle">Collection</h2><span class="sub" id="preview"></span></div>
+        <div class="card__body">
+          <div class="two">
+            <div class="field"><label for="title">Title</label><input id="title" maxlength="80" placeholder="The Eid Edit"></div>
+            <div class="field"><label for="slug">Web address</label><input id="slug" maxlength="60" placeholder="eid-edit">
+              <span class="sub" id="slugHint"></span></div>
+            <div class="field"><label for="subtitle">Small line above the title</label><input id="subtitle" maxlength="80" placeholder="Glow for the big day"></div>
+            <div class="field"><label for="tint">Card colour</label>
+              <div style="display:flex;gap:8px"><input type="color" id="tintPick" style="width:56px;padding:4px"><input id="tint" maxlength="7" placeholder="#e83e70"></div></div>
+          </div>
+          <div class="field"><label for="blurb">Description</label><textarea id="blurb" rows="2" maxlength="300"></textarea></div>
+          <div class="two">
+            <div class="field"><label for="position">Order on the Collections page</label><input id="position" type="number" min="0" max="1000"></div>
+            <div class="field"><label>&nbsp;</label><label class="check"><input type="checkbox" id="isActive"> Show on the shop</label></div>
+          </div>
+
+          <h3 style="font-size:14px;margin:8px 0 10px">Rules — every published product matching all of these is included</h3>
+          <div class="two">
+            <div class="field"><label for="ruleCategory">Category</label><select id="ruleCategory"></select></div>
+            <div class="field"><label for="rulePrice">Price under (Rs.)</label><input id="rulePrice" type="number" min="1" placeholder="No price rule"></div>
+          </div>
+          <div class="field"><label>Subcategory (any of)</label><div class="subs" id="ruleSubs"></div></div>
+
+          <h3 style="font-size:14px;margin:8px 0 10px">Hand-picked products</h3>
+          <div class="bar"><input type="search" id="pickSearch" placeholder="Find a product"><span class="sub" id="pickCount"></span></div>
+          <div class="picks" id="picks"></div>
+
+          <div class="bar" style="margin-top:18px">
+            <button class="btn btn--primary" id="saveBtn">Save</button>
+            <button class="btn btn--outline" id="cancelBtn">Cancel</button>
+            <span class="spacer"></span>
+            <button class="btn btn--danger btn--outline" id="deleteBtn">Delete collection</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+<script src="/admin/admin.js"></script>
+<script>(function () {
+  "use strict";
+  const A = window.Admin, { $, esc, money } = A;
+  let data = null, current = null;   // current: the collection being edited (null id = new)
+
+  A.boot("/admin/collections").then(load).catch(() => {});
+
+  const notice = (m, bad) => { const n = $("#notice"); n.textContent = m || ""; n.hidden = !m; n.className = "msg" + (bad ? " msg--err" : ""); };
+
+  async function load() {
+    data = await A.api("/api/admin/collections");
+    $("#rows").innerHTML = data.collections.length ? data.collections.map((c) => `
+      <tr data-id="${c.id}">
+        <td><span class="swatch" style="background:${/^#[0-9a-fA-F]{6}$/.test(c.tint || "") ? c.tint : "#3d3d3d"}"></span>${esc(c.title)}</td>
+        <td class="sub">/collection-${esc(c.slug)}.html</td>
+        <td class="num">${c.members.length}</td>
+        <td class="sub">${esc(describe(c))}</td>
+        <td>${c.is_active ? '<span class="pill" style="background:#e6f6ec;color:#17803d">On the shop</span>' : '<span class="pill" style="background:#f1f1f3;color:#666">Hidden</span>'}</td>
+      </tr>`).join("") : `<tr><td colspan="5"><div class="empty">No collections yet.</div></td></tr>`;
+  }
+
+  function describe(c) {
+    const parts = [];
+    if (c.picks.length) parts.push(`${c.picks.length} picked`);
+    if (c.rule_category_id != null) parts.push("category " + ((data.categories.find((x) => x.id === c.rule_category_id) || {}).name || "?"));
+    if ((c.rule_subcategories || []).length) parts.push(c.rule_subcategories.join(" or "));
+    if (c.rule_price_under != null) parts.push("under " + money(c.rule_price_under));
+    return parts.join(" + ") || "nothing yet";
+  }
+
+  /* The same rule as lib/collections.js, for the live count while editing;
+     the server decides what the shop actually shows. */
+  function membersNow() {
+    const f = form();
+    const subs = f.ruleSubcategories.map((s) => s.toLowerCase());
+    const hasRules = f.ruleCategoryId != null || subs.length || f.rulePriceUnder != null;
+    return data.products.filter((p) => p.status === "PUBLISHED" && (f.productIds.includes(p.id) || (hasRules
+      && (f.ruleCategoryId == null || p.category_id === f.ruleCategoryId)
+      && (!subs.length || subs.includes(String(p.subcategory || "").toLowerCase()))
+      && (f.rulePriceUnder == null || p.price < f.rulePriceUnder))));
+  }
+
+  function form() {
+    const num = (v) => (v === "" || v == null ? null : Number(v));
+    return {
+      title: $("#title").value, slug: $("#slug").value.trim().toLowerCase(), subtitle: $("#subtitle").value,
+      blurb: $("#blurb").value, tint: $("#tint").value.trim(), position: Number($("#position").value || 0),
+      isActive: $("#isActive").checked,
+      ruleCategoryId: num($("#ruleCategory").value), rulePriceUnder: num($("#rulePrice").value),
+      ruleSubcategories: [...document.querySelectorAll("#ruleSubs input:checked")].map((i) => i.value),
+      productIds: [...document.querySelectorAll("#picks input:checked")].map((i) => Number(i.value)),
+    };
+  }
+
+  function open(c) {
+    current = c;
+    notice("");
+    $("#editor").hidden = false;
+    $("#edTitle").textContent = c.id ? "Edit collection" : "New collection";
+    $("#deleteBtn").hidden = !c.id;
+    $("#title").value = c.title || ""; $("#slug").value = c.slug || ""; $("#subtitle").value = c.subtitle || "";
+    $("#blurb").value = c.blurb || ""; $("#tint").value = c.tint || "#e83e70"; $("#tintPick").value = c.tint || "#e83e70";
+    $("#position").value = c.position || 0; $("#isActive").checked = c.is_active !== false;
+    $("#ruleCategory").innerHTML = `<option value="">Any category</option>` +
+      data.categories.map((x) => `<option value="${x.id}"${x.id === c.rule_category_id ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+    $("#rulePrice").value = c.rule_price_under == null ? "" : c.rule_price_under;
+    const chosen = (c.rule_subcategories || []).map((s) => s.toLowerCase());
+    // The rule's own subcategories too, even if no product has one today — or saving would drop them.
+    const offered = data.subcategories.concat((c.rule_subcategories || [])
+      .filter((s) => !data.subcategories.some((x) => x.toLowerCase() === s.toLowerCase())));
+    $("#ruleSubs").innerHTML = offered.map((s) =>
+      `<label class="check"><input type="checkbox" value="${esc(s)}"${chosen.includes(s.toLowerCase()) ? " checked" : ""}> ${esc(s)}</label>`).join("") || '<span class="sub">No subcategories yet.</span>';
+    const picked = new Set(c.picks || []);
+    $("#picks").innerHTML = data.products.map((p) => `
+      <label data-name="${esc(p.name.toLowerCase())}"><input type="checkbox" value="${p.id}"${picked.has(p.id) ? " checked" : ""}>
+        ${esc(p.name)}${p.status !== "PUBLISHED" ? ' <span class="pill" style="background:#f1f1f3;color:#666">' + esc(p.status.toLowerCase()) + "</span>" : ""}
+        <span class="sub">${esc(p.subcategory || p.category || "")} · ${money(p.price)}</span></label>`).join("");
+    $("#pickSearch").value = "";
+    refresh();
+    $("#editor").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function refresh() {
+    const n = membersNow().length;
+    $("#preview").textContent = `Shows ${n} product${n === 1 ? "" : "s"} on the shop`;
+    $("#pickCount").textContent = `${document.querySelectorAll("#picks input:checked").length} picked`;
+    const slug = $("#slug").value.trim().toLowerCase();
+    $("#slugHint").textContent = current && current.id && slug !== current.slug
+      ? "Changing this moves the page; links to the old address will stop working."
+      : slug ? `Page: /collection-${slug}.html` : "";
+  }
+
+  const slugify = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+
+  $("#rows").addEventListener("click", (e) => {
+    const tr = e.target.closest("tr[data-id]");
+    if (tr) open(data.collections.find((c) => String(c.id) === tr.dataset.id));
+  });
+  $("#newBtn").addEventListener("click", () => open({ id: null, picks: [], is_active: true, position: data.collections.length + 1 }));
+  $("#cancelBtn").addEventListener("click", () => { $("#editor").hidden = true; current = null; });
+  $("#title").addEventListener("input", () => { if (current && !current.id) $("#slug").value = slugify($("#title").value); refresh(); });
+  $("#tintPick").addEventListener("input", () => { $("#tint").value = $("#tintPick").value; });
+  $("#tint").addEventListener("input", () => { if (/^#[0-9a-fA-F]{6}$/.test($("#tint").value)) $("#tintPick").value = $("#tint").value; });
+  $("#editor").addEventListener("input", refresh);
+  $("#editor").addEventListener("change", refresh);
+  $("#pickSearch").addEventListener("input", () => {
+    const q = $("#pickSearch").value.trim().toLowerCase();
+    document.querySelectorAll("#picks label").forEach((l) => { l.hidden = !!q && !l.dataset.name.includes(q); });
+  });
+
+  const shopNote = (r) => {
+    const st = r.rebuild && r.rebuild.status;
+    return st === "queued" ? " The shop updates within a minute or two."
+      : st === "failed" ? " The shop could not be updated automatically — use “Update shop now” on Products." : "";
+  };
+
+  $("#saveBtn").addEventListener("click", async () => {
+    const btn = $("#saveBtn");
+    btn.disabled = true;
+    try {
+      const id = current && current.id;
+      const r = await A.api("/api/admin/collections" + (id ? "?id=" + id : ""), { method: id ? "PATCH" : "POST", body: form() });
+      $("#editor").hidden = true; current = null;
+      await load();
+      notice("Saved." + shopNote(r));
+    } catch (e) { notice(e.message, true); }
+    finally { btn.disabled = false; }
+  });
+
+  $("#deleteBtn").addEventListener("click", async () => {
+    if (!current || !current.id) return;
+    if (!confirm(`Delete “${current.title}”? Its page leaves the shop. The products themselves are not touched.`)) return;
+    try {
+      const r = await A.api("/api/admin/collections?id=" + current.id, { method: "DELETE" });
+      $("#editor").hidden = true; current = null;
+      await load();
+      notice("Deleted." + shopNote(r));
+    } catch (e) { notice(e.message, true); }
+  });
+})();
+</script>
+</body>
+</html>

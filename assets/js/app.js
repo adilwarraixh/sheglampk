@@ -501,23 +501,39 @@
     );
   }
 
-  function initSearchPage() {
+  async function initSearchPage() {
     if (PAGE !== "search") return;
     const q = new URLSearchParams(location.search).get("q") || "";
-    const hits = searchProducts(q);
     const title = $("#searchTitle"), count = $("#searchCount"), out = $("#searchGrid");
     if (title) title.textContent = q ? `Results for “${q}”` : "Search";
-    if (count) count.textContent = `${hits.length} ${hits.length === 1 ? "product" : "products"}`;
     const box = $("#searchQuery");
     if (box) box.value = q;
-    if (out) {
+    const render = (hits) => {
+      if (count) count.textContent = `${hits.length} ${hits.length === 1 ? "product" : "products"}`;
+      if (!out) return;
       out.innerHTML = hits.length
         ? hits.map((p) => T.card(p, BASE)).join("")
         : `<div class="empty"><h3>No products matched “${T.esc(q)}”</h3>
            <p>Check the spelling, or browse a category instead.</p>
            <a class="btn btn--primary" href="${BASE}face.html">Shop face</a></div>`;
       syncWishButtons();
-    }
+    };
+    const local = searchProducts(q);
+    render(local);
+    if (!q.trim()) return;
+    /* Then the server's full-text search (stemmed and ranked: "blushes"
+       finds Blush), best matches first, with every match found here —
+       shade names included — kept after them. No answer in 4s, or any
+       error, leaves the results above as they are. */
+    try {
+      const ctl = new AbortController();
+      setTimeout(() => ctl.abort(), 4000);
+      const r = await fetch(`${BASE}api/products?limit=200&q=${encodeURIComponent(q)}`, { signal: ctl.signal });
+      const data = await r.json();
+      if (!r.ok || !data.ok) return;
+      const ranked = (data.products || []).map((x) => D.bySlug(x.slug)).filter(Boolean);
+      render([...new Set([...ranked, ...local])]);
+    } catch (e) { /* keep the local results */ }
   }
 
   /* ---------------------------------------------------------

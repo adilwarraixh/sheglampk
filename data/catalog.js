@@ -494,12 +494,23 @@
     null;
   const bySlug = (s) => PRODUCTS.find((p) => p.slug === s) || null;
 
-  /* Collection membership resolved once, so the browser never runs match() */
-  const COLLECTIONS_RESOLVED = COLLECTIONS.map((c) => ({
-    slug: c.slug, title: c.title, sub: c.sub, blurb: c.blurb, tint: c.tint,
-    page: `collection-${c.slug}.html`,
-    ids: PRODUCTS.filter(c.match).map((p) => p.id),
-  }));
+  /* Collections come from the admin portal (lib/collections.js, exported
+     with their members); the list above only serves a snapshot made
+     before collections were in the database. Membership is resolved once,
+     so the browser never runs a rule. */
+  const DB_COLLECTIONS = isNode ? SNAP.collections : (typeof self !== "undefined" && self.SGPK_COLLECTIONS);
+  const tintOf = (t) => (/^#[0-9a-fA-F]{6}$/.test(t || "") ? t : "#3d3d3d");
+  const COLLECTIONS_RESOLVED = Array.isArray(DB_COLLECTIONS)
+    ? DB_COLLECTIONS.filter((c) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(c.slug)).map((c) => ({
+        slug: c.slug, title: c.title, sub: c.sub, blurb: c.blurb, tint: tintOf(c.tint),
+        page: `collection-${c.slug}.html`,
+        ids: c.dbIds.map((d) => (PRODUCTS.find((p) => p.dbId === d) || {}).id).filter((id) => id != null),
+      }))
+    : COLLECTIONS.map((c) => ({
+        slug: c.slug, title: c.title, sub: c.sub, blurb: c.blurb, tint: c.tint,
+        page: `collection-${c.slug}.html`,
+        ids: PRODUCTS.filter(c.match).map((p) => p.id),
+      }));
 
   /* Named product feeds used by pages */
   const FEEDS = {

@@ -69,6 +69,10 @@
     {
       "source": "/admin/inbox",
       "destination": "/admin/inbox.html"
+    },
+    {
+      "source": "/admin/collections",
+      "destination": "/admin/collections.html"
     }
   ],
   "headers": [

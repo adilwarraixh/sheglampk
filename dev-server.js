@@ -43,6 +43,7 @@ const REWRITES = {
   "/admin/customers": "/admin/customers.html",
   "/admin/inventory": "/admin/inventory.html",
   "/admin/inbox": "/admin/inbox.html",
+  "/admin/collections": "/admin/collections.html",
 };
 
 /* Maps /api/admin/orders/42 to api/admin/orders/[id].js, exactly as
