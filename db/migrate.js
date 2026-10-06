@@ -12,6 +12,9 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+// --production applies to the live shop (PRODUCTION_DATABASE_URL); the
+// default is the dev branch, where a migration should be tried first.
+if (process.argv.includes("--production")) process.env.SGPK_TARGET = "production";
 const { sql, describeTarget, rawClient } = require("./client.js");
 
 const DIR = path.join(__dirname, "migrations");

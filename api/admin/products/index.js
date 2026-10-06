@@ -2,6 +2,7 @@
    products:create is Super Admin only, so ashba can browse the catalogue
    but not change it. The check is in rbac.js, applied by guard(). */
 const P = require("../../../lib/products-admin.js");
+const { shopSettings } = require("../../../lib/site-admin.js");
 const R = require("../../../lib/rebuild.js");
 const { ok, fail, guard, handler, methods, readBody, clientIp } = require("../../../lib/http.js");
 const auth = require("../../../lib/auth.js");
@@ -12,16 +13,22 @@ module.exports = handler(async (req, res) =>
       const session = await guard(req, res, "products:view");
       if (!session) return;
       const q = req.query || {};
-      const data = await P.adminList({
-        q: q.q, status: q.status, category: q.category, stock: q.stock,
-        flag: q.flag, sort: q.sort, limit: q.limit, offset: q.offset,
-      });
+      const [data, categories, subcategories, settings] = await Promise.all([
+        P.adminList({
+          q: q.q, status: q.status, category: q.category, stock: q.stock,
+          flag: q.flag, sort: q.sort, limit: q.limit, offset: q.offset,
+        }),
+        P.categories(),
+        P.subcategories(),
+        shopSettings(),
+      ]);
       return ok(res, {
         ...data,
         statuses: P.STATUSES,
         newForDays: P.NEW_FOR_DAYS,
-        categories: await P.categories(),
-        subcategories: await P.subcategories(),
+        lowStockDefault: settings.lowStockDefault,
+        categories,
+        subcategories,
       });
     },
 
@@ -33,10 +40,12 @@ module.exports = handler(async (req, res) =>
       try { product = await P.createProduct(body); }
       catch (e) { return fail(res, 400, e.message); }
 
+      // Recorded as changes from nothing, so the log shows the starting price, stock and so on.
       await auth.audit({
         actorId: session.user.id, actorUsername: session.user.username,
         action: "PRODUCT_CREATED", targetType: "product", targetId: String(product.id),
-        detail: { name: product.name, status: product.status }, ip: clientIp(req),
+        detail: { name: product.name, status: product.status, changes: P.changes(null, await P.auditView(product.id)) },
+        ip: clientIp(req),
       });
       // A draft changes nothing a customer can see, so it needs no rebuild.
       const rebuild = product.status === "PUBLISHED"

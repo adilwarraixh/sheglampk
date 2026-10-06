@@ -273,8 +273,9 @@
     const ship = $("#cartShipNote");
     if (ship) {
       const left = SITE.freeShippingOver - sub;
+      // With no delivery charge at all there is nothing to unlock.
       ship.innerHTML = !cart.length ? ""
-        : left > 0
+        : left > 0 && SITE.flatShipping > 0
           ? `Add <b>${money(left)}</b> more for free delivery`
           : `You have unlocked <b>free delivery</b>`;
     }
@@ -1031,6 +1032,13 @@
 
   function openCheckout() {
     if (!cart.length) { toast("Your cart is empty", false); return; }
+    /* "Accept new orders" is off in Settings: the server would refuse, so
+       say so now and hand the cart to WhatsApp instead. */
+    if (SITE.ordersEnabled === false) {
+      toast("We're taking orders on WhatsApp right now — opening it with your cart", false);
+      window.open(waCartURL(), "_blank", "noopener");
+      return;
+    }
     confirmedQuote = null;
     const box = $("#coError");
     if (box) box.hidden = true;

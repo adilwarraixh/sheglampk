@@ -206,6 +206,7 @@
       fillMeta();
       renderVariants([]); renderImages([]);
       F("status").value = "DRAFT";
+      if (m.lowStockDefault != null) F("lowStockThreshold").value = m.lowStockDefault;   // from Settings
       onChange();
     } else {
       const r = await A.api("/api/admin/products/" + encodeURIComponent(id));

@@ -14,22 +14,17 @@ module.exports = handler(async (req, res) => {
     GET: async () => {
       const session = await guard(req, res, "products:view");
       if (!session) return;
-      const product = await P.adminGet(id);
+      const [product, categories, subcategories] = await Promise.all([P.adminGet(id), P.categories(), P.subcategories()]);
       if (!product) return fail(res, 404, "Product not found");
-      return ok(res, {
-        product,
-        statuses: P.STATUSES,
-        newForDays: P.NEW_FOR_DAYS,
-        categories: await P.categories(),
-        subcategories: await P.subcategories(),
-      });
+      return ok(res, { product, statuses: P.STATUSES, newForDays: P.NEW_FOR_DAYS, categories, subcategories });
     },
 
     PATCH: async () => {
       const session = await guard(req, res, "products:update");
       if (!session) return;
       const body = await readBody(req);
-      const before = await P.statusOf(id);
+      const before = await P.auditView(id);
+      if (!before) return fail(res, 404, "Product not found");
       let product;
       try {
         // A bare {status} is the list view's publish/unpublish/archive action.
@@ -39,13 +34,16 @@ module.exports = handler(async (req, res) => {
       } catch (e) { return fail(res, 400, e.message); }
       if (!product) return fail(res, 404, "Product not found");
 
+      /* What changed, field by field, before → after — so "who changed this
+         price, and from what" has an answer. */
+      const changes = P.changes(before, await P.auditView(id));
       await auth.audit({
         actorId: session.user.id, actorUsername: session.user.username,
         action: "PRODUCT_UPDATED", targetType: "product", targetId: String(id),
-        detail: { name: product.name, status: product.status }, ip: clientIp(req),
+        detail: { name: product.name, status: product.status, changes }, ip: clientIp(req),
       });
       // The shop changes if the product is on it now, or was until this save.
-      const rebuild = before === "PUBLISHED" || product.status === "PUBLISHED"
+      const rebuild = before.status === "PUBLISHED" || product.status === "PUBLISHED"
         ? await R.requestRebuild(`updated “${product.name}”`, { by: session.user.username })
         : { status: "not-needed" };
       return ok(res, { product, rebuild });
@@ -94,7 +92,7 @@ module.exports = handler(async (req, res) => {
       await auth.audit({
         actorId: session.user.id, actorUsername: session.user.username,
         action: "PRODUCT_ARCHIVED", targetType: "product", targetId: String(id),
-        detail: { name: product.name }, ip: clientIp(req),
+        detail: { name: product.name, changes: { status: [before, "ARCHIVED"] } }, ip: clientIp(req),
       });
       const rebuild = before === "PUBLISHED"
         ? await R.requestRebuild(`archived “${product.name}”`, { by: session.user.username })

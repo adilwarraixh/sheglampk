@@ -14,18 +14,14 @@ const { ok, fail, readBody, methods, handler, clientIp } = require("../lib/http.
 /* Light abuse control: a handful of orders per phone number per hour is
    generous for a real shopper and stops a loop filling the table. */
 async function tooManyRecent(phone, ip) {
-  const [byPhone] = await sql`
-    SELECT count(*)::int AS n FROM orders
-    WHERE customer_phone = ${phone} AND placed_at > now() - interval '1 hour'`;
-  if (byPhone.n >= 6) return true;
-
-  if (ip) {
-    const [byIp] = await sql`
-      SELECT count(*)::int AS n FROM login_attempts
-      WHERE ip = ${ip} AND username = '__order__' AND created_at > now() - interval '1 hour'`;
-    if (byIp.n >= 20) return true;
-  }
-  return false;
+  const [[byPhone], [byIp]] = await Promise.all([
+    sql`SELECT count(*)::int AS n FROM orders
+         WHERE customer_phone = ${phone} AND placed_at > now() - interval '1 hour'`,
+    sql`SELECT count(*)::int AS n FROM login_attempts
+         WHERE ${ip}::text IS NOT NULL AND ip = ${ip} AND username = '__order__'
+           AND created_at > now() - interval '1 hour'`,
+  ]);
+  return byPhone.n >= 6 || byIp.n >= 20;
 }
 
 /* Cash on delivery is the only method the store accepts. Anything else a
@@ -90,12 +86,14 @@ module.exports = handler(async (req, res) =>
       /* A replayed request returns the original order and stops here: no
          second audit entry, and no second notification. */
       if (!order.duplicate) {
-        await sql`INSERT INTO login_attempts (username, ip, success) VALUES ('__order__', ${ip}, true)`;
-        await auth.audit({
-          actorUsername: "customer", action: "ORDER_PLACED",
-          targetType: "order", targetId: order.id,
-          detail: { reference: order.reference, total: order.total, items: body.items.length }, ip,
-        });
+        await Promise.all([
+          sql`INSERT INTO login_attempts (username, ip, success) VALUES ('__order__', ${ip}, true)`,
+          auth.audit({
+            actorUsername: "customer", action: "ORDER_PLACED",
+            targetType: "order", targetId: order.id,
+            detail: { reference: order.reference, total: order.total, items: body.items.length }, ip,
+          }),
+        ]);
 
         /* The order is committed. Notification is attempted now but its
            outcome cannot change the answer the customer gets — a mail

@@ -25,7 +25,7 @@ module.exports = handler(async (req, res) =>
         action: "STOCK_UPDATED",
         targetType: body.variantId ? "variant" : "product",
         targetId: String(body.variantId || body.productId),
-        detail: { name: r.name, quantity: r.quantity }, ip: clientIp(req),
+        detail: { name: r.name, quantity: r.quantity, changes: { stock: [r.previous, r.quantity] } }, ip: clientIp(req),
       });
       // Pages show "in stock" / "sold out", so a stock change is a shop change.
       const rebuild = await R.requestRebuild(`stock of “${r.name}” set to ${r.quantity}`, { by: session.user.username });

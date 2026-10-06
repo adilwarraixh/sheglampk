@@ -19,7 +19,11 @@
   const SITE = {
     name: "SHEGLAM PK",
     legalName: "SHEGLAM PK",
-    domain: "https://sheglampk.online",
+    /* The host the shop is actually served from. Vercel answers on www and
+       redirects the bare domain to it, so canonical URLs, the sitemap, Open
+       Graph and structured data must all say www — pointing them at the
+       bare domain told search engines the canonical page was a redirect. */
+    domain: "https://www.sheglampk.online",
     tagline: "Bold, affordable, high-quality beauty — delivered across Pakistan",
 
     // Shown in the footer. Keeps you clearly positioned as a reseller,
@@ -75,7 +79,45 @@
        "stock"  → category-matched stock photography (placeholder only)
     -------------------------------------------------------------------- */
     imageMode: "local",
+
+    ordersEnabled: true,
+    announcement: "",
   };
+
+  /* The admin's Settings (Settings page → database → catalogue export)
+     override the defaults above, so delivery charges, the returns window,
+     contact details and the announcement bar shown on the shop are the ones
+     the checkout actually uses. The values above apply only to a snapshot
+     made before Settings were exported. */
+  const isNode = typeof module !== "undefined" && module.exports;
+  let SNAP = {};
+  if (isNode) {
+    try { SNAP = require("./products.json"); }
+    catch (e) { console.error("[sgpk] could not read data/products.json —", e.message); }
+  }
+  const SETTINGS = isNode ? SNAP.settings : (typeof self !== "undefined" && self.SGPK_SETTINGS);
+  if (SETTINGS) {
+    const s = SETTINGS;
+    Object.assign(SITE, {
+      freeShippingOver: s.freeShippingOver, flatShipping: s.flatShipping, returnDays: s.returnDays,
+      email: s.contactEmail || SITE.email,
+      phoneShow: s.contactPhone || SITE.phoneShow,
+      phoneTel: (s.contactPhone || SITE.phoneTel).replace(/[^\d+]/g, ""),
+      whatsapp: s.whatsapp || SITE.whatsapp,
+      announcement: s.announcement || "",
+      ordersEnabled: s.ordersEnabled !== false,
+    });
+  }
+  const rs = (n) => "Rs. " + Number(n).toLocaleString("en-US");
+
+  /* WhatsApp links show the number they actually open (the WhatsApp
+     setting), not the separate contact phone. */
+  SITE.whatsappShow = (function (d) {
+    d = String(d || "").replace(/\D/g, "");
+    if (/^92\d{10}$/.test(d)) return `+92 ${d.slice(2, 5)} ${d.slice(5)}`;
+    if (/^44\d{10}$/.test(d)) return `+44 ${d.slice(2, 6)} ${d.slice(6)}`;
+    return "+" + d;
+  })(SITE.whatsapp);
 
   /* ---------------------------------------------------------
      TAXONOMY
@@ -114,17 +156,7 @@
      or config. Edit products in the admin portal (or the JSON
      directly), then run: node build.js
      ========================================================= */
-  let RAW = [];
-  if (typeof module !== "undefined" && module.exports) {
-    try {
-      RAW = require("./products.json").products || [];
-    } catch (e) {
-      console.error("[sgpk] could not read data/products.json —", e.message);
-      RAW = [];
-    }
-  } else {
-    RAW = (typeof self !== "undefined" && self.SGPK_PRODUCTS) || [];
-  }
+  const RAW = isNode ? SNAP.products || [] : (typeof self !== "undefined" && self.SGPK_PRODUCTS) || [];
 
 
   /* =========================================================
@@ -199,12 +231,14 @@
   /* ---------------------------------------------------------
      PROMOS — rotating announcement bar
      --------------------------------------------------------- */
+  // The Settings announcement leads; the same line twice is shown once.
   const PROMOS = [
-    "Free delivery on orders over Rs. 3,500 — nationwide",
+    SITE.announcement,
+    `Free delivery on orders over ${rs(SITE.freeShippingOver)} — nationwide`,
     "Cash on delivery available in every city",
     "100% genuine SHEGLAM stock — sealed and batch-checked",
-    "Easy 7-day returns on unopened items",
-  ];
+    `Easy ${SITE.returnDays}-day returns on unopened items`,
+  ].filter((line, i, all) => line && all.indexOf(line) === i);
 
   /* ---------------------------------------------------------
      FAQ
@@ -215,7 +249,7 @@
       items: [
         { q: "How long does delivery take?", a: "Orders are dispatched within 1–2 working days. Delivery takes 2–3 days in Lahore, Karachi and Islamabad, and 3–5 days for other cities. You will get a tracking number by WhatsApp as soon as your parcel is booked." },
         { q: "Do you offer cash on delivery?", a: "Yes — and it is the only payment method we accept. Cash on delivery is available across Pakistan at no extra charge. You pay the courier when the parcel arrives, never in advance." },
-        { q: "What does delivery cost?", a: "Flat Rs. 250 nationwide, and free on every order over Rs. 3,500." },
+        { q: "What does delivery cost?", a: `Flat ${rs(SITE.flatShipping)} nationwide, and free on every order over ${rs(SITE.freeShippingOver)}.` },
         { q: "Can I change or cancel my order?", a: "Yes, as long as it has not been dispatched. Message us on WhatsApp with your order reference and we will sort it out." },
         { q: "How do I track my order?", a: "Use the Track Order page with the reference number from your confirmation, or send the reference to us on WhatsApp." },
       ],
@@ -232,7 +266,7 @@
     {
       group: "Returns & Refunds",
       items: [
-        { q: "What is your return policy?", a: "Unopened items in original packaging can be returned within 7 days of delivery. For hygiene reasons we cannot accept opened cosmetics unless the product is faulty or you received the wrong item." },
+        { q: "What is your return policy?", a: `Unopened items in original packaging can be returned within ${SITE.returnDays} days of delivery.` + " For hygiene reasons we cannot accept opened cosmetics unless the product is faulty or you received the wrong item." },
         { q: "I received the wrong or a damaged item.", a: "Send us photos on WhatsApp within 48 hours of delivery and we will arrange a free replacement or a full refund, including delivery charges." },
         { q: "How long do refunds take?", a: "Once we receive the returned item, refunds are processed within 3–5 working days by bank transfer, Easypaisa or JazzCash." },
       ],

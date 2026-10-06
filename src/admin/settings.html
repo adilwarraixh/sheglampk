@@ -31,9 +31,10 @@
     <div class="content">
       <div class="msg msg--err" id="err" hidden></div>
       <div class="msg msg--ok" id="ok" hidden></div>
-      <div class="msg"><b>Not connected to the shop yet.</b> These values are saved, but the storefront
-        and checkout do not read them: delivery charges, contact details and the WhatsApp number that
-        customers see are still set in the site's code. Changing them here has no effect on the live shop.</div>
+      <div class="msg"><b>These run the live shop.</b> The checkout uses delivery charges and
+        “Accept new orders” the moment you save — unticking it stops website orders and sends customers to
+        WhatsApp. The shop's pages (delivery and returns wording, contact details, the announcement bar)
+        update within a minute or two of saving.</div>
 
       <section class="card">
         <div class="card__head"><h2>Store settings</h2></div>
@@ -78,7 +79,7 @@
   function field(s) {
     const meta = s.updatedAt
       ? `<span class="sub">last changed ${esc(when(s.updatedAt))}${s.updatedBy ? " by " + esc(s.updatedBy) : ""}</span>`
-      : `<span class="sub">not set — the site default applies</span>`;
+      : `<span class="sub">never changed — this is the default the shop uses</span>`;
 
     if (s.type === "boolean") {
       return `<div class="field">
@@ -105,9 +106,14 @@
     const btn = $("#save");
     btn.disabled = true; btn.textContent = "Saving…";
     try {
-      await A.api("/api/admin/settings", { method: "PATCH", body: { settings } });
+      const r = await A.api("/api/admin/settings", { method: "PATCH", body: { settings } });
       A.toast("Settings saved");
-      showOk("Saved. The live shop does not read these settings yet, so customers see no change.");
+      const st = (r.rebuild && r.rebuild.status) || "";
+      showOk(st === "not-needed" ? "Saved — nothing had changed."
+        : "Saved. The checkout uses the new values straight away. " +
+          (st === "queued" ? "The shop's pages are being rebuilt and will show them within a minute or two."
+           : st === "failed" ? "The shop's pages could not be rebuilt automatically — use “Update shop now” on the Products page."
+           : "The shop's pages will show them after the next update."));
       load();
     } catch (e) { showErr(e.message); A.toast(e.message, true); }
     finally { btn.disabled = false; btn.textContent = "Save changes"; }

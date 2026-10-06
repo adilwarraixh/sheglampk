@@ -28,7 +28,20 @@ function loadLocalEnv() {
 }
 loadLocalEnv();
 
-const URL = process.env.DATABASE_URL;
+/* Locally, DATABASE_URL is the `dev` branch (a copy of production that can
+   be broken freely) and PRODUCTION_DATABASE_URL is the live shop. Production
+   is only reached on purpose: `node db/migrate.js --production` sets
+   SGPK_TARGET. On Vercel neither extra variable exists and DATABASE_URL is
+   whatever the deployment was given. */
+const URL = process.env.SGPK_TARGET === "production"
+  ? process.env.PRODUCTION_DATABASE_URL
+  : process.env.DATABASE_URL;
+
+/* The suites create and delete products, orders and sessions. Never on the
+   live shop. */
+if (URL && URL === process.env.PRODUCTION_DATABASE_URL && /[\\/]test-[\w-]+\.js$/.test(process.argv[1] || "")) {
+  throw new Error("Refusing to run a test against the production database. Point DATABASE_URL at the dev branch.");
+}
 if (!URL) {
   throw new Error(
     "DATABASE_URL is not set.\n" +

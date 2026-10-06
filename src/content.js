@@ -122,9 +122,9 @@ function home() {
 
 <section class="services">
   <div class="container services__grid">
-    <div class="service">${icon("truck", 24)}<div><strong>Free delivery over Rs. 3,500</strong><span>Flat Rs. 250 nationwide otherwise</span></div></div>
+    <div class="service">${icon("truck", 24)}<div><strong>Free delivery over ${money(SITE.freeShippingOver)}</strong><span>Flat ${money(SITE.flatShipping)} nationwide otherwise</span></div></div>
     <div class="service">${icon("shield", 24)}<div><strong>100% genuine stock</strong><span>Sealed and batch-checked</span></div></div>
-    <div class="service">${icon("refresh", 24)}<div><strong>7-day returns</strong><span>On unopened items</span></div></div>
+    <div class="service">${icon("refresh", 24)}<div><strong>${SITE.returnDays}-day returns</strong><span>On unopened items</span></div></div>
     <div class="service">${icon("chat", 24)}<div><strong>Shade help on WhatsApp</strong><span>Ask before you buy</span></div></div>
   </div>
 </section>
@@ -230,10 +230,10 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "About" }])}
   <p>Most returns happen because someone guessed a shade. Message us on WhatsApp with a photo in natural light before you order and we will tell you honestly which shade to pick — including telling you when we think a product is not right for you.</p>
 
   <h2>Delivery across Pakistan</h2>
-  <p>We deliver to every city in Pakistan with cash on delivery. Lahore, Karachi and Islamabad typically arrive in 2–3 days; everywhere else is 3–5 days. Orders over Rs. 3,500 ship free, and everything else is a flat Rs. 250.</p>
+  <p>We deliver to every city in Pakistan with cash on delivery. Lahore, Karachi and Islamabad typically arrive in 2–3 days; everywhere else is 3–5 days. Orders over ${money(SITE.freeShippingOver)} ship free, and everything else is a flat ${money(SITE.flatShipping)}.</p>
 
   <h2>Talk to us</h2>
-  <p>We are a small team and we answer our own messages. WhatsApp is fastest — <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.phoneShow)}</a> — or email <a href="mailto:${SITE.email}">${esc(SITE.email)}</a>. Full details are on the <a href="contact.html">contact page</a>.</p>
+  <p>We are a small team and we answer our own messages. WhatsApp is fastest — <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.whatsappShow)}</a> — or email <a href="mailto:${SITE.email}">${esc(SITE.email)}</a>. Full details are on the <a href="contact.html">contact page</a>.</p>
 </div>
 
 <section class="section section--alt">
@@ -261,7 +261,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Contact" }])}
       <ul class="contactlist">
         <li>
           <span class="contactlist__icon">${brandIcon("whatsapp", 18)}</span>
-          <span><strong>WhatsApp</strong><a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.phoneShow)}</a></span>
+          <span><strong>WhatsApp</strong><a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.whatsappShow)}</a></span>
         </li>
         <li>
           <span class="contactlist__icon">${icon("box", 18)}</span>
@@ -355,7 +355,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "FAQs" }])}
     file: "shipping.html",
     page: "shipping",
     title: `Shipping & Delivery | ${SITE.name}`,
-    description: "Delivery charges, timelines and courier information for orders across Pakistan. Free delivery over Rs. 3,500, flat Rs. 250 otherwise.",
+    description: `Delivery charges, timelines and courier information for orders across Pakistan. Free delivery over ${money(SITE.freeShippingOver)}, flat ${money(SITE.flatShipping)} otherwise.`,
     body: `
 ${pagehead("Shipping & delivery", "What it costs, how long it takes, and what happens if something goes wrong.")}
 ${crumbs([{ label: "Home", href: "index.html" }, { label: "Shipping" }])}
@@ -364,8 +364,8 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Shipping" }])}
   <table>
     <thead><tr><th>Order value</th><th>Delivery charge</th></tr></thead>
     <tbody>
-      <tr><td>Rs. 3,500 and above</td><td><strong>Free</strong></td></tr>
-      <tr><td>Below Rs. 3,500</td><td>Rs. 250 flat, anywhere in Pakistan</td></tr>
+      <tr><td>${money(SITE.freeShippingOver)} and above</td><td><strong>Free</strong></td></tr>
+      <tr><td>Below ${money(SITE.freeShippingOver)}</td><td>${money(SITE.flatShipping)} flat, anywhere in Pakistan</td></tr>
     </tbody>
   </table>
   <p>There is no extra charge for choosing cash on delivery.</p>
@@ -398,7 +398,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Shipping" }])}
   </ul>
 
   <h2>Questions</h2>
-  <p>WhatsApp <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.phoneShow)}</a> or email <a href="mailto:${SITE.email}">${esc(SITE.email)}</a>.</p>
+  <p>WhatsApp <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.whatsappShow)}</a> or email <a href="mailto:${SITE.email}">${esc(SITE.email)}</a>.</p>
 </div>`,
   });
 
@@ -407,14 +407,14 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Shipping" }])}
     file: "returns.html",
     page: "returns",
     title: `Returns & Refunds | ${SITE.name}`,
-    description: "Our 7-day return policy for unopened cosmetics, plus how faulty, damaged and incorrect items are handled.",
+    description: `Our ${SITE.returnDays}-day return policy for unopened cosmetics, plus how faulty, damaged and incorrect items are handled.`,
     body: `
-${pagehead("Returns & refunds", "Seven days to change your mind on unopened items — and no time limit on us getting it wrong.")}
+${pagehead("Returns & refunds", `${SITE.returnDays} days to change your mind on unopened items — and no time limit on us getting it wrong.`)}
 ${crumbs([{ label: "Home", href: "index.html" }, { label: "Returns" }])}
 <div class="container--narrow prose">
   <h2>The short version</h2>
   <ul>
-    <li>Unopened, unused items in original packaging: returnable within <strong>7 days</strong> of delivery.</li>
+    <li>Unopened, unused items in original packaging: returnable within <strong>${SITE.returnDays} days</strong> of delivery.</li>
     <li>Opened cosmetics: not returnable, for hygiene reasons — <em>unless</em> the item is faulty or we sent the wrong thing.</li>
     <li>Wrong, damaged or faulty item: we cover everything, including return delivery.</li>
   </ul>
@@ -443,7 +443,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Returns" }])}
   <p>Refunds go back by Easypaisa, JazzCash or bank transfer to an account in the name on the order. For cash on delivery orders we cannot refund in cash, so please have one of these ready.</p>
 
   <h2>Exchanges</h2>
-  <p>Shade exchanges on unopened items are free within 7 days — you only cover the delivery of the returning item. Message us and we will hold the replacement shade for you.</p>
+  <p>Shade exchanges on unopened items are free within ${SITE.returnDays} days — you only cover the delivery of the returning item. Message us and we will hold the replacement shade for you.</p>
 
   <div class="note"><strong>Consumer rights.</strong> Nothing in this policy limits your rights under Pakistani consumer protection law. If you believe we have got something wrong, tell us and we will look at it again properly.</div>
 </div>`,
@@ -639,7 +639,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Terms" }])}
   <p>Delivery timelines on the <a href="shipping.html">shipping page</a> are estimates, not guarantees. Courier delays, weather and public holidays can affect them. Risk in the goods passes to you on delivery.</p>
 
   <h2>6. Returns</h2>
-  <p>Our <a href="returns.html">returns policy</a> forms part of these terms. In short: unopened items within 7 days; opened cosmetics only if faulty or incorrectly sent.</p>
+  <p>Our <a href="returns.html">returns policy</a> forms part of these terms. In short: unopened items within ${SITE.returnDays} days; opened cosmetics only if faulty or incorrectly sent.</p>
 
   <h2>7. Product information</h2>
   <p>We describe products as accurately as we can. Screen colours vary, so shade swatches are indicative rather than exact. Ingredient lists are printed on the packaging and are the authoritative source — always patch test if you have sensitive skin or known allergies.</p>
@@ -657,7 +657,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Terms" }])}
   <p>These terms are governed by the laws of Pakistan, and the courts of Lahore have jurisdiction.</p>
 
   <h2>12. Contact</h2>
-  <p><a href="mailto:${SITE.email}">${esc(SITE.email)}</a> &middot; <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.phoneShow)}</a></p>
+  <p><a href="mailto:${SITE.email}">${esc(SITE.email)}</a> &middot; <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener">${esc(SITE.whatsappShow)}</a></p>
 </div>`,
   });
 

@@ -50,13 +50,15 @@ module.exports = handler(async (req, res) => {
         return fail(res, 400, e.message);
       }
 
-      await auth.audit({
-        actorId: session.user.id, actorUsername: session.user.username,
-        action: "ORDER_UPDATED", targetType: "order", targetId: id,
-        detail: applied, ip: clientIp(req),
-      });
-
-      const order = await orders.getOrder(id);
+      // applied carries previousStatus beside status, so the log shows before → after.
+      const [, order] = await Promise.all([
+        auth.audit({
+          actorId: session.user.id, actorUsername: session.user.username,
+          action: "ORDER_UPDATED", targetType: "order", targetId: id,
+          detail: applied, ip: clientIp(req),
+        }),
+        orders.getOrder(id),
+      ]);
       return ok(res, { order, applied });
     },
 
