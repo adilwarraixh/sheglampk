@@ -198,6 +198,7 @@ function buildNewsletter(base) {
     <p>Be first to know about new drops, restocks and discounts.</p>
     <form class="newsletter__form" id="newsletterForm" novalidate>
       <input type="email" id="newsletterEmail" placeholder="Enter your email" aria-label="Email address" required>
+      <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
       <button class="btn" type="submit">Subscribe</button>
     </form>
     <p class="formmsg" id="newsletterMsg" role="status"></p>
@@ -383,7 +384,8 @@ function buildOverlays(base) {
     <button class="modal__x" id="rvClose" aria-label="Close">${icon("close", 16)}</button>
     <div class="modal__scroll" style="padding:32px 28px">
       <h3 style="font-size:19px;margin-bottom:6px">Write a review</h3>
-      <p style="font-size:13.5px;color:var(--muted);margin-bottom:20px">Only reviews from verified buyers are published.</p>
+      <p style="font-size:13.5px;color:var(--muted);margin-bottom:20px">We read every review before it appears. Add your order
+        reference if you have it, so we can mark yours as a verified purchase.</p>
       <form id="reviewForm" novalidate>
         <div class="field">
           <label>Your rating</label>
@@ -399,10 +401,19 @@ function buildOverlays(base) {
           <label for="rvName">Your name</label>
           <input type="text" id="rvName" placeholder="e.g. Ayesha K.">
         </div>
+        <div class="field" id="rvShadeField" style="display:none">
+          <label for="rvShadeIn">Shade <span style="color:var(--menu);font-weight:400">(optional)</span></label>
+          <select id="rvShadeIn"></select>
+        </div>
         <div class="field">
           <label for="rvText">Your review</label>
           <textarea id="rvText" rows="4" placeholder="How did it wear? Would you buy it again?"></textarea>
         </div>
+        <div class="field">
+          <label for="rvOrder">Order reference <span style="color:var(--menu);font-weight:400">(optional)</span></label>
+          <input type="text" id="rvOrder" placeholder="SG-2610-ABCDE" autocomplete="off">
+        </div>
+        <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <button class="btn btn--primary btn--block" type="submit">Submit review</button>
       </form>
     </div>
@@ -1086,11 +1097,6 @@ console.log(`✓ ${written.length} pages written`);
 console.log(`  · ${PRODUCTS.length} products`);
 console.log(`  · ${COLLECTIONS.length} collections`);
 console.log(`  · sitemap.xml + robots.txt`);
-if (!SITE.orderEndpoint) {
-  console.log("\n⚠  SITE.orderEndpoint is empty in data/catalog.js");
-  console.log("   Orders will NOT be emailed to you — customers must tap WhatsApp.");
-}
-
 /* Product photography status */
 if (SITE.imageMode === "local") {
   // A product without a photo resolves to an inline studio tile (data: URI)
@@ -1107,6 +1113,5 @@ if (SITE.imageMode === "local") {
 const reviewed = PRODUCTS.filter((p) => p.reviewCount).length;
 console.log(`\n· ${reviewed} of ${PRODUCTS.length} products have customer reviews.`);
 if (!reviewed) {
-  console.log("  Reviews are empty — that is correct for a new shop. Add genuine ones to");
-  console.log("  REVIEWS in data/catalog.js as customers send them in (README → Getting real reviews).");
+  console.log("  Customers' reviews appear once approved in the admin portal (Inbox → Reviews).");
 }

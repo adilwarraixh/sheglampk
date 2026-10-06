@@ -35,7 +35,6 @@
 
   let cart = store.get("sgpk_cart", []);
   let wishlist = store.get("sgpk_wishlist", []);
-  let orders = store.get("sgpk_orders", []);
 
   /* Cart, wishlist and recently viewed are keyed by product slug. They used
      to store the product's position in the build's catalogue, which shifts
@@ -63,6 +62,7 @@
       store.set("sgpk_cart", cart);
       store.set("sgpk_wishlist", wishlist);
     }
+    try { ["sgpk_reviews", "sgpk_outbox", "sgpk_orders"].forEach((k) => localStorage.removeItem(k)); } catch (e) {}
     const recent = store.get("sgpk_recent", []);
     const recentNow = keep(recent);
     if (JSON.stringify(recentNow) !== JSON.stringify(recent)) store.set("sgpk_recent", recentNow);
@@ -884,13 +884,10 @@
   /* ---------------------------------------------------------
      Reviews
      --------------------------------------------------------- */
-  function localReviews(slug) {
-    return store.get("sgpk_reviews", {})[slug] || [];
-  }
   function initReviews(p) {
     const listEl = $("#reviewList");
     if (!listEl) return;
-    const all = p.reviews.concat(localReviews(p.slug));
+    const all = p.reviews.slice();   // approved reviews only (data/catalog.js)
     const PER = 5;
     let page = 1, fRating = "all", fShade = "all", sort = "recent";
 
@@ -937,7 +934,13 @@
     on(shadeSel, "change", (e) => { fShade = e.target.value; page = 1; render(); });
     on($("#rvSort"), "change", (e) => { sort = e.target.value; page = 1; render(); });
 
-    // Write a review
+    // Write a review — with a shade to pick when the product has more than one.
+    const shadeIn = $("#rvShadeIn");
+    if (shadeIn && p.shades && p.shades.length > 1) {
+      shadeIn.innerHTML = `<option value="">Choose a shade</option>` +
+        p.shades.map((s) => `<option value="${T.esc(s.name)}">${T.esc(s.name)}</option>`).join("");
+      $("#rvShadeField").style.display = "";
+    }
     on($("#rvWrite"), "click", () => openModal($("#reviewModal")));
     $$("#starpick label").forEach((lab) =>
       on(lab, "click", () => {
@@ -945,8 +948,9 @@
         $$("#starpick label").forEach((x) => x.classList.toggle("is-on", +x.dataset.star <= n));
       })
     );
-    on($("#reviewForm"), "submit", (e) => {
+    on($("#reviewForm"), "submit", async (e) => {
       e.preventDefault();
+      const form = e.currentTarget;
       const name = $("#rvName").value.trim();
       const rating = +($('input[name="rvStars"]:checked') || {}).value || 0;
       const text = $("#rvText").value.trim();
@@ -954,26 +958,20 @@
         toast("Please add your name, a rating and a few words", false);
         return;
       }
-      const review = {
-        a: name, r: rating, t: text, s: $("#rvShadeIn") ? $("#rvShadeIn").value : "",
-        d: new Date().toISOString().slice(0, 10), v: 0,
-      };
-      const map = store.get("sgpk_reviews", {});
-      map[p.slug] = (map[p.slug] || []).concat(review);
-      store.set("sgpk_reviews", map);
-      submitOrQueue("review", {
-        product: p.name,
-        product_slug: p.slug,
-        reviewer: review.a,
-        rating: review.r + " / 5",
-        shade: review.s || "(not given)",
-        review: review.t,
-        date: review.d,
-        note: "Verify this against a real order before publishing it in data/catalog.js",
-      }, { subject: `New review: ${p.name} — ${review.r}/5 from ${review.a}` });
+      const btn = form.querySelector('[type="submit"]');
+      if (btn) btn.disabled = true;
+      const r = await postForm({
+        kind: "review", slug: p.slug, name, rating, text,
+        shade: shadeIn ? shadeIn.value : "",
+        orderReference: $("#rvOrder") ? $("#rvOrder").value.trim() : "",
+        website: honeypot(form),
+      });
+      if (btn) btn.disabled = false;
+      if (!r.ok) { toast(r.error, false); return; }
+      form.reset();
+      $$("#starpick label").forEach((x) => x.classList.remove("is-on"));
       closeModal($("#reviewModal"));
-      toast("Thank you — your review has been submitted");
-      setTimeout(() => location.reload(), 900);
+      toast("Thank you — your review will appear here once we have checked it");
     });
 
     render();
@@ -1076,92 +1074,35 @@
     return ok;
   }
 
-  /* =========================================================
-     FORM SUBMISSION
-     Provider-aware: Web3Forms and Formspree use different reserved
-     field names, and Web3Forms can return {success:false} inside a
-     200 response — so checking res.ok alone is not enough.
-     ========================================================= */
-  function providerOf(url) {
-    if (/web3forms\.com/i.test(url)) return "web3forms";
-    if (/formspree\.io/i.test(url)) return "formspree";
-    return "custom";
-  }
-
-  const endpointReady = () =>
-    !!SITE.orderEndpoint &&
-    (providerOf(SITE.orderEndpoint) !== "web3forms" || !!SITE.orderAccessKey);
-
-  /* kind: order | contact | newsletter | review
-     opts: { subject, replyTo } */
-  async function submitForm(kind, fields, opts) {
-    opts = opts || {};
-    if (!endpointReady()) return { ok: false, reason: "not-configured" };
-
-    const provider = providerOf(SITE.orderEndpoint);
-    const body = Object.assign({ form_type: kind, site: SITE.name }, fields);
-
-    if (provider === "web3forms") {
-      body.access_key = SITE.orderAccessKey;
-      if (opts.subject) body.subject = opts.subject;
-      body.from_name = SITE.name;
-      if (opts.replyTo) body.replyto = opts.replyTo;
-      body.botcheck = "";                       // honeypot: must stay empty
-    } else if (provider === "formspree") {
-      if (opts.subject) body._subject = opts.subject;
-      if (opts.replyTo) body._replyto = opts.replyTo;
-    } else {
-      if (opts.subject) body.subject = opts.subject;
-      if (opts.replyTo) body.replyto = opts.replyTo;
-      if (SITE.orderAccessKey) body.access_key = SITE.orderAccessKey;
-    }
-
+  /* ---------------------------------------------------------
+     Newsletter, contact and reviews go to /api/forms, which stores them
+     (they used to go to a third-party service that was never set up, and
+     were lost). The answer only ever says what the server confirmed.
+     --------------------------------------------------------- */
+  async function postForm(fields) {
     try {
-      const res = await fetch(SITE.orderEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(body),
+      const res = await fetch(BASE + "api/forms", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields),
       });
-      let json = null;
-      try { json = await res.json(); } catch { /* some endpoints return no body */ }
-      const ok = res.ok && !(json && json.success === false);
-      return { ok, reason: ok ? "" : (json && json.message) || `HTTP ${res.status}` };
+      const data = await res.json().catch(() => ({}));
+      return res.ok && data.ok
+        ? { ok: true }
+        : { ok: false, error: data.error || "That did not go through. Please try again, or message us on WhatsApp." };
     } catch (err) {
-      return { ok: false, reason: "network" };
+      return { ok: false, error: "We could not reach the server. Please check your connection and try again." };
     }
   }
-
-  /* ---- Outbox -----------------------------------------------------------
-     A submission that fails (offline, flaky mobile data, endpoint down) is
-     queued and retried on the next page load, so an order is not lost just
-     because the network dropped at the wrong moment.
-  ---------------------------------------------------------------------- */
-  function queueOutbox(kind, fields, opts) {
-    const q = store.get("sgpk_outbox", []);
-    q.push({ kind, fields, opts, at: Date.now() });
-    store.set("sgpk_outbox", q.slice(-25));
-  }
-
-  async function flushOutbox() {
-    if (!endpointReady()) return;
-    const q = store.get("sgpk_outbox", []);
-    if (!q.length) return;
-    const keep = [];
-    for (const item of q) {
-      // Drop anything older than 14 days rather than retrying forever
-      if (Date.now() - item.at > 12096e5) continue;
-      const r = await submitForm(item.kind, item.fields, item.opts);
-      if (!r.ok) keep.push(item);
-    }
-    store.set("sgpk_outbox", keep);
-    if (q.length && !keep.length) console.info("[sgpk] queued submissions delivered");
-  }
-
-  /* Submit, and queue for retry if it fails. */
-  async function submitOrQueue(kind, fields, opts) {
-    const r = await submitForm(kind, fields, opts);
-    if (!r.ok && r.reason !== "not-configured") queueOutbox(kind, fields, opts);
-    return r;
+  // The hidden field bots fill in; people never see it.
+  const honeypot = (form) => (form && form.querySelector('[name="website"]') || {}).value || "";
+  /* One submission at a time: a second tap while the first is on its way
+     is ignored (resolves to null) instead of sending the form twice. */
+  async function sending(form, send) {
+    if (form.dataset.sending) return null;
+    const btn = form.querySelector('[type="submit"]');
+    form.dataset.sending = "1";
+    if (btn) btn.disabled = true;
+    try { return await send(); }
+    finally { delete form.dataset.sending; if (btn) btn.disabled = false; }
   }
 
   function initCheckout() {
@@ -1224,10 +1165,6 @@
           shipping: confirmedQuote.shippingFee, total: confirmedQuote.total,
         });
       }
-
-      const itemLines = order.items
-        .map((i) => `  • ${i.name}${i.shade ? " — " + i.shade : ""}  x${i.qty}  ${money(i.price * i.qty)}`)
-        .join("\n");
 
       /* ---- the real order ----
          POST to our own API first. This is what creates the database
@@ -1316,41 +1253,10 @@
         return;
       }
 
-      const result = await submitOrQueue("order", {
-        order_ref: order.ref,
-        customer: order.name,
-        phone: order.phone,
-        email: order.email || "(not given)",
-        city: order.city,
-        address: order.address,
-        payment: order.payment,
-        notes: order.notes || "(none)",
-        items: itemLines,
-        subtotal: money(order.subtotal),
-        shipping: order.shipping ? money(order.shipping) : "Free",
-        total: money(order.total),
-        summary:
-          `ORDER ${order.ref}\n` +
-          `${order.name} · ${order.phone}\n` +
-          `${order.address}, ${order.city}\n` +
-          `Payment: ${order.payment}\n\n` +
-          `${itemLines}\n\n` +
-          `Subtotal ${money(order.subtotal)}\n` +
-          `Delivery ${order.shipping ? money(order.shipping) : "Free"}\n` +
-          `TOTAL    ${money(order.total)}`,
-      }, {
-        subject: `New order ${order.ref} — ${order.name} (${money(order.total)})`,
-        replyTo: order.email || undefined,
-      });
-      const sent = result.ok;
-      order.delivered = sent;
-
       /* This order is committed; the next one must not reuse its key. */
       checkoutKey = null;   // a new order needs a new key
       confirmedQuote = null;
 
-      orders = [order].concat(orders).slice(0, 30);
-      store.set("sgpk_orders", orders);
 
       track("purchase", {
         transaction_id: order.ref, currency: "PKR", value: order.total, shipping: order.shipping,
@@ -1393,32 +1299,48 @@
   function initTracker() {
     if (PAGE !== "track") return;
     const form = $("#trackForm");
-    on(form, "submit", (e) => {
+    /* Asks the shop's records, so it works from any phone and shows the
+       status the shop has actually set. The phone number is the second
+       key: a reference alone (it is on the parcel) shows nothing. */
+    on(form, "submit", async (e) => {
       e.preventDefault();
       const ref = $("#trackRef").value.trim().toUpperCase();
+      const phone = $("#trackPhone").value.trim();
       const box = $("#trackResult");
-      const o = orders.find((x) => x.ref.toUpperCase() === ref);
-      if (!o) {
-        box.classList.add("is-on");
-        box.innerHTML = `<h3 style="font-size:17px;margin-bottom:8px">We could not find that reference on this device</h3>
-          <p style="color:var(--muted);font-size:14px;line-height:1.7">Order lookup works on the device the order was placed from.
-          For any other order, send your reference to us on WhatsApp and we will check it for you.</p>
-          <a class="btn btn--wa" style="margin-top:16px" target="_blank" rel="noopener"
+      const btn = form.querySelector('[type="submit"]');
+      const ask = `<a class="btn btn--wa" style="margin-top:16px" target="_blank" rel="noopener"
              href="${waBase + encodeURIComponent(`Hello ${SITE.name}! Please check the status of my order: ${ref}`)}">
              ${T.brandIcon("whatsapp", 18)} Ask on WhatsApp</a>`;
+      btn.disabled = true;
+      let res = null, data = {};
+      try {
+        res = await fetch(BASE + "api/track", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference: ref, phone }),
+        });
+        data = await res.json().catch(() => ({}));
+      } catch (err) { res = null; }
+      btn.disabled = false;
+      box.classList.add("is-on");
+      if (!res || !res.ok || !data.ok) {
+        box.innerHTML = `<h3 style="font-size:17px;margin-bottom:8px">${escHtml(!res ? "We could not reach the server" : data.error || "We could not find that order")}</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7">${!res
+            ? "Please check your connection and try again."
+            : "Check the reference on your confirmation, and use the phone number you placed the order with."}</p>${ask}`;
         return;
       }
-      box.classList.add("is-on");
+      const o = data.order;
+      const day = (d) => new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
       box.innerHTML = `
-        <div class="tracker__row"><span>Reference</span><b>${T.esc(o.ref)}</b></div>
-        <div class="tracker__row"><span>Placed</span><span>${new Date(o.placed).toLocaleString("en-GB")}</span></div>
-        <div class="tracker__row"><span>Status</span><b style="color:var(--ok)">${T.esc(o.status)}</b></div>
-        <div class="tracker__row"><span>Deliver to</span><span>${T.esc(o.name)}, ${T.esc(o.city)}</span></div>
-        <div class="tracker__row"><span>Payment</span><span>${T.esc(o.payment)}</span></div>
-        <div class="tracker__row"><span>Items</span><span>${o.items.reduce((s, i) => s + i.qty, 0)}</span></div>
-        <div class="tracker__row"><span>Total</span><b>${money(o.total)}</b></div>
-        <a class="btn btn--wa btn--block" style="margin-top:16px" target="_blank" rel="noopener"
-           href="${waOrderURL(o)}">${T.brandIcon("whatsapp", 18)} Ask about this order</a>`;
+        <div class="tracker__row"><span>Reference</span><b>${T.esc(o.reference)}</b></div>
+        <div class="tracker__row"><span>Placed</span><span>${T.esc(day(o.placedAt))}</span></div>
+        <div class="tracker__row"><span>Status</span><b style="color:var(--ok)">${T.esc(o.says)}</b></div>
+        ${o.trackingNumber ? `<div class="tracker__row"><span>Courier tracking</span><b>${T.esc(o.trackingNumber)}</b></div>` : ""}
+        <div class="tracker__row"><span>Items</span><span>${o.items.map((i) => T.esc(`${i.name}${i.shade ? " — " + i.shade : ""} × ${i.qty}`)).join("<br>")}</span></div>
+        <div class="tracker__row"><span>Total (${T.esc(o.payment)})</span><b>${money(o.total)}</b></div>
+        ${o.history.length > 1 ? `<div class="tracker__row"><span>Updates</span><span>${o.history.map((h) =>
+            T.esc(`${day(h.at)} · ${h.status.charAt(0) + h.status.slice(1).toLowerCase()}`)).join("<br>")}</span></div>` : ""}
+        ${ask.replace("Ask on WhatsApp", "Ask about this order")}`;
     });
   }
 
@@ -1436,9 +1358,11 @@
         msg.textContent = "Please enter a valid email address.";
         return;
       }
-      await submitOrQueue("newsletter", { email }, { subject: `Newsletter signup — ${email}`, replyTo: email });
-      msg.style.color = "#c9f5dd";
-      msg.textContent = "You're on the list — welcome to SHEGLAM PK.";
+      const r = await sending(nf, () => postForm({ kind: "newsletter", email, source: location.pathname, website: honeypot(nf) }));
+      if (!r) return;
+      msg.style.color = r.ok ? "#c9f5dd" : "#ffc9c9";
+      msg.textContent = r.ok ? "You're on the list — welcome to SHEGLAM PK." : r.error;
+      if (!r.ok) return;
       nf.reset();
       track("generate_lead", { method: "newsletter" });
     });
@@ -1456,14 +1380,11 @@
       const msg = $("#contactMsg");
       if (!ok) { msg.style.color = "var(--err)"; msg.textContent = "Please fix the highlighted fields."; return; }
 
-      const { ok: sent } = await submitOrQueue("contact",
-        { name, email, phone: phone || "(not given)", message },
-        { subject: `Contact form — ${name}`, replyTo: email });
-      msg.style.color = sent ? "var(--ok)" : "var(--muted)";
-      msg.textContent = sent
-        ? "Thanks — we'll reply within one working day."
-        : "Thanks! For the fastest reply, message us on WhatsApp.";
-      cf.reset();
+      const r = await sending(cf, () => postForm({ kind: "contact", name, email, phone, message, website: honeypot(cf) }));
+      if (!r) return;
+      msg.style.color = r.ok ? "var(--ok)" : "var(--err)";
+      msg.textContent = r.ok ? "Thanks — we have your message and will reply within one working day." : r.error;
+      if (r.ok) cf.reset();
     });
 
     // FAQ accordions on content pages
@@ -1697,8 +1618,6 @@
     renderRecentlyViewed();
     updateBadges();
     syncWishButtons();
-    flushOutbox();          // retry anything that failed to send earlier
-    on(window, "online", flushOutbox);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -144,7 +144,7 @@
   function rowFor(p) {
     const price = p.price === null
       ? `<span class="pill p-DRAFT">no price</span>`
-      : (p.sale_price
+      : (p.sale_state === "active"
           ? `${money(p.sale_price)} <span class="sub" style="text-decoration:line-through">${money(p.price)}</span>`
           : money(p.price));
 
@@ -155,6 +155,11 @@
       p.is_featured ? "Featured" : null,
       p.is_bestseller ? "Bestseller" : null,
       p.is_new ? "New" : null,           // worked out the way the shop does
+      // The sale as customers see it now (lib/pricing.js), so a scheduled or
+      // finished sale is not mistaken for a running one.
+      p.sale_state === "active" ? `Sale −${p.percent_off}%` : null,
+      p.sale_state === "scheduled" ? "Sale scheduled" : null,
+      p.sale_state === "ended" ? "Sale ended" : null,
     ].filter(Boolean).map((f) => `<span class="pill">${f}</span>`).join(" ") || `<span class="sub">—</span>`;
 
     const canEdit = A.can("products:update");

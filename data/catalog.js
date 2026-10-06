@@ -48,25 +48,6 @@
     facebook: "https://www.facebook.com/sheglampk",
     tiktok: "https://www.tiktok.com/@sheglampk",
 
-    /* ---- Contact / newsletter form delivery ----------------------------
-       ORDERS DO NOT USE THIS. They go to /api/orders, which writes to the
-       database and emails the shop — see lib/order-emails.js. Leaving this
-       blank has no effect on ordering.
-
-       It is only used by the contact form, the newsletter signup and review
-       submissions, which have no database table of their own. Fill it in to
-       have those emailed to you:
-
-         Web3Forms:  orderEndpoint  "https://api.web3forms.com/submit"
-                     orderAccessKey "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-         Formspree:  orderEndpoint  "https://formspree.io/f/xxxxxxx"
-
-       The access key is designed to be public — it ships in the page source
-       either way and can only submit to your own inbox. It is not a secret.
-    -------------------------------------------------------------------- */
-    orderEndpoint: "",
-    orderAccessKey: "",
-
     /* ---- Analytics: paste IDs to switch on ---- */
     ga4: "",        // "G-XXXXXXXXXX"
     metaPixel: "",  // "1234567890"
@@ -159,36 +140,12 @@
   const RAW = isNode ? SNAP.products || [] : (typeof self !== "undefined" && self.SGPK_PRODUCTS) || [];
 
 
-  /* =========================================================
-     CUSTOMER REVIEWS
-     =========================================================
-     GENUINE REVIEWS ONLY. Keyed by product slug.
-
-     Reviews submitted through the site are emailed to you (see
-     SITE.orderEndpoint). When one arrives from a real customer,
-     paste it in here and rebuild — that is how this fills up.
-
-     Format:
-       "product-slug": [
-         { a: "Ayesha K.",        // reviewer name, as they gave it
-           r: 5,                  // rating 1-5
-           s: "Golden",           // shade bought, or "" — powers the shade filter
-           t: "What they wrote.",
-           d: "2026-08-02",       // YYYY-MM-DD
-           v: 1 },                // 1 = you confirmed an order exists for them
-       ],
-
-     Do not write entries yourself. Inventing reviews — or marking
-     v:1 on one you have not verified against a real order — is
-     illegal advertising under Pakistan's Consumer Protection Acts
-     and grounds for removal from Meta, Google and TikTok commerce.
-     See README → "Getting real reviews" for how to collect these fast.
-     ========================================================= */
-  const REVIEWS = {
-    // "color-bloom-liquid-blush": [
-    //   { a: "", r: 5, s: "", t: "", d: "", v: 1 },
-    // ],
-  };
+  /* Customer reviews come from the database: a customer submits one on a
+     product page, an admin approves it in the Inbox, and the catalogue
+     export carries it here (r.reviews). Nothing is shown unapproved, and
+     only an admin who has matched it to a real order can mark it verified.
+     Never write reviews by hand — inventing them is illegal advertising
+     under Pakistan's Consumer Protection Acts. */
 
   /* ---------------------------------------------------------
      CURATED COLLECTIONS (campaign landing pages)
@@ -251,7 +208,7 @@
         { q: "Do you offer cash on delivery?", a: "Yes — and it is the only payment method we accept. Cash on delivery is available across Pakistan at no extra charge. You pay the courier when the parcel arrives, never in advance." },
         { q: "What does delivery cost?", a: `Flat ${rs(SITE.flatShipping)} nationwide, and free on every order over ${rs(SITE.freeShippingOver)}.` },
         { q: "Can I change or cancel my order?", a: "Yes, as long as it has not been dispatched. Message us on WhatsApp with your order reference and we will sort it out." },
-        { q: "How do I track my order?", a: "Use the Track Order page with the reference number from your confirmation, or send the reference to us on WhatsApp." },
+        { q: "How do I track my order?", a: "Use the Track Order page with the reference from your confirmation and the phone number you ordered with — it works from any phone. Or send the reference to us on WhatsApp." },
       ],
     },
     {
@@ -505,7 +462,7 @@
       seoDescription: r.seoDescription || null,
     };
     p.discount = discountPct(p);
-    p.reviews = REVIEWS[slug] || [];
+    p.reviews = Array.isArray(r.reviews) ? r.reviews : [];
     p.reviewCount = p.reviews.length;
     p.rating = p.reviewCount
       ? Math.round((p.reviews.reduce((s, x) => s + x.r, 0) / p.reviewCount) * 10) / 10

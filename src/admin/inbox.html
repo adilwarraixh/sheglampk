@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Inbox — SHEGLAM PK Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="side__brand">SHEGLAM<span>.PK</span></div>
+    <nav class="side__nav" id="nav"></nav>
+    <div class="side__foot">
+      <div class="whoami" id="whoami"></div>
+      <button class="btn btn--outline btn--sm btn--block" id="logout">Sign out</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+      <h1>Inbox</h1>
+      <a class="btn btn--outline btn--sm" id="exportBtn" href="/api/admin/inbox?export=subscribers" hidden>Download subscribers (CSV)</a>
+    </header>
+    <div class="content">
+      <div class="bar">
+        <button class="btn btn--sm" data-tab="messages" id="tabMessages">Messages</button>
+        <button class="btn btn--sm" data-tab="reviews" id="tabReviews">Reviews</button>
+        <select id="filter"></select>
+        <span class="spacer"></span>
+        <span class="sub" id="count"></span>
+      </div>
+      <div class="msg" id="notice" hidden></div>
+      <section class="card">
+        <div class="scroll">
+          <table class="tbl">
+            <thead id="head"></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <p class="sub" style="padding:14px 2px" id="foot"></p>
+      <div style="display:flex;justify-content:center;gap:10px;padding:8px 0 18px">
+        <button class="btn btn--outline btn--sm" id="prev">← Previous</button>
+        <button class="btn btn--outline btn--sm" id="next">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"></div>
+<script src="/admin/admin.js"></script>
+<script>(function () {
+  "use strict";
+  const A = window.Admin, { $, esc, when } = A;
+  let tab = new URLSearchParams(location.search).get("tab") === "reviews" ? "reviews" : "messages";
+  let offset = 0; const LIMIT = 25;
+  const FILTERS = {
+    messages: [["open", "Not yet answered"], ["all", "All messages"]],
+    reviews: [["PENDING", "Waiting for approval"], ["APPROVED", "On the shop"], ["REJECTED", "Rejected"], ["", "All reviews"]],
+  };
+
+  A.boot("/admin/inbox").then(() => {
+    if (A.can("subscribers:export")) $("#exportBtn").hidden = false;
+    setTab(tab);
+  }).catch(() => {});
+
+  function setTab(t) {
+    tab = t; offset = 0;
+    $("#tabMessages").className = "btn btn--sm " + (t === "messages" ? "btn--primary" : "btn--outline");
+    $("#tabReviews").className = "btn btn--sm " + (t === "reviews" ? "btn--primary" : "btn--outline");
+    $("#filter").innerHTML = FILTERS[t].map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("");
+    history.replaceState(null, "", t === "reviews" ? "?tab=reviews" : location.pathname);
+    load();
+  }
+
+  const notice = (m, bad) => { const n = $("#notice"); n.textContent = m || ""; n.hidden = !m; n.className = "msg" + (bad ? " msg--err" : ""); };
+  const stars = (n) => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+
+  async function load() {
+    const p = new URLSearchParams({ tab, limit: LIMIT, offset });
+    p.set(tab === "reviews" ? "status" : "show", $("#filter").value);
+    const d = await A.api("/api/admin/inbox?" + p.toString());
+    const c = d.counts;
+    $("#tabMessages").textContent = `Messages${c.open_messages ? ` (${c.open_messages})` : ""}`;
+    $("#tabReviews").textContent = `Reviews${c.pending_reviews ? ` (${c.pending_reviews})` : ""}`;
+    $("#foot").textContent = `${c.subscribers} newsletter subscriber${c.subscribers === 1 ? "" : "s"}.` +
+      (tab === "reviews" ? " A review appears on the shop only after you approve it. Mark it verified only once you have matched it to a real order." : "");
+    const list = tab === "reviews" ? d.reviews : d.messages;
+    // Answering the last item on a later page empties it; show the page before.
+    if (!list.length && offset > 0) { offset = Math.max(0, offset - LIMIT); return load(); }
+    const from = d.total ? offset + 1 : 0, to = Math.min(offset + list.length, d.total);
+    $("#count").textContent = d.total ? `${from}–${to} of ${d.total}` : "";
+    tab === "reviews" ? renderReviews(d.reviews) : renderMessages(d.messages);
+    $("#prev").disabled = offset === 0;
+    $("#next").disabled = offset + LIMIT >= d.total;
+  }
+
+  function renderMessages(rows) {
+    $("#head").innerHTML = `<tr><th>From</th><th>Message</th><th>Received</th><th style="width:150px"></th></tr>`;
+    const canHandle = A.can("inbox:handle");
+    $("#rows").innerHTML = rows.length ? rows.map((m) => {
+      const wa = m.phone ? "https://wa.me/" + String(m.phone).replace(/\D/g, "").replace(/^0/, "92") : null;
+      return `<tr>
+        <td data-label="From"><b>${esc(m.name)}</b>
+          <div class="sub"><a href="mailto:${esc(m.email)}">${esc(m.email)}</a>${wa ? ` · <a href="${wa}" target="_blank" rel="noopener">WhatsApp ↗</a>` : ""}</div></td>
+        <td data-label="Message" style="white-space:pre-wrap;max-width:520px">${esc(m.message)}</td>
+        <td data-label="Received">${esc(when(m.created_at, true))}
+          ${m.handled_at ? `<div class="sub">answered by ${esc(m.handled_by || "—")}</div>` : ""}</td>
+        <td>${canHandle ? `<button class="btn btn--outline btn--sm js-handle" data-id="${m.id}" data-handled="${m.handled_at ? "" : "1"}">
+          ${m.handled_at ? "Mark not answered" : "Mark answered"}</button>` : ""}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="4"><div class="empty">Nothing here. Messages from the shop's contact page arrive here.</div></td></tr>`;
+  }
+
+  function renderReviews(rows) {
+    $("#head").innerHTML = `<tr><th>Product</th><th>Review</th><th>Order</th><th>Status</th><th style="width:220px"></th></tr>`;
+    const canModerate = A.can("reviews:moderate");
+    $("#rows").innerHTML = rows.length ? rows.map((r) => {
+      const actions = !canModerate ? "" : [
+        r.status !== "APPROVED" ? `<button class="btn btn--primary btn--sm js-review" data-id="${r.id}" data-status="APPROVED">Approve</button>` : "",
+        r.status !== "REJECTED" ? `<button class="btn btn--outline btn--sm js-review" data-id="${r.id}" data-status="REJECTED">Reject</button>` : "",
+        `<label class="check" style="margin-top:6px"><input type="checkbox" class="js-verified" data-id="${r.id}"${r.verified ? " checked" : ""}> Verified purchase</label>`,
+      ].join(" ");
+      return `<tr>
+        <td data-label="Product"><b>${esc(r.product_name || r.product_slug)}</b>${r.shade ? `<div class="sub">${esc(r.shade)}</div>` : ""}</td>
+        <td data-label="Review"><div>${stars(r.rating)} <b>${esc(r.author_name)}</b></div>
+          <div style="white-space:pre-wrap;max-width:480px">${esc(r.body)}</div>
+          <div class="sub">${esc(when(r.created_at, true))}</div></td>
+        <td data-label="Order">${r.order_reference
+          ? `${esc(r.order_reference)}<div class="sub">${r.order_status ? `matches an order (${esc(r.order_status)})` : "no matching order for this product"}</div>`
+          : `<span class="sub">none given</span>`}</td>
+        <td data-label="Status"><span class="pill">${esc(r.status)}</span>${r.verified ? `<div class="sub">verified</div>` : ""}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="5"><div class="empty">No reviews here.</div></td></tr>`;
+  }
+
+  async function patch(body, okText) {
+    notice("");
+    try {
+      const r = await A.api("/api/admin/inbox", { method: "PATCH", body });
+      const st = r.rebuild && r.rebuild.status;
+      notice(okText + (st === "queued" ? " The shop updates within a minute or two." : st === "failed" ? " The shop could not be updated automatically — use “Update shop now” on Products." : ""));
+      load();
+    } catch (e) { notice(e.message, true); }
+  }
+
+  document.addEventListener("click", (e) => {
+    const h = e.target.closest(".js-handle");
+    if (h) return patch({ type: "message", id: h.dataset.id, handled: !!h.dataset.handled }, "Saved.");
+    const r = e.target.closest(".js-review");
+    if (r) return patch({ type: "review", id: r.dataset.id, status: r.dataset.status },
+      r.dataset.status === "APPROVED" ? "Approved." : "Rejected — it will not appear on the shop.");
+  });
+  document.addEventListener("change", (e) => {
+    const v = e.target.closest(".js-verified");
+    if (v) patch({ type: "review", id: v.dataset.id, verified: v.checked }, v.checked ? "Marked as a verified purchase." : "Verified mark removed.");
+  });
+  $("#tabMessages").addEventListener("click", () => setTab("messages"));
+  $("#tabReviews").addEventListener("click", () => setTab("reviews"));
+  $("#filter").addEventListener("change", () => { offset = 0; load(); });
+  $("#prev").addEventListener("click", () => { offset = Math.max(0, offset - LIMIT); load(); });
+  $("#next").addEventListener("click", () => { offset += LIMIT; load(); });
+})();
+</script>
+</body>
+</html>

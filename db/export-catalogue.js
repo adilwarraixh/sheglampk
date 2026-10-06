@@ -30,7 +30,7 @@ async function snapshot(now = new Date()) {
 
   const products = await sql`
     SELECT p.id, p.slug, p.sku, p.name, p.subcategory, p.short_description, p.description,
-           p.finish, p.size, p.price, p.sale_price, p.stock_quantity,
+           p.finish, p.size, p.price, p.sale_price, p.sale_starts_at, p.sale_ends_at, p.stock_quantity,
            p.is_featured, p.is_bestseller, p.is_new_arrival, p.published_at, p.tags,
            p.seo_title, p.seo_description,
            c.slug AS category_slug
@@ -40,13 +40,17 @@ async function snapshot(now = new Date()) {
      ORDER BY p.published_at DESC NULLS LAST, p.id DESC`;
 
   const ids = products.map((p) => p.id);
-  const variants = ids.length ? await sql`
+  const [variants, images, reviews] = await Promise.all([
+    ids.length ? sql`
     SELECT product_id, id, variant_name, hex, stock_quantity, position
       FROM product_variants WHERE product_id = ANY(${ids}) AND is_available
-     ORDER BY product_id, position` : [];
-  const images = ids.length ? await sql`
+     ORDER BY product_id, position` : [],
+    ids.length ? sql`
     SELECT product_id, variant_id, url, alt, position, is_primary
-      FROM product_images WHERE product_id = ANY(${ids}) ORDER BY product_id, position` : [];
+      FROM product_images WHERE product_id = ANY(${ids}) ORDER BY product_id, position` : [],
+    // Only reviews an admin has approved (lib/inbox.js).
+    require("../lib/inbox.js").approvedReviews(),
+  ]);
 
   const group = (rows, key = "product_id") => rows.reduce((m, r) => {
     (m[r[key]] = m[r[key]] || []).push(r); return m;
@@ -57,7 +61,7 @@ async function snapshot(now = new Date()) {
     const imgs = iById[p.id] || [];
     const vars = vById[p.id] || [];
     const imageOf = (variantId) => (imgs.find((i) => i.variant_id === variantId) || {}).url || null;
-    const pr = priceOf(p);
+    const pr = priceOf(p, now);
 
     return {
       /* The database id. The checkout sends this so the server can price
@@ -88,6 +92,7 @@ async function snapshot(now = new Date()) {
       tags: p.tags || [],
       seoTitle: p.seo_title,
       seoDescription: p.seo_description,
+      reviews: reviews[p.slug] || [],
       // Explicit URL: images are named per product AND shade, so they can
       // no longer be found by matching a filename to the product slug.
       image: (imgs.find((i) => i.is_primary) || imgs[0] || {}).url || null,
@@ -114,6 +119,8 @@ async function snapshot(now = new Date()) {
   };
 }
 
+let mark = null;   // this build's export stamp, put back if the export fails
+
 async function main() {
   const { sql, describeTarget } = require("./client.js");
   console.log(`\nCatalogue export ← ${describeTarget()}`);
@@ -122,7 +129,7 @@ async function main() {
      mistaken for one it includes (see lib/rebuild.js). Only a production
      build counts: a local or preview build does not change the live shop. */
   if (process.env.VERCEL_ENV === "production") {
-    try { await require("../lib/rebuild.js").markExported(); }
+    try { mark = await require("../lib/rebuild.js").markExported(); }
     catch (e) { console.warn(`  (could not record the export time: ${e.message})`); }
   }
   console.log(`  automatic rebuilds: ${process.env.DEPLOY_HOOK_URL ? "deploy hook configured" : "DEPLOY_HOOK_URL is not set"}`);
@@ -168,9 +175,21 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((e) => {
+  main().catch(async (e) => {
     const existing = fs.existsSync(OUT);
     console.error(`\n! Catalogue export failed: ${e.message}`);
+    if (mark) {
+      try { await require("../lib/rebuild.js").unmarkExported(mark); }
+      catch (err) { console.warn(`  (could not put back the export time: ${err.message})`); }
+    }
+    /* Postgres class 42 (no such column, table or type) is this code
+       running against a database that has not been migrated — not a blip.
+       Shipping it would break checkout, so the build stops and the live
+       shop stays as it is. */
+    if (/^42/.test(String(e.code || ""))) {
+      console.error("  The database is missing something this code needs. Run the pending migration first.\n");
+      process.exit(1);
+    }
     if (existing) {
       console.error("  Keeping the existing data/products.json and continuing the build.\n");
       process.exit(0);           // do not break the build over a transient outage

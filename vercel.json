@@ -65,6 +65,10 @@
     {
       "source": "/admin/import",
       "destination": "/admin/import.html"
+    },
+    {
+      "source": "/admin/inbox",
+      "destination": "/admin/inbox.html"
     }
   ],
   "headers": [
@@ -173,8 +177,8 @@
       "schedule": "*/15 * * * *"
     },
     {
-      "path": "/api/cron/daily",
-      "schedule": "0 21 * * *"
+      "path": "/api/cron/refresh",
+      "schedule": "5 * * * *"
     }
   ]
 }

@@ -283,6 +283,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Contact" }])}
       <h2 style="font-size:18px;margin-bottom:6px">Send a message</h2>
       <p style="color:var(--muted);font-size:14px;margin-bottom:20px">We reply within one working day.</p>
       <form id="contactForm" novalidate>
+        <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="field">
           <label for="ctName">Your name</label>
           <input type="text" id="ctName" placeholder="Ayesha Khan" autocomplete="name">
@@ -524,22 +525,26 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Shade guide" }])}
     file: "track-order.html",
     page: "track",
     title: `Track Your Order | ${SITE.name}`,
-    description: "Look up the status of your SHEGLAM PK order using your order reference.",
+    description: "Look up the status of your SHEGLAM PK order with your order reference and phone number.",
     body: `
-${pagehead("Track your order", "Enter the reference from your confirmation — it looks like SG-2601-ABCDE.")}
+${pagehead("Track your order", "Enter the reference from your confirmation (it looks like SG-2601-ABCDE) and the phone number you ordered with.")}
 ${crumbs([{ label: "Home", href: "index.html" }, { label: "Track order" }])}
 <div class="container" style="padding:44px 0 72px">
   <div class="tracker">
     <form id="trackForm">
       <div class="field" style="text-align:left">
         <label for="trackRef">Order reference</label>
-        <input type="text" id="trackRef" placeholder="SG-2601-ABCDE" autocomplete="off">
+        <input type="text" id="trackRef" placeholder="SG-2601-ABCDE" autocomplete="off" required>
+      </div>
+      <div class="field" style="text-align:left">
+        <label for="trackPhone">Phone number used for the order</label>
+        <input type="tel" id="trackPhone" placeholder="0300 1234567" autocomplete="tel" inputmode="tel" required>
       </div>
       <button class="btn btn--primary btn--block" type="submit">Track order</button>
     </form>
     <div class="tracker__result" id="trackResult"></div>
     <p style="font-size:13.5px;color:var(--muted);margin-top:22px;line-height:1.7">
-      Order lookup works on the device you ordered from. Changed device, or lost your reference?
+      Lost your reference?
       <a href="https://wa.me/${SITE.whatsapp}" target="_blank" rel="noopener" style="color:var(--rose)">Message us on WhatsApp</a>
       with your name and phone number and we will find it.
     </p>
@@ -564,13 +569,13 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Privacy" }])}
   <ul>
     <li><strong>Order information</strong> — your name, mobile number, delivery address, city, and email if you provide one.</li>
     <li><strong>Contact messages</strong> — anything you send us through the contact form or WhatsApp.</li>
-    <li><strong>Newsletter signups</strong> — your email address, if you subscribe.</li>
-    <li><strong>Reviews</strong> — the name and text you choose to publish.</li>
+    <li><strong>Newsletter</strong> — your email address, if you sign up.</li>
+    <li><strong>Reviews</strong> — the name, rating and words you submit, and an order reference if you give one. A review is published only after we have read it.</li>
     <li><strong>Usage data</strong> — the pages you visit and shop actions such as viewing a product, adding to cart and placing an order, recorded by the TikTok Pixel so we can measure our TikTok advertising.</li>
   </ul>
 
   <h2>What stays on your own device</h2>
-  <p>Your cart, wishlist, recently viewed products and order history are stored in your browser's local storage. They never leave your device and we cannot see them. Clearing your browser data will erase them.</p>
+  <p>Your cart, wishlist and recently viewed products are stored in your browser's local storage. They never leave your device and we cannot see them. Clearing your browser data will erase them. Your order details are not kept on your device: to check an order, use the Track Order page with your order reference and phone number.</p>
 
   <h2>Why we collect it</h2>
   <ul>
@@ -584,7 +589,7 @@ ${crumbs([{ label: "Home", href: "index.html" }, { label: "Privacy" }])}
   <p>Only the parties needed to fulfil your order:</p>
   <ul>
     <li><strong>Courier companies</strong> — your name, address and phone number, so they can deliver the parcel.</li>
-    <li><strong>Our form and email provider</strong> — order details reach us by email.</li>
+    <li><strong>Our email provider</strong> — sends your order confirmation, and tells us about new orders, messages and reviews.</li>
     <li><strong>TikTok</strong> — through the TikTok Pixel: the pages you view and the products you view, add to cart or order, with the order value, so we can measure and improve our TikTok ads. We do not send TikTok your name, phone number, email or address.</li>
   </ul>
   <p>We do not sell your data. We do not pass your number to other sellers.</p>

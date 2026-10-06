@@ -69,6 +69,14 @@
                 <div class="field"><label for="currency">Currency</label>
                   <input id="currency" value="PKR" maxlength="8"></div>
               </div>
+              <div class="grid2">
+                <div class="field"><label for="saleStartsAt">Sale starts <span class="sub">(optional)</span></label>
+                  <input id="saleStartsAt" type="datetime-local"></div>
+                <div class="field"><label for="saleEndsAt">Sale ends <span class="sub">(optional)</span></label>
+                  <input id="saleEndsAt" type="datetime-local"></div>
+              </div>
+              <p class="sub">Leave both empty for a sale that runs until you clear the sale price. Times are in this
+                computer's time zone; the shop switches within the hour.</p>
               <p class="sub" id="priceSummary"></p>
               <p class="sub" id="priceHint">A product cannot be published without a regular price.</p>
             </div>
@@ -194,6 +202,13 @@
   let newUntil = null;      // when this product stops counting as New, once published
 
   const F = (k) => $("#" + k);
+  const toLocalInput = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
+  const fromLocalInput = (v) => (v ? new Date(v).toISOString() : null);
+  const stamp = (d) => d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   const val = (k) => F(k).value.trim();
 
   A.boot("/admin/products").then(async () => {
@@ -242,6 +257,8 @@
     F("finish").value = p.finish || "";
     F("price").value = p.price === null ? "" : Number(p.price);
     F("salePrice").value = p.sale_price === null ? "" : Number(p.sale_price);
+    F("saleStartsAt").value = toLocalInput(p.sale_starts_at);
+    F("saleEndsAt").value = toLocalInput(p.sale_ends_at);
     F("currency").value = p.currency || "PKR";
     F("sku").value = p.sku || "";
     F("stockQuantity").value = p.stock_quantity;
@@ -585,6 +602,11 @@
   function onChange() {
     const price = val("price") === "" ? null : Number(val("price"));
     const sale = val("salePrice") === "" ? null : Number(val("salePrice"));
+    // Is the sale running right now? (The preview shows what a customer would see today.)
+    const sStart = val("saleStartsAt") ? new Date(val("saleStartsAt")) : null;
+    const sEnd = val("saleEndsAt") ? new Date(val("saleEndsAt")) : null;
+    const saleNow = sale !== null && price !== null && sale < price &&
+      (!sStart || sStart <= new Date()) && (!sEnd || sEnd > new Date());
     const status = F("status").value;
     const img = ($$("#images .i-url")[0] || {}).value || "";
 
@@ -595,7 +617,7 @@
       <b>${esc(val("name") || "Untitled product")}</b>
       <div class="sub">${esc(val("subcategory") || "")}</div>
       <div class="pvcard__price">${price === null ? `<span class="sub">no price</span>`
-        : (sale ? `${money(sale)} <s class="sub">${money(price)}</s>` : money(price))}</div>
+        : (saleNow ? `${money(sale)} <s class="sub">${money(price)}</s>` : money(price))}</div>
       <button class="btn btn--primary btn--sm btn--block" type="button" disabled>Add to Cart</button>`;
 
     const hint = {
@@ -616,9 +638,24 @@
       summary.textContent = "The sale price must be lower than the regular price.";
       summary.style.color = "var(--err)";
     } else {
-      summary.textContent = `On sale: customers pay ${money(sale)}, saving ${money(price - sale)} ` +
-        `(${Math.round((1 - sale / price) * 100)}% off ${money(price)}). Clear the sale price to end the sale — ` +
-        `the regular price stays as it is.`;
+      /* Display only — the server decides with lib/pricing.js, the same rule. */
+      const starts = val("saleStartsAt") ? new Date(val("saleStartsAt")) : null;
+      const ends = val("saleEndsAt") ? new Date(val("saleEndsAt")) : null;
+      const now = new Date();
+      const deal = `${money(sale)}, saving ${money(price - sale)} (${Math.round((1 - sale / price) * 100)}% off ${money(price)})`;
+      if (starts && ends && ends <= starts) {
+        summary.textContent = "The sale must end after it starts.";
+        summary.style.color = "var(--err)";
+      } else if (ends && ends <= now) {
+        summary.textContent = `This sale ended ${stamp(ends)}: customers pay the regular ${money(price)}. ` +
+          `Clear the sale price, or set new dates.`;
+      } else if (starts && starts > now) {
+        summary.textContent = `Scheduled: customers pay ${money(price)} until ${stamp(starts)}, then ${deal}` +
+          (ends ? ` until ${stamp(ends)}.` : " until you clear the sale price.");
+      } else {
+        summary.textContent = `On sale: customers pay ${deal}` +
+          (ends ? ` until ${stamp(ends)}.` : ". Clear the sale price to end the sale — the regular price stays as it is.");
+      }
     }
 
     const days = meta.newForDays || 30;
@@ -715,6 +752,8 @@
       size: val("size"),
       price: val("price") === "" ? null : Number(val("price")),
       salePrice: val("salePrice") === "" ? null : Number(val("salePrice")),
+      saleStartsAt: fromLocalInput(val("saleStartsAt")),
+      saleEndsAt: fromLocalInput(val("saleEndsAt")),
       currency: val("currency"),
       sku: val("sku"),
       stockQuantity: Number(val("stockQuantity") || 0),
