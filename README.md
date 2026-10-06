@@ -55,38 +55,40 @@ opens the product by itself once the build is live.
 
 | Layer | Where |
 |---|---|
-| Storefront pages | generated at the repo root by `build.js` |
-| Page content | `src/content.js`, `src/pages/` |
+| Storefront pages | generated into `.build/` by `build.js` from the database on every deploy (not committed) |
+| Page content | `src/content.js` |
 | Site config | `data/catalog.js` (name, contact, delivery thresholds) |
 | Admin portal | `src/admin/*.html` → served at `/admin/*` |
-| API | `api/**` (Vercel serverless functions) |
+| API | `handlers/**`, mounted unchanged by the two-line wrappers in `pages/api/**` |
+| Host | Next.js (`next.config.ts`: routing and headers); migration plan in `docs/NEXTJS-MIGRATION-PLAN.md` |
 | Business logic | `lib/**` |
 | Database | `db/**`, migrations in `db/migrations/` |
-| Deployed output | `dist/` (built by `deploy-prepare.js`, never committed) |
+| Static output | `public/` (built by `deploy-prepare.js`, never committed), served by Next.js |
 
 `deploy-prepare.js` copies to an **allow-list**, so a new tooling or credential file
-is excluded by default and the build hard-fails if anything sensitive reaches `dist/`.
+is excluded by default and the build hard-fails if anything sensitive reaches `public/`.
 
 ---
 
 ## Running it locally
 
-Requires Node 18+ and a Neon Postgres database.
+Requires Node 20.9+ and a Neon Postgres database.
 
 ```bash
 npm install
 cp .env.example .env.local     # then fill it in — see below
 npm run db:migrate             # create the tables
 npm run db:passwords           # issue admin passwords -> HANDOVER.txt
-npm run build                  # export catalogue, generate pages, assemble dist/
-npm run dev                    # http://localhost:5601
+npm run build                  # export catalogue, generate pages, assemble public/, next build
+npm run dev                    # http://localhost:3000
 ```
 
-- Shop: http://localhost:5601
-- Admin: http://localhost:5601/admin/login
+- Shop: http://localhost:3000
+- Admin: http://localhost:3000/admin/login
 
-`npm run dev` serves `dist/` and dispatches `/api/*` to the same handler modules
-Vercel runs, so the portal can be exercised end to end before deploying.
+`npm run dev` regenerates `public/` and starts Next.js, which serves it and runs the
+same `/api/*` handlers as production, so the portal can be exercised end to end
+before deploying.
 
 **Rebuild after changing** `data/catalog.js`, `src/content.js`, `build.js`, or anything
 in `assets/`. On Vercel, product, stock and hero changes made in the admin portal start

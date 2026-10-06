@@ -21,7 +21,7 @@ const BLOB_TOKEN=process.env.BLOB_READ_WRITE_TOKEN; delete process.env.BLOB_READ
     return {cookie:`sgpk_session=${s.token}`,csrf:s.csrf,token:s.token};};
   const savedCredentials = await snapshotCredentials();
   const U=await mk("umama"), A=await mk("ashba");
-  const R={up:"/api/admin/upload.js", get:"/api/media/[id].js"};
+  const R={up:"/handlers/admin/upload.js", get:"/handlers/media/[id].js"};
   const out=[]; const t=(l,c,x="")=>out.push(`${c?"✓":"✗"} ${l}${x?"  → "+x:""}`);
 
   const realPng = fs.readFileSync(P+"/assets/img/products/01-camera-on-smooth-and-blur-primer-clear.png");

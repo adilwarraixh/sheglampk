@@ -49,14 +49,14 @@ async function call(routePath, { method = "GET", url = "/", body, cookie, csrf, 
 }
 
 const R = {
-  login: "./api/admin/login.js",
-  logout: "./api/admin/logout.js",
-  session: "./api/admin/session.js",
-  ordersList: "./api/admin/orders/index.js",
-  orderOne: "./api/admin/orders/[id].js",
-  dashboard: "./api/admin/dashboard.js",
-  password: "./api/admin/password.js",
-  publicOrders: "./api/orders.js",
+  login: "./handlers/admin/login.js",
+  logout: "./handlers/admin/logout.js",
+  session: "./handlers/admin/session.js",
+  ordersList: "./handlers/admin/orders/index.js",
+  orderOne: "./handlers/admin/orders/[id].js",
+  dashboard: "./handlers/admin/dashboard.js",
+  password: "./handlers/admin/password.js",
+  publicOrders: "./handlers/orders.js",
 };
 
 const cookieFrom = (res) => String(res.getHeader("set-cookie") || "").split(";")[0];

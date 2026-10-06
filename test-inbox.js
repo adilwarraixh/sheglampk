@@ -64,7 +64,7 @@ const PHONE = "03009998896";
   const [prod] = await sql`
     SELECT p.slug, (SELECT variant_name FROM product_variants v WHERE v.product_id = p.id AND v.is_available LIMIT 1) AS shade
       FROM products p WHERE p.status = 'PUBLISHED' ORDER BY p.id LIMIT 1`;
-  const forms = (body, ip) => call("/api/forms.js", { method: "POST", body, ip });
+  const forms = (body, ip) => call("/handlers/forms.js", { method: "POST", body, ip });
   const [cat] = await sql`SELECT id FROM categories WHERE is_active ORDER BY position LIMIT 1`;
   const made = [];   // throwaway products
   // A run within the hour of the last one must not start over its limits.
@@ -113,22 +113,22 @@ const PHONE = "03009998896";
     check("a pending review is not on the shop", !onShop());
 
     console.log("\n=== INBOX (admin) ===");
-    r = await call("/api/admin/inbox.js", { cookie: A.cookie, query: { tab: "messages" } });
+    r = await call("/handlers/admin/inbox.js", { cookie: A.cookie, query: { tab: "messages" } });
     check("ashba can read the inbox", r.statusCode === 200 && r.body.messages.some((m) => m.email === email));
-    r = await call("/api/admin/inbox.js", { method: "PATCH", cookie: A.cookie, csrf: A.csrf, body: { type: "message", id: msg.id, handled: true } });
+    r = await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: A.cookie, csrf: A.csrf, body: { type: "message", id: msg.id, handled: true } });
     check("ashba can mark a message answered", r.statusCode === 200 && r.body.message.handled_at);
-    r = await call("/api/admin/inbox.js", { method: "PATCH", cookie: A.cookie, csrf: A.csrf, body: { type: "review", id: rev.id, status: "APPROVED" } });
+    r = await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: A.cookie, csrf: A.csrf, body: { type: "review", id: rev.id, status: "APPROVED" } });
     check("ashba cannot approve a review → 403", r.statusCode === 403);
-    r = await call("/api/admin/inbox.js", { method: "PATCH", cookie: U.cookie, body: { type: "review", id: rev.id, status: "APPROVED" } });
+    r = await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: U.cookie, body: { type: "review", id: rev.id, status: "APPROVED" } });
     check("approving without the CSRF token is refused", r.statusCode === 403);
-    r = await call("/api/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: rev.id, status: "APPROVED", verified: true } });
+    r = await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: rev.id, status: "APPROVED", verified: true } });
     check("umama approves it and marks it verified", r.statusCode === 200 && r.body.review.status === "APPROVED" && r.body.review.verified === true);
     check("approving asks for a shop update", r.body.rebuild && r.body.rebuild.status === "not-configured", JSON.stringify(r.body.rebuild));
     snap = await snapshot();
     check("an approved review is on the shop", onShop());
-    r = await call("/api/admin/inbox.js", { cookie: A.cookie, query: { export: "subscribers" } });
+    r = await call("/handlers/admin/inbox.js", { cookie: A.cookie, query: { export: "subscribers" } });
     check("ashba cannot download subscribers → 403", r.statusCode === 403);
-    r = await call("/api/admin/inbox.js", { cookie: U.cookie, query: { export: "subscribers" } });
+    r = await call("/handlers/admin/inbox.js", { cookie: U.cookie, query: { export: "subscribers" } });
     check("umama downloads them as CSV", r.statusCode === 200 && typeof r.body === "string" && r.body.includes(email));
 
     console.log("\n=== ORDER TRACKING ===");
@@ -136,7 +136,7 @@ const PHONE = "03009998896";
                             AND NOT EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id AND v.is_available) LIMIT 1`;
     const order = await O.createOrder({ customerName: "Track Test", customerPhone: PHONE, shippingAddress: "House 1, Street 2, Test Town",
                                         items: [{ productId: pp.id, quantity: 1 }] });
-    const track = (body, ip = IPS[1]) => call("/api/track.js", { method: "POST", body, ip });
+    const track = (body, ip = IPS[1]) => call("/handlers/track.js", { method: "POST", body, ip });
     r = await track({ reference: order.reference.toLowerCase(), phone: "+92 300 999 8896" });
     check("the customer finds it with reference + phone (any format)", r.statusCode === 200 && r.body.order.reference === order.reference, JSON.stringify(r.body).slice(0, 120));
     check("it shows the real status and items", r.body.order && r.body.order.status === "PENDING" && r.body.order.items.length === 1);
@@ -171,16 +171,16 @@ const PHONE = "03009998896";
     made.push(T.id);
     await forms({ kind: "review", slug: T.slug, name: "Rename Tester", rating: 4, text: `Follows the product ${tag}` }, IPS[1]);
     const [tr] = await sql`SELECT id FROM reviews WHERE body = ${"Follows the product " + tag}`;
-    await call("/api/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: tr.id, status: "APPROVED" } });
+    await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: tr.id, status: "APPROVED" } });
     const reviewsOn = (s, slug) => ((s.products.find((x) => x.slug === slug) || {}).reviews || []).length;
     await sql`UPDATE products SET slug = ${T.slug + "-renamed"} WHERE id = ${T.id}`;
     snap = await snapshot();
     check("a renamed product keeps its reviews", reviewsOn(snap, T.slug + "-renamed") === 1);
     await PA.archiveProduct(T.id);
-    r = await call("/api/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: tr.id, status: "REJECTED" } });
+    r = await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: tr.id, status: "REJECTED" } });
     check("moderating a review of a product off the shop starts no rebuild",
       r.statusCode === 200 && r.body.rebuild.status === "not-needed", JSON.stringify(r.body.rebuild));
-    await call("/api/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: tr.id, status: "APPROVED" } });
+    await call("/handlers/admin/inbox.js", { method: "PATCH", cookie: U.cookie, csrf: U.csrf, body: { type: "review", id: tr.id, status: "APPROVED" } });
     await PA.deleteProduct(T.id);
     const T2 = await PA.createProduct({ name: `Test Review ${tag}`, sku: `TST2-${tag}`, status: "PUBLISHED", categoryId: cat.id, price: 1000, stockQuantity: 5 });
     made.push(T2.id);

@@ -3,26 +3,34 @@
   "private": true,
   "version": "1.0.0",
   "description": "SHEGLAM PK storefront and admin portal",
-  "type": "commonjs",
   "scripts": {
-    "build": "node db/export-catalogue.js && node build.js && node deploy-prepare.js",
-    "dev": "node dev-server.js",
+    "build": "node db/export-catalogue.js && node build.js && node deploy-prepare.js && next build",
+    "dev": "node build.js && node deploy-prepare.js && next dev",
     "db:migrate": "node db/migrate.js",
     "db:migrate:production": "node db/migrate.js --production",
     "db:seed": "node db/seed.js",
     "db:import-pdf": "node db/import-pdf-catalogue.js",
     "db:export": "node db/export-catalogue.js",
     "db:passwords": "node db/issue-temp-passwords.js",
-    "test": "node test-auth.js && node test-api.js && node test-media.js && node test-import.js && node test-orders.js && node test-catalogue.js && node test-pricing.js && node test-new-in.js && node test-checkout.js && node test-admin.js && node test-inbox.js && node test-collections.js",
+    "test": "node test-routes.js && node test-auth.js && node test-api.js && node test-media.js && node test-import.js && node test-orders.js && node test-catalogue.js && node test-pricing.js && node test-new-in.js && node test-checkout.js && node test-admin.js && node test-inbox.js && node test-collections.js",
     "db:seed-hero": "node db/seed-hero.js",
     "db:seed-settings": "node db/seed-settings.js",
-    "mail:test": "node db/mail-test.js"
+    "mail:test": "node db/mail-test.js",
+    "start": "next start"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
-    "@vercel/blob": "^2.8.1"
+    "@vercel/blob": "^2.8.1",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "@types/react": "^19.3.0",
+    "typescript": "^5.9.3"
   }
 }
