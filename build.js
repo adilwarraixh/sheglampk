@@ -25,6 +25,16 @@ const OUT_PRODUCT = path.join(ROOT, "product");
    listed in the sitemap. A product page must not outlive its product. */
 fs.rmSync(OUT_PRODUCT, { recursive: true, force: true });
 fs.mkdirSync(OUT_PRODUCT, { recursive: true });
+// The same for collection pages, now that collections can be renamed, hidden or deleted in the portal.
+fs.readdirSync(ROOT).filter((f) => /^collection-[a-z0-9-]+\.html$/.test(f)).forEach((f) => fs.rmSync(path.join(ROOT, f)));
+
+/* JSON placed inside a <script> element. A "</script>" or "<!--" in any
+   value — a product name, an approved customer review, a collection
+   title — would otherwise end the element and run as markup. Escaped,
+   it is the same JSON to every parser and stays data. */
+const scriptJson = (v, space) => JSON.stringify(v, null, space)
+  .replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026")
+  .replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
 
 const FONT = "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap";
 
@@ -436,7 +446,7 @@ function writePage(o) {
   const ogImage = o.ogImage || PRODUCTS[0].imageLarge;
 
   const jsonLd = (o.jsonLd || []).map(
-    (j) => `<script type="application/ld+json">\n${JSON.stringify(j, null, 2)}\n</script>`
+    (j) => `<script type="application/ld+json">\n${scriptJson(j, 2)}\n</script>`
   ).join("\n");
 
   const html = `<!doctype html>
@@ -465,7 +475,7 @@ ${o.noindex ? `<meta name="robots" content="noindex">` : `<link rel="canonical" 
 <script>
 /* Which products have real photography. Must load before catalog.js so
    client-side re-renders resolve images the same way the build did. */
-window.SGPK_PHOTOS=${JSON.stringify(D.PHOTOS || [])};
+window.SGPK_PHOTOS=${scriptJson(D.PHOTOS || [])};
 /* Registered here, in <head>, so it catches images that fail while the
    page is still parsing — a listener added at end-of-body misses them. */
 addEventListener("error",function(e){
