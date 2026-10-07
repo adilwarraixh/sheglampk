@@ -1,0 +1,253 @@
+- main [ref=f1e2]:
+  - heading "Uniman logo, round 1" [level=1] [ref=f1e3]
+  - paragraph [ref=f1e4]: Six designers each drew one meaningful object, checked it from the 16 px tab icon up to the 180 px app icon in light and dark, and an independent judge then scored all six side by side. Ordered by the judge's score. Every mark here is one colour so it follows the theme, like the current logo.
+  - generic [ref=f1e5]:
+    - text: "Judge's bottom line: none of the six is ready to ship as drawn. Only the top two are worth refining."
+    - list [ref=f1e6]:
+      - listitem [ref=f1e7]: "Master Key has the best meaning: one key that opens every part of the business, and keys belong to hotels, shops, clinics and real estate alike. Its round bow with a U cut out looks like the kosher-certification (OU) symbol, so the bow has to become a classic skeleton-key bow."
+      - listitem [ref=f1e8]: Storefront builds the U in best (the doorway) and sits best next to the wordmark. It is close to the generic "shop" icon used by Google Business and POS apps, and it says "retail" only.
+  - generic [ref=f1e9]:
+    - generic [ref=f1e10]:
+      - generic [ref=f1e11]: "#1"
+      - heading "Master Key" [level=2] [ref=f1e12]
+      - generic [ref=f1e13]: 6.5/10
+      - generic [ref=f1e14]: meaning 8 · 16px 6 · premium 6 · ownable 5 · with wordmark 6
+    - paragraph [ref=f1e15]: "A solid brass-style skeleton key set on a rising diagonal. Its round bow carries an upright U knocked out like a stamped monogram, and its chunky bit has a U-shaped notch that echoes it: one key (one login, one system) that opens every part of the business."
+    - generic [ref=f1e16]:
+      - figure "128" [ref=f1e17]
+      - figure "48" [ref=f1e21]
+      - figure "32" [ref=f1e25]
+      - figure "16" [ref=f1e29]
+      - figure "16 real ×4" [ref=f1e33]
+      - generic [ref=f1e35]: Orders · Uniman
+    - generic [ref=f1e39]:
+      - figure "128" [ref=f1e40]
+      - figure "48" [ref=f1e44]
+      - figure "32" [ref=f1e48]
+      - figure "16" [ref=f1e52]
+      - figure "16 real ×4" [ref=f1e56]
+      - generic [ref=f1e58]: Orders · Uniman
+    - generic [ref=f1e70]:
+      - generic [ref=f1e74]:
+        - generic [ref=f1e75]: Uniman
+        - generic [ref=f1e76]: Universal Management System
+      - generic [ref=f1e80]:
+        - generic [ref=f1e81]: Uniman
+        - generic [ref=f1e82]: Universal Management System
+      - generic [ref=f1e86]:
+        - generic [ref=f1e87]: Uniman
+        - generic [ref=f1e88]: Universal Management System
+    - generic [ref=f1e89]:
+      - paragraph [ref=f1e90]: "Judge: Best of the set. It is clearly a key at every size, and the master-key idea fits every vertical, because hotels, real estate, shops and clinics all run on keys. It is not finished. The solid disc with a knocked-out U is the OU kosher symbol in negative, and that is a real problem on restaurant receipts and menus. The round notch in the bit disappears below 48 px. The 45-degree lean puts the weight at the bottom left, so in the lockup the mark looks small and tilted next to the heavy wordmark. At 180 px it reads as a password-manager icon more than a premium brass key."
+      - paragraph [ref=f1e91]: "Looks like: HIGH: a disc with a U is the OU kosher certification mark (Orthodox Union), which matters for restaurant clients. MEDIUM: key icons are the default symbol for password managers and security apps (KeePass, Keychain), and keys are common in locksmith and real-estate logos."
+      - group [ref=f1e92]:
+        - generic "What must change before it could ship (5)" [ref=f1e93] [cursor=pointer]
+      - group [ref=f1e94]:
+        - generic "Designer's notes" [ref=f1e95] [cursor=pointer]
+  - generic [ref=f1e96]:
+    - generic [ref=f1e97]:
+      - generic [ref=f1e98]: "#2"
+      - heading "Storefront" [level=2] [ref=f1e99]
+      - generic [ref=f1e100]: 6.2/10
+      - generic [ref=f1e101]: meaning 8 · 16px 7 · premium 5 · ownable 3 · with wordmark 8
+    - paragraph [ref=f1e102]: "A shop front: a striped awning drawn in perspective over a solid shop front whose open doorway is cut as a bold U, so Uniman is the door into the business it runs."
+    - generic [ref=f1e103]:
+      - figure "128" [ref=f1e104]
+      - figure "48" [ref=f1e108]
+      - figure "32" [ref=f1e112]
+      - figure "16" [ref=f1e116]
+      - figure "16 real ×4" [ref=f1e120]
+      - generic [ref=f1e122]: Orders · Uniman
+    - generic [ref=f1e126]:
+      - figure "128" [ref=f1e127]
+      - figure "48" [ref=f1e131]
+      - figure "32" [ref=f1e135]
+      - figure "16" [ref=f1e139]
+      - figure "16 real ×4" [ref=f1e143]
+      - generic [ref=f1e145]: Orders · Uniman
+    - generic [ref=f1e157]:
+      - generic [ref=f1e161]:
+        - generic [ref=f1e162]: Uniman
+        - generic [ref=f1e163]: Universal Management System
+      - generic [ref=f1e167]:
+        - generic [ref=f1e168]: Uniman
+        - generic [ref=f1e169]: Universal Management System
+      - generic [ref=f1e173]:
+        - generic [ref=f1e174]: Uniman
+        - generic [ref=f1e175]: Universal Management System
+    - generic [ref=f1e176]:
+      - paragraph [ref=f1e177]: "Judge: The U doorway is the best-integrated U in the set. You see a shop and you see a U, and the square, heavy silhouette sits best beside the bold wordmark. Two problems. It is close to the generic 'store' icon (Material Symbols storefront, Google Business Profile, many Pakistani merchant and POS apps), so it is not ownable. And it says retail only, while the product also sells to hospitals, clinics, hotels and real estate. At 180 px it looks like a stock icon, not a premium brand."
+      - paragraph [ref=f1e178]: "Looks like: HIGH: Google Business Profile logo (awning storefront), the Material Symbols 'storefront' glyph, Shopify POS and similar merchant apps; most local POS and dukaan apps use this exact silhouette."
+      - group [ref=f1e179]:
+        - generic "What must change before it could ship (4)" [ref=f1e180] [cursor=pointer]
+      - group [ref=f1e181]:
+        - generic "Designer's notes" [ref=f1e182] [cursor=pointer]
+  - generic [ref=f1e183]:
+    - generic [ref=f1e184]:
+      - generic [ref=f1e185]: "#3"
+      - heading "Markhor U" [level=2] [ref=f1e186]
+      - generic [ref=f1e187]: 5/10
+      - generic [ref=f1e188]: meaning 6 · 16px 3 · premium 5 · ownable 7 · with wordmark 5
+    - paragraph [ref=f1e189]: "A front-facing markhor head, Pakistan's national animal and the old brand's mark: its corkscrew horns and solid face together form a bold U, which carries national pride over to the new name."
+    - generic [ref=f1e190]:
+      - figure "128" [ref=f1e191]
+      - figure "48" [ref=f1e195]
+      - figure "32" [ref=f1e199]
+      - figure "16" [ref=f1e203]
+      - figure "16 real ×4" [ref=f1e207]
+      - generic [ref=f1e209]: Orders · Uniman
+    - generic [ref=f1e213]:
+      - figure "128" [ref=f1e214]
+      - figure "48" [ref=f1e218]
+      - figure "32" [ref=f1e222]
+      - figure "16" [ref=f1e226]
+      - figure "16 real ×4" [ref=f1e230]
+      - generic [ref=f1e232]: Orders · Uniman
+    - generic [ref=f1e244]:
+      - generic [ref=f1e248]:
+        - generic [ref=f1e249]: Uniman
+        - generic [ref=f1e250]: Universal Management System
+      - generic [ref=f1e254]:
+        - generic [ref=f1e255]: Uniman
+        - generic [ref=f1e256]: Universal Management System
+      - generic [ref=f1e260]:
+        - generic [ref=f1e261]: Uniman
+        - generic [ref=f1e262]: Universal Management System
+    - generic [ref=f1e263]:
+      - paragraph [ref=f1e264]: "Judge: The most ownable story: the national animal, and continuity with the old Markhor brand. The drawing does not deliver it. The corkscrew horns are stacks of thin slivers held together by a 0.8 stroke, well under the 3.5-unit minimum. They render as serrated spikes or drill bits, and at 16 px the whole mark collapses into a trident or Psi glyph. The face is a hollow U with no features, so it reads as a horned U or devil mask more than a markhor. Its narrow, spiky silhouette looks frail next to the slab-heavy wordmark."
+      - paragraph [ref=f1e265]: "Looks like: MEDIUM-HIGH: in Pakistan a markhor head is strongly linked with the ISI emblem and military insignia; at small sizes it reads as a trident or the Psi symbol (Ψ) or devil horns. Low risk against global tech marks."
+      - group [ref=f1e266]:
+        - generic "What must change before it could ship (4)" [ref=f1e267] [cursor=pointer]
+      - group [ref=f1e268]:
+        - generic "Designer's notes" [ref=f1e269] [cursor=pointer]
+  - generic [ref=f1e270]:
+    - generic [ref=f1e271]:
+      - generic [ref=f1e272]: "#4"
+      - heading "Control Dial" [level=2] [ref=f1e273]
+      - generic [ref=f1e274]: 4.8/10
+      - generic [ref=f1e275]: meaning 6 · 16px 5 · premium 6 · ownable 3 · with wordmark 7
+    - paragraph [ref=f1e276]: "A hi-fi control knob inside a 270-degree, four-segment scale whose segments get thicker clockwise: the owner turns one dial and sees and steers the whole business, and the thickening scale shows it growing."
+    - generic [ref=f1e277]:
+      - figure "128" [ref=f1e278]
+      - figure "48" [ref=f1e282]
+      - figure "32" [ref=f1e286]
+      - figure "16" [ref=f1e290]
+      - figure "16 real ×4" [ref=f1e294]
+      - generic [ref=f1e296]: Orders · Uniman
+    - generic [ref=f1e300]:
+      - figure "128" [ref=f1e301]
+      - figure "48" [ref=f1e305]
+      - figure "32" [ref=f1e309]
+      - figure "16" [ref=f1e313]
+      - figure "16 real ×4" [ref=f1e317]
+      - generic [ref=f1e319]: Orders · Uniman
+    - generic [ref=f1e331]:
+      - generic [ref=f1e335]:
+        - generic [ref=f1e336]: Uniman
+        - generic [ref=f1e337]: Universal Management System
+      - generic [ref=f1e341]:
+        - generic [ref=f1e342]: Uniman
+        - generic [ref=f1e343]: Universal Management System
+      - generic [ref=f1e347]:
+        - generic [ref=f1e348]: Uniman
+        - generic [ref=f1e349]: Universal Management System
+    - generic [ref=f1e350]:
+      - paragraph [ref=f1e351]: "Judge: A clean, well-built gauge, and 'dashboard' is the literal metaphor. But it is the default admin-template dashboard icon and very close to the Speedtest (Ookla) mark. The thickening scale is a subtle idea nobody will notice. At 16 px it reads as a ring with a dot (a target or camera lens). It is competent but generic, and it says speed or performance more than running a business."
+      - paragraph [ref=f1e352]: "Looks like: HIGH: Speedtest by Ookla (arc gauge plus needle), plus the generic 'dashboard/performance' icon in Material, Lighthouse and every admin template."
+      - group [ref=f1e353]:
+        - generic "What must change before it could ship (4)" [ref=f1e354] [cursor=pointer]
+      - group [ref=f1e355]:
+        - generic "Designer's notes" [ref=f1e356] [cursor=pointer]
+  - generic [ref=f1e357]:
+    - generic [ref=f1e358]:
+      - generic [ref=f1e359]: "#5"
+      - heading "Hub Wheel (Six-Business Hub)" [level=2] [ref=f1e360]
+      - generic [ref=f1e361]: 4.5/10
+      - generic [ref=f1e362]: meaning 4 · 16px 6 · premium 6 · ownable 4 · with wordmark 7
+    - paragraph [ref=f1e363]: "A machined six-spoke alloy wheel turning on a hex-nut hub: each spoke stands for one kind of business (restaurant, hotel, clinic, hospital, retail, real estate), all bolted to one six-sided core. It is the hub-and-spoke idea drawn literally: Uniman is the hub every business turns on."
+    - generic [ref=f1e364]:
+      - figure "128" [ref=f1e365]
+      - figure "48" [ref=f1e369]
+      - figure "32" [ref=f1e373]
+      - figure "16" [ref=f1e377]
+      - figure "16 real ×4" [ref=f1e381]
+      - generic [ref=f1e383]: Orders · Uniman
+    - generic [ref=f1e387]:
+      - figure "128" [ref=f1e388]
+      - figure "48" [ref=f1e392]
+      - figure "32" [ref=f1e396]
+      - figure "16" [ref=f1e400]
+      - figure "16 real ×4" [ref=f1e404]
+      - generic [ref=f1e406]: Orders · Uniman
+    - generic [ref=f1e418]:
+      - generic [ref=f1e422]:
+        - generic [ref=f1e423]: Uniman
+        - generic [ref=f1e424]: Universal Management System
+      - generic [ref=f1e428]:
+        - generic [ref=f1e429]: Uniman
+        - generic [ref=f1e430]: Universal Management System
+      - generic [ref=f1e434]:
+        - generic [ref=f1e435]: Uniman
+        - generic [ref=f1e436]: Universal Management System
+    - generic [ref=f1e437]:
+      - paragraph [ref=f1e438]: "Judge: The six kidney-shaped windows make this read as a FILM REEL first and a car alloy rim second, not a hub that businesses turn on. Nobody will get 'six spokes = six businesses' without being told. There is no U. The round, solid silhouette pairs fine in the lockup, but the meaning points to cinema or automotive."
+      - paragraph [ref=f1e439]: "Looks like: HIGH: generic film-reel icons and cinema brands; alloy-wheel and tyre-shop logos; loosely Rotary-style wheel emblems."
+      - group [ref=f1e440]:
+        - generic "What must change before it could ship (4)" [ref=f1e441] [cursor=pointer]
+      - group [ref=f1e442]:
+        - generic "Designer's notes" [ref=f1e443] [cursor=pointer]
+  - generic [ref=f1e444]:
+    - generic [ref=f1e445]:
+      - generic [ref=f1e446]: "#6"
+      - heading "Modular Blocks" [level=2] [ref=f1e447]
+      - generic [ref=f1e448]: 3.5/10
+      - generic [ref=f1e449]: meaning 2 · 16px 9 · premium 4 · ownable 3 · with wordmark 7
+    - paragraph [ref=f1e450]: "Three rounded building blocks make a sturdy U, laid in a pinwheel bond so each one rests against the next: one system put together from modules. The base block and the right pillar are the same 2-unit module turned 90 degrees, and together with the tall pillar the shape also reads as a dashboard layout (a sidebar plus panels)."
+    - generic [ref=f1e451]:
+      - figure "128" [ref=f1e452]
+      - figure "48" [ref=f1e456]
+      - figure "32" [ref=f1e460]
+      - figure "16" [ref=f1e464]
+      - figure "16 real ×4" [ref=f1e468]
+      - generic [ref=f1e470]: Orders · Uniman
+    - generic [ref=f1e474]:
+      - figure "128" [ref=f1e475]
+      - figure "48" [ref=f1e479]
+      - figure "32" [ref=f1e483]
+      - figure "16" [ref=f1e487]
+      - figure "16 real ×4" [ref=f1e491]
+      - generic [ref=f1e493]: Orders · Uniman
+    - generic [ref=f1e505]:
+      - generic [ref=f1e509]:
+        - generic [ref=f1e510]: Uniman
+        - generic [ref=f1e511]: Universal Management System
+      - generic [ref=f1e515]:
+        - generic [ref=f1e516]: Uniman
+        - generic [ref=f1e517]: Universal Management System
+      - generic [ref=f1e521]:
+        - generic [ref=f1e522]: Uniman
+        - generic [ref=f1e523]: Universal Management System
+    - generic [ref=f1e524]:
+      - paragraph [ref=f1e525]: "Judge: Crisp at 16 px and its weight matches Archivo 800, but it is exactly what the owner rejects: an abstract letter-mark. It is not an object. It reads as 'L!', 'LJ' or 'IJ' before it reads as a U or as building blocks, so the lockup looks like 'LJ Uniman'. The dashboard-layout reading is a designer's rationale, not what people see."
+      - paragraph [ref=f1e526]: "Looks like: MEDIUM: reads as the letters LJ or IJ; looks like generic layout or Tetris icons and UI 'dashboard layout' glyphs."
+      - group [ref=f1e527]:
+        - generic "What must change before it could ship (3)" [ref=f1e528] [cursor=pointer]
+      - group [ref=f1e529]:
+        - generic "Designer's notes" [ref=f1e530] [cursor=pointer]
+  - generic [ref=f1e531]:
+    - 'heading "For reference: today''s markhor head" [level=2] [ref=f1e533]'
+    - generic [ref=f1e534]:
+      - generic [ref=f1e538]:
+        - generic [ref=f1e539]: Uniman
+        - generic [ref=f1e540]: Universal Management System
+      - generic [ref=f1e544]:
+        - generic [ref=f1e545]: Uniman
+        - generic [ref=f1e546]: Universal Management System
+  - generic [ref=f1e547]:
+    - heading "Your call" [level=2] [ref=f1e548]
+    - paragraph [ref=f1e549]:
+      - text: Tell me which one or two to take forward, e.g.
+      - code [ref=f1e550]: refine Key + Storefront
+      - text: ", or mix ideas, e.g."
+      - code [ref=f1e551]: Storefront with a Mughal arch door
+      - text: . I'll apply the judge's fixes, re-check every size, and show you the finished version before anything in the app changes.

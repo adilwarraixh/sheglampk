@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Uniman" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation "Primary" [ref=e11]:
+          - link "Features" [ref=e12] [cursor=pointer]:
+            - /url: "#features"
+          - link "How it works" [ref=e13] [cursor=pointer]:
+            - /url: "#how"
+          - link "Sign in" [ref=e14] [cursor=pointer]:
+            - /url: /login
+    - main [ref=e15]:
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: Universal Management System
+        - heading "Run your whole operation from one clean dashboard." [level=1] [ref=e19]
+        - paragraph [ref=e20]: Uniman is a single operations platform for restaurants, hotels, clinics, hospitals, retail stores and real-estate agencies. One engine, configured for how your business actually works.
+        - generic [ref=e21]:
+          - button "Request access" [ref=e22] [cursor=pointer]
+          - link "Sign in" [ref=e23] [cursor=pointer]:
+            - /url: /login
+        - paragraph [ref=e24]: Set up for you — no self-signup, no card required.
+      - generic [ref=e26]:
+        - paragraph [ref=e27]: One engine, many industries
+        - heading "Not another app per industry — one, shaped to yours." [level=2] [ref=e28]
+        - paragraph [ref=e29]: The same platform runs each business type. Turning on a business type decides which modules appear and what everything is called, so the software fits your world instead of the other way round.
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - generic [ref=e32]: Restaurants
+            - generic [ref=e33]: Tables, menu, dine-in / takeaway / delivery, kitchen display.
+          - generic [ref=e34]:
+            - generic [ref=e35]: Hotels
+            - generic [ref=e36]: Rooms, room types, reservations, housekeeping.
+          - generic [ref=e37]:
+            - generic [ref=e38]: Clinics
+            - generic [ref=e39]: Appointment slots, services, patients.
+          - generic [ref=e40]:
+            - generic [ref=e41]: Hospitals
+            - generic [ref=e42]: Beds, procedures, admissions, ward tasks.
+          - generic [ref=e43]:
+            - generic [ref=e44]: Retail / Marts
+            - generic [ref=e45]: Products, counter sales, stock, purchasing.
+          - generic [ref=e46]:
+            - generic [ref=e47]: Real estate
+            - generic [ref=e48]: Listings, viewings, leases, follow-ups.
+          - generic [ref=e49]:
+            - generic [ref=e50]: …and more
+            - generic [ref=e51]: A new industry is a preset, not a rebuild.
+      - generic [ref=e53]:
+        - paragraph [ref=e54]: Everything the day needs
+        - heading "The modules that run the floor and the back office." [level=2] [ref=e55]
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - heading "Daily task & checklist engine" [level=3] [ref=e58]
+            - paragraph [ref=e59]: Opening and closing duties, per-shift checklists and cleaning schedules — with a live completion view for managers.
+          - generic [ref=e60]:
+            - heading "Orders & billing" [level=3] [ref=e61]
+            - paragraph [ref=e62]: Take an order, apply tax and discounts, split or part-pay, settle to paid — and void or refund with a clean audit trail.
+          - generic [ref=e63]:
+            - heading "Live occupancy board" [level=3] [ref=e64]
+            - paragraph [ref=e65]: See every table, room or bed at a glance — free, occupied, reserved or being cleaned.
+          - generic [ref=e66]:
+            - heading "Inventory that deducts itself" [level=3] [ref=e67]
+            - paragraph [ref=e68]: Stock drops automatically on each sale from its recipe or bill-of-materials, with low-stock alerts before you run out.
+          - generic [ref=e69]:
+            - heading "Kitchen / fulfilment display" [level=3] [ref=e70]
+            - paragraph [ref=e71]: Tickets flow queued → preparing → ready → served, oldest first, so the pass never loses an order.
+          - generic [ref=e72]:
+            - heading "Staff & attendance" [level=3] [ref=e73]
+            - paragraph [ref=e74]: Team roster, clock in / out, worked hours and shift scheduling — the hours owners actually pay for.
+          - generic [ref=e75]:
+            - heading "Owner insights" [level=3] [ref=e76]
+            - paragraph [ref=e77]: Revenue trend, top sellers, busiest hours, payment mix and a multi-branch roll-up — from anywhere.
+          - generic [ref=e78]:
+            - heading "Purchasing & suppliers" [level=3] [ref=e79]
+            - paragraph [ref=e80]: Raise purchase orders; receiving restocks inventory and refreshes unit cost automatically.
+          - generic [ref=e81]:
+            - heading "One login, many workspaces" [level=3] [ref=e82]
+            - paragraph [ref=e83]: Run more than one business? Switch between your workspaces in a click — each with its own team and data.
+      - generic [ref=e85]:
+        - paragraph [ref=e86]: How it works
+        - heading "Up and running in three steps." [level=2] [ref=e87]
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - generic [aria-hidden] [ref=e90]: "1"
+            - heading "Pick your business type" [level=3] [ref=e91]
+            - paragraph [ref=e92]: We provision your workspace with the right modules and wording — a table for a restaurant, a bed for a hospital, a listing for an agency.
+          - generic [ref=e93]:
+            - generic [aria-hidden] [ref=e94]: "2"
+            - heading "Add your team" [level=3] [ref=e95]
+            - paragraph [ref=e96]: Create a login for each teammate with role-based access — manager, cashier, waiter, kitchen, receptionist, stock-keeper — so everyone sees just their part.
+          - generic [ref=e97]:
+            - generic [aria-hidden] [ref=e98]: "3"
+            - heading "Run the day" [level=3] [ref=e99]
+            - paragraph [ref=e100]: Orders, tasks, stock and staff in one clean dashboard; owners get live insight without standing at the counter.
+      - generic [ref=e102]:
+        - heading "Ready to run your business on it?" [level=2] [ref=e107]
+        - paragraph [ref=e108]: Workspaces are provisioned and billed directly by Social Studios Pk — tell us your business and we'll set yours up.
+        - generic [ref=e109]:
+          - button "Request access" [ref=e110] [cursor=pointer]
+          - link "hello@unimansystem.com" [ref=e111] [cursor=pointer]:
+            - /url: mailto:hello@unimansystem.com
+    - contentinfo [ref=e112]:
+      - generic [ref=e113]:
+        - link "Uniman" [ref=e114] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e120]:
+          - generic [ref=e121]: Powered by Social Studios Pk
+          - generic [aria-hidden] [ref=e122]: ·
+          - link "hello@unimansystem.com" [ref=e123] [cursor=pointer]:
+            - /url: mailto:hello@unimansystem.com
+          - generic [aria-hidden] [ref=e124]: ·
+          - link "Privacy" [ref=e125] [cursor=pointer]:
+            - /url: /privacy
+          - generic [aria-hidden] [ref=e126]: ·
+          - link "Terms" [ref=e127] [cursor=pointer]:
+            - /url: /terms
+          - generic [aria-hidden] [ref=e128]: ·
+          - generic [ref=e129]: © 2026 Social Studios Pk
+  - button "Open Next.js Dev Tools" [ref=e135] [cursor=pointer]

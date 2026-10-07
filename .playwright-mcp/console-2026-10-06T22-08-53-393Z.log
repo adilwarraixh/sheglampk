@@ -1,0 +1,77 @@
+[ 2741626ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 67ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2741745ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2742038ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2744485ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 18ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2744500ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2744558ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2746781ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 17ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2746790ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2746842ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2748924ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 21ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2748937ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2748986ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2750805ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 19ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2750814ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2750868ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2752778ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 19ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2752787ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2752832ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2754523ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 27ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2754533ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2754595ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2756146ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 22ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2756154ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2756219ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2757875ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 27ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2757887ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2757945ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2759737ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 24ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2759747ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2759802ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2761563ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 18ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2761572ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2761625ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2763286ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 22ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2763300ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2763348ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2765042ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 21ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2765050ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2765099ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2767019ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 18ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2767030ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2767085ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2768994ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 26ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2769007ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2769060ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2771064ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 25ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2771074ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2771134ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2773028ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 21ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2773036ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2773083ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2775075ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 17ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2775084ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2775140ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2776952ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 20ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2776962ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2777020ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2778784ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 17ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2778792ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2778833ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2780379ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3011/this-page-does-not-exist:0
+[ 2780589ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 19ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2780603ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2780660ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2782260ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3011/this-page-does-not-exist:0
+[ 2782726ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 25ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2782734ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2782794ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2784379ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3011/this-page-does-not-exist:0
+[ 2784503ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 22ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2784511ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2784560ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2785994ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3011/this-page-does-not-exist:0
+[ 2786286ms] [LOG] [Client Instrumentation Hook] Slow execution detected: 23ms (Note: Code download overhead is not included in this measurement) @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:692
+[ 2786296ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2786346ms] [LOG] [HMR] connected @ http://localhost:3011/_next/static/chunks/node_modules_next_dist_00y7o2o._.js:905
+[ 2953623ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3011/favicon.ico:0
