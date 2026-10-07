@@ -15,6 +15,11 @@ const htmlIn = (dir: string) =>
   existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".html")).map((f) => f.slice(0, -5)) : [];
 const PAGES = htmlIn("public").filter((p) => p !== "index" && p !== "404");
 const PRODUCTS = htmlIn("public/product");
+// Pages React renders itself (app/(shop)/<name>/page.tsx); their old .html addresses redirect too.
+const SHOP_APP = "app/(shop)";
+const REACT_PAGES = existsSync(SHOP_APP)
+  ? readdirSync(SHOP_APP).filter((d) => /^[a-z0-9-]+$/.test(d) && existsSync(`${SHOP_APP}/${d}/page.tsx`))
+  : [];
 
 const ADMIN_PAGES = [
   "login", "orders", "password", "products", "product", "inventory", "customers",
@@ -37,7 +42,7 @@ const config: NextConfig = {
   async redirects() {
     return [
       { source: "/index.html", destination: "/", permanent: true },
-      ...PAGES.map((p) => ({ source: `/${p}.html`, destination: `/${p}`, permanent: true })),
+      ...PAGES.concat(REACT_PAGES).map((p) => ({ source: `/${p}.html`, destination: `/${p}`, permanent: true })),
       ...PRODUCTS.map((s) => ({ source: `/product/${s}.html`, destination: `/product/${s}`, permanent: true })),
     ];
   },

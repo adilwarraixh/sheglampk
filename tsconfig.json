@@ -17,7 +17,18 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -25,7 +36,12 @@
     "pages/**/*.ts",
     "pages/**/*.tsx",
     "app/**/*.ts",
-    "app/**/*.tsx"
+    "app/**/*.tsx",
+    "components/**/*.tsx",
+    "components/**/*.ts",
+    "lib/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

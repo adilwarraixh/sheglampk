@@ -18,8 +18,10 @@
      --------------------------------------------------------- */
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => Array.prototype.slice.call(c.querySelectorAll(s));
-  const BASE = document.body.dataset.base || "";
-  const PAGE = document.body.dataset.page || "";
+  // The page's context: on <body> in generated pages, on <main> in React ones.
+  const CTX = (document.querySelector("[data-page]") || document.body).dataset;
+  const BASE = CTX.base || "";
+  const PAGE = CTX.page || "";
   const on = (el, ev, fn, opt) => el && el.addEventListener(ev, fn, opt);
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   /* Server messages and customer input both reach innerHTML below. */
@@ -809,7 +811,7 @@
      --------------------------------------------------------- */
   function initPDP() {
     if (PAGE !== "product") return;
-    const slug = document.body.dataset.slug;
+    const slug = CTX.slug;
     const p = bySlug(slug);
     if (!p) return;
 
@@ -1005,7 +1007,7 @@
   function renderRecentlyViewed() {
     const box = $("#recentGrid");
     if (!box) return;
-    const current = document.body.dataset.slug || "";
+    const current = CTX.slug || "";
     const items = store.get("sgpk_recent", []).filter((s) => s !== current).map(bySlug).filter(Boolean).slice(0, 5);
     if (!items.length) { const s = box.closest("section"); if (s) s.style.display = "none"; return; }
     box.innerHTML = items.map((p) => T.card(p, BASE)).join("");
